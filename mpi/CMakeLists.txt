@@ -20,6 +20,9 @@ if (MPI_FOUND)
     add_executable(onenas_mpi onenas_mpi.cxx)
     target_link_libraries(onenas_mpi examm_strategy onenas_strategy exact_time_series online_series exact_common exact_weights examm_nn ${MPI_LIBRARIES} ${MPI_EXTRA} ${MYSQL_LIBRARIES} ${TIFF_LIBRARIES} pthread)
 
+    add_executable(catastrophic_forgetting_mpi catastrophic_forgetting_mpi.cxx)
+    target_link_libraries(catastrophic_forgetting_mpi examm_strategy onenas_strategy exact_time_series online_series exact_common exact_weights examm_nn ${MPI_LIBRARIES} ${MPI_EXTRA} ${MYSQL_LIBRARIES} ${TIFF_LIBRARIES} pthread)
+
     # add_executable(examm_mpi_multi examm_mpi_multi.cxx)
     # target_link_libraries(examm_mpi_multi examm_strategy exact_time_series  exact_common exact_weights examm_nn ${MPI_LIBRARIES} ${MPI_EXTRA} ${MYSQL_LIBRARIES} ${TIFF_LIBRARIES} pthread)
 
