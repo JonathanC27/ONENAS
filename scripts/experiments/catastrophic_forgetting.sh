@@ -1,35 +1,38 @@
-#!/bin/sh
-# Catastrophic Forgetting Experiment: Train A -> Train B -> Evaluate A & B
+#!/bin/bash -l
+# Catastrophic Forgetting Experiment: ONE-NAS + Uniform Replay
 #
 # This script measures whether ONE-NAS's vanilla random historical replay
 # (uniform sampling from all historical episodes) is sufficient to resist
 # catastrophic forgetting when the data distribution shifts (summer -> winter).
-# See Section 4.1 of the ONE-NAS paper.
 #
 # Distribution A (Summer): May-Sep data (files 5-18, file 19 held out for eval)
-#   - Ot_avg ~18.6C, Rt_avg ~24.6C, P_avg ~292 kW, Ws_avg ~5.2 m/s
-#   - Train: 14 files (~822 episodes at length 25)
-#   - Eval:  file 19 (held-out summer data)
-#
 # Distribution B (Winter): Nov-Mar data (files 1, 2, 25-29, 31; file 30 held out for eval)
-#   - Ot_avg ~5.2C, Rt_avg ~12.9C, P_avg ~546 kW, Ws_avg ~6.3 m/s
-#   - Train: 8 files (~632 episodes at length 25)
-#   - Eval:  file 30 (held-out winter data)
 #
 # Unified stream: ~1454 total episodes (A: 822, B: 632)
-# num_training_sets=100 to ensure enough generations for convergence:
-#   Phase boundary: gen ~722 (822 - 100), well past the ~500 gen convergence point
-#   Max generations: ~1253 (1454 - 100 - 100 - 1)
-#
-# Excluded (transition months): files 3, 4 (Mar-Apr), 20-24 (Oct)
-#
-# Usage:
-#   cd build && cmake .. && make catastrophic_forgetting_mpi
-#   cd .. && bash scripts/experiments/catastrophic_forgetting.sh
+# Phase boundary: gen ~722 (822 - 100)
+# Max generations: ~1253 (1454 - 100 - 100 - 1)
 
-cd build
+#SBATCH -J cf_onenas_uniform
+#SBATCH -A cis251123
+#SBATCH -o cf_onenas_uniform_%x_%j.output
+#SBATCH -e cf_onenas_uniform_%x_%j.error
+#SBATCH --mail-user=jchang1@ucvts.org
+#SBATCH --mail-type=ALL
+#SBATCH -t 12:0:0
+#SBATCH --nodes=1
+#SBATCH --ntasks=22
+#SBATCH -p wholenode
 
-DATA_DIR="../datasets/2020_wind_engine"
+set -euo pipefail
+
+module --force purge
+module load gcc
+module load cmake
+module load openmpi
+module load libtiff
+
+ONENAS="$HOME/ONENAS"
+DATA_DIR="$ONENAS/datasets/2020_wind_engine"
 
 INPUT_PARAMETERS="Ba_avg Rt_avg DCs_avg Cm_avg P_avg S_avg Cosphi_avg Db1t_avg Db2t_avg Dst_avg Gb1t_avg Gb2t_avg Git_avg Gost_avg Ya_avg Yt_avg Ws_avg Wa_avg Ot_avg Nf_avg Nu_avg Rbt_avg"
 OUTPUT_PARAMETERS="P_avg"
@@ -68,19 +71,18 @@ ${DATA_DIR}/turbine_R80711_2017-2020_31.csv"
 EVAL_FILES_A="${DATA_DIR}/turbine_R80711_2017-2020_19.csv"
 EVAL_FILES_B="${DATA_DIR}/turbine_R80711_2017-2020_30.csv"
 
-NUM_PROCS=22
 TOTAL_GENERATIONS=1250
 EVAL_FREQUENCY=5
 
-for i in {0..9}
+for i in {0..2}
 do
 
-exp_name="../results/catastrophic_forgetting/$i"
-mkdir -p $exp_name
+exp_name="$ONENAS/results/catastrophic_forgetting/$i"
+mkdir -p "$exp_name"
 echo "Running Catastrophic Forgetting Experiment (trial $i)"
 echo "Results will be saved to: $exp_name"
 
-mpirun -np $NUM_PROCS ./mpi/catastrophic_forgetting_mpi \
+mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_mpi" \
 --training_filenames_a $TRAINING_FILES_A \
 --training_filenames_b $TRAINING_FILES_B \
 --eval_filenames_a $EVAL_FILES_A \
@@ -92,7 +94,7 @@ mpirun -np $NUM_PROCS ./mpi/catastrophic_forgetting_mpi \
 --output_parameter_names $OUTPUT_PARAMETERS \
 --number_islands 20 \
 --bp_iterations 10 \
---output_directory $exp_name \
+--output_directory "$exp_name" \
 --num_mutations 1 \
 --time_series_length 25 \
 --num_validation_sets 100 \
@@ -106,7 +108,6 @@ mpirun -np $NUM_PROCS ./mpi/catastrophic_forgetting_mpi \
 --normalize min_max \
 --compare_with_naive \
 --control_size_method reduce_add_mutation \
---seed $i \
 --std_message_level INFO \
 --file_message_level INFO
 

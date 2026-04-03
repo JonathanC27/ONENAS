@@ -350,7 +350,7 @@ void master(int32_t max_rank, OnlineSeries* online_series, int32_t current_gener
                 onenas_mutex.unlock();
 
                 if (genome != NULL) {
-                    // Master generates training indices using PER system
+                    // Master generates training indices for this genome
                     vector<int32_t> master_training_index;
                     online_series->get_training_index(master_training_index);
                     
@@ -460,7 +460,7 @@ void worker(int32_t rank, OnlineSeries* online_series) {
             Log::release_id(log_id);
 
             // Training indices were provided by master and used for training
-            // No training history tracking needed with PER system
+            // Training indices were provided by master
 
             // go back to the worker's log for MPI communication
             Log::set_id("worker_" + to_string(rank));
@@ -666,7 +666,7 @@ int main(int argc, char** argv) {
                 current_validation_inputs, current_validation_outputs
             );
 
-            // Finalize generation and get elite genomes for PER updates
+            // Finalize generation and get elite genomes
             OneNasIslandSpeciationStrategy* onenas_strategy = dynamic_cast<OneNasIslandSpeciationStrategy*>(onenas->get_speciation_strategy());
             vector<RNN_Genome*> elite_genomes;
             if (onenas_strategy != nullptr) {
@@ -680,17 +680,6 @@ int main(int argc, char** argv) {
             Log::info("=== MPI Generation %d Finalization Complete ===\n", current_generation);
             Log::info("Received %d elite genomes from finalize_generation\n", (int32_t)elite_genomes.size());
             
-            // Update episode priorities using all elite genomes (only for PER method)
-            if (online_series->get_training_method().compare("PER") == 0) {
-                Log::info("Training method is PER - updating episode priorities with elite genomes\n");
-                online_series->update_episode_priorities(elite_genomes, current_generation);
-                
-                // Write priority statistics to CSV (PER method only)
-                online_series->write_priorities_to_csv(current_generation, get_stats_directory());
-            } else {
-                Log::debug("Training method is %s - skipping priority updates\n", online_series->get_training_method().c_str());
-            }
-            
             // Clean up elite genome copies (they were created in finalize_generation)
             for (RNN_Genome* genome : elite_genomes) {
                 if (genome != NULL) {
@@ -699,7 +688,7 @@ int main(int argc, char** argv) {
             }
             elite_genomes.clear();
             
-            Log::info("MPI Generation %d priority update complete\n", current_generation);
+            Log::info("MPI Generation %d finalization complete\n", current_generation);
             
             onenas->update_log();
             

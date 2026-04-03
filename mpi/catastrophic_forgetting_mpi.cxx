@@ -581,7 +581,7 @@ int main(int argc, char** argv) {
     vector<vector<vector<double>>> inputs_a, outputs_a;
     slice_online_time_series(args_a, time_series_sets_a, inputs_a, outputs_a);
     Log::info("Distribution A - inputs shape: %d, %d, %d\n",
-              inputs_a.size(), inputs_a[0].size(), inputs_a[0][0].size());
+              (int32_t)inputs_a.size(), (int32_t)inputs_a[0].size(), (int32_t)inputs_a[0][0].size());
 
     // Get normalization bounds from A
     map<string, double> norm_mins = time_series_sets_a->get_normalize_mins();
@@ -618,7 +618,7 @@ int main(int argc, char** argv) {
     vector<vector<vector<double>>> inputs_b, outputs_b;
     slice_online_time_series(args_b, time_series_sets_b, inputs_b, outputs_b);
     Log::info("Distribution B - inputs shape: %d, %d, %d\n",
-              inputs_b.size(), inputs_b[0].size(), inputs_b[0][0].size());
+              (int32_t)inputs_b.size(), (int32_t)inputs_b[0].size(), (int32_t)inputs_b[0][0].size());
 
     // --- Concatenate A and B into unified stream ---
     num_episodes_a = inputs_a.size();
@@ -687,6 +687,12 @@ int main(int argc, char** argv) {
 
     OnlineSeries* online_series = new OnlineSeries(total_episodes, arguments);
     online_series->initialize_episodes(time_series_inputs, time_series_outputs);
+
+    // Initialize stratified bins from source file counts
+    int32_t num_episodes_b = total_episodes - num_episodes_a;
+    online_series->initialize_bins(num_episodes_a, (int32_t)training_filenames_a.size(),
+                                   num_episodes_b, (int32_t)training_filenames_b.size());
+
     online_series->print_episode_stats();
 
     total_generation = total_generations;
@@ -775,13 +781,6 @@ int main(int argc, char** argv) {
             Log::info("=== Generation %d Finalization Complete ===\n", gen);
             Log::info("Received %d elite genomes from finalize_generation\n", (int32_t)elite_genomes.size());
 
-            // Update episode priorities (PER) — now spans ALL historical episodes
-            if (online_series->get_training_method().compare("PER") == 0) {
-                Log::info("Training method is PER - updating episode priorities with elite genomes\n");
-                online_series->update_episode_priorities(elite_genomes, gen);
-                online_series->write_priorities_to_csv(gen, get_stats_directory());
-            }
-
             for (RNN_Genome* genome : elite_genomes) {
                 if (genome != NULL) {
                     delete genome;
@@ -816,12 +815,12 @@ int main(int argc, char** argv) {
     // These are allocated by all ranks
     delete online_series;
     delete weight_update_method;
+    delete weight_rules;
 
     Log::set_id("main_" + to_string(rank));
     finished = true;
-    Log::debug("rank %d completed!\n");
+    Log::debug("rank %d completed!\n", rank);
     Log::release_id("main_" + to_string(rank));
-    MPI_Finalize();
 
     delete time_series_sets_a;
     delete time_series_sets_b;
@@ -834,6 +833,8 @@ int main(int argc, char** argv) {
     eval_outputs_b.clear();
     time_series_inputs.clear();
     time_series_outputs.clear();
+
+    MPI_Finalize();
 
     return 0;
 }

@@ -29,7 +29,7 @@ class RNN_Genome;
 
 class OnlineSeries {
     private:
-        // Episode management - PER approach
+        // Episode management
         vector<TimeSeriesEpisode*> episodes;
         
         // Core configuration
@@ -45,10 +45,8 @@ class OnlineSeries {
         // RNG for sampling (seeded once from hardware entropy)
         mt19937 rng;
 
-        // PER parameters
-        double per_alpha;    // prioritization strength [0, 1]
-        double per_lambda;   // temporal decay rate
-        double per_epsilon;  // small constant for priority calculation
+        // Stratified replay: total number of bins
+        int32_t num_bins;
         
     public:
         OnlineSeries(int32_t _num_sets, const vector<string> &arguments);
@@ -64,20 +62,18 @@ class OnlineSeries {
         void shuffle_data();
         void uniform_random_sample_index(vector<int32_t>& training_index);
         void sliding_window_sample_index(vector<int32_t>& training_index);
-        void prioritized_experience_replay(vector<int32_t>& training_index);
+        void stratified_sample_index(vector<int32_t>& training_index);
         void set_current_index(int32_t _current_gen);
         void get_online_arguments(const vector<string> &arguments);
-        
+
+        // Stratified replay bin initialization
+        void initialize_bins(int32_t num_episodes_a, int32_t num_files_a, int32_t num_episodes_b, int32_t num_files_b);
+
         // Core interface methods
         vector<int32_t> get_training_index(vector<int32_t>& training_index);
-        vector< int32_t > get_validation_index(vector<int32_t>& validation_index);
+        vector<int32_t> get_validation_index(vector<int32_t>& validation_index);
         int32_t get_test_index();
-        
-        // PER priority system methods
-        void update_episode_priorities(const vector<RNN_Genome*>& elite_genomes, int32_t current_generation);
-        void write_priorities_to_csv(int32_t generation, const string& stats_directory);
-        void log_priority_statistics(int32_t current_generation);
-        
+
         // Getter for training data method
         string get_training_method() const { return get_training_data_method; }
 

@@ -341,6 +341,12 @@ int main(int argc, char** argv) {
 
     OnlineSeries* online_series = new OnlineSeries(total_episodes, arguments);
     online_series->initialize_episodes(time_series_inputs, time_series_outputs);
+
+    // Initialize stratified bins from source file counts
+    int32_t num_episodes_b = total_episodes - num_episodes_a;
+    online_series->initialize_bins(num_episodes_a, (int32_t)training_filenames_a.size(),
+                                   num_episodes_b, (int32_t)training_filenames_b.size());
+
     online_series->print_episode_stats();
 
     // --- Setup weight update ---
