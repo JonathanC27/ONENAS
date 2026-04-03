@@ -53,19 +53,19 @@ ofstream validation_test_indices_csv;
 ofstream forgetting_results_csv;
 string output_directory;
 
-// Data for both distributions
-vector<vector<vector<double>>> time_series_inputs_a;
-vector<vector<vector<double>>> time_series_outputs_a;
-vector<vector<vector<double>>> time_series_inputs_b;
-vector<vector<vector<double>>> time_series_outputs_b;
-
-// Evaluation data for Distribution A
+// Evaluation data for Distribution A (held-out summer)
 vector<vector<vector<double>>> eval_inputs_a;
 vector<vector<vector<double>>> eval_outputs_a;
 
-// Global fallback arrays used by populate_current_time_series_data
+// Evaluation data for Distribution B (held-out winter)
+vector<vector<vector<double>>> eval_inputs_b;
+vector<vector<vector<double>>> eval_outputs_b;
+
+// Unified stream: A episodes [0..num_episodes_a-1], B episodes [num_episodes_a..]
 vector<vector<vector<double>>> time_series_inputs;
 vector<vector<vector<double>>> time_series_outputs;
+int32_t num_episodes_a = 0;
+int32_t phase_boundary_gen = 0;
 
 vector<int32_t> time_series_index;
 int32_t generated_population_size;
@@ -121,7 +121,7 @@ void initialize_csv_files() {
         Log::error("Failed to open %s for writing\n", forgetting_csv_path.c_str());
         return;
     }
-    forgetting_results_csv << "generation,phase,mse_on_a,mae_on_a,best_validation_mse\n";
+    forgetting_results_csv << "generation,phase,mse_on_a,mae_on_a,mse_on_b,mae_on_b,best_validation_mse\n";
 
     Log::info("CSV files initialized successfully in %s\n", stats_dir.c_str());
 }
@@ -449,12 +449,14 @@ void worker(int32_t rank, OnlineSeries* online_series) {
 }
 
 /**
- * Evaluate the best genome on Distribution A data and log results.
+ * Evaluate the best genome on both Distribution A and B data and log results.
  */
-void evaluate_on_distribution_a(
+void evaluate_on_distributions(
     int32_t generation, const string& phase,
     const vector<vector<vector<double>>>& a_eval_inputs,
-    const vector<vector<vector<double>>>& a_eval_outputs
+    const vector<vector<vector<double>>>& a_eval_outputs,
+    const vector<vector<vector<double>>>& b_eval_inputs,
+    const vector<vector<vector<double>>>& b_eval_outputs
 ) {
     RNN_Genome* best_genome = onenas->get_best_genome();
     if (best_genome == NULL) {
@@ -465,14 +467,20 @@ void evaluate_on_distribution_a(
     vector<double> best_params = best_genome->get_best_parameters();
     double mse_on_a = best_genome->get_mse(best_params, a_eval_inputs, a_eval_outputs);
     double mae_on_a = best_genome->get_mae(best_params, a_eval_inputs, a_eval_outputs);
+    double mse_on_b = best_genome->get_mse(best_params, b_eval_inputs, b_eval_outputs);
+    double mae_on_b = best_genome->get_mae(best_params, b_eval_inputs, b_eval_outputs);
     double best_val_mse = best_genome->get_best_validation_mse();
 
-    Log::info("=== Evaluation on Distribution A at generation %d (phase %s) ===\n", generation, phase.c_str());
-    Log::info("MSE on A: %lf, MAE on A: %lf, Best validation MSE: %lf\n", mse_on_a, mae_on_a, best_val_mse);
+    Log::info("=== Evaluation at generation %d (phase %s) ===\n", generation, phase.c_str());
+    Log::info("MSE on A (summer): %lf, MAE on A: %lf\n", mse_on_a, mae_on_a);
+    Log::info("MSE on B (winter): %lf, MAE on B: %lf\n", mse_on_b, mae_on_b);
+    Log::info("Best validation MSE: %lf\n", best_val_mse);
 
     if (forgetting_results_csv.is_open()) {
         forgetting_results_csv << generation << "," << phase << ","
-                               << mse_on_a << "," << mae_on_a << "," << best_val_mse << "\n";
+                               << mse_on_a << "," << mae_on_a << ","
+                               << mse_on_b << "," << mae_on_b << ","
+                               << best_val_mse << "\n";
         forgetting_results_csv.flush();
     }
 }
@@ -533,44 +541,49 @@ int main(int argc, char** argv) {
     get_argument(arguments, "--output_directory", true, output_directory);
 
     // Load catastrophic forgetting specific parameters
-    int32_t generations_a = 50;
-    int32_t generations_b = 50;
-    int32_t eval_frequency = 1;
-    get_argument(arguments, "--generations_a", true, generations_a);
-    get_argument(arguments, "--generations_b", true, generations_b);
+    int32_t total_generations = 1000;
+    int32_t eval_frequency = 5;
+    get_argument(arguments, "--total_generations", true, total_generations);
     get_argument(arguments, "--eval_frequency", false, eval_frequency);
 
     Log::info("Output directory: %s\n", output_directory.c_str());
-    Log::info("Generations A: %d, Generations B: %d, Eval frequency: %d\n", generations_a, generations_b, eval_frequency);
+    Log::info("Total generations: %d, Eval frequency: %d\n", total_generations, eval_frequency);
 
-    // Parse filenames for distributions A, B, and A eval
+    // Parse filenames for distributions A, B, and eval sets
     vector<string> training_filenames_a;
     vector<string> training_filenames_b;
     vector<string> eval_filenames_a;
+    vector<string> eval_filenames_b;
     get_argument_vector(arguments, "--training_filenames_a", true, training_filenames_a);
     get_argument_vector(arguments, "--training_filenames_b", true, training_filenames_b);
     get_argument_vector(arguments, "--eval_filenames_a", false, eval_filenames_a);
+    get_argument_vector(arguments, "--eval_filenames_b", false, eval_filenames_b);
 
-    // If no separate eval filenames provided, use the training filenames for A
+    // If no separate eval filenames provided, use the training filenames
     if (eval_filenames_a.empty()) {
         eval_filenames_a = training_filenames_a;
         Log::info("No --eval_filenames_a provided, using training filenames A for evaluation\n");
+    }
+    if (eval_filenames_b.empty()) {
+        eval_filenames_b = training_filenames_b;
+        Log::info("No --eval_filenames_b provided, using training filenames B for evaluation\n");
     }
 
     Log::info("Distribution A training files: %d\n", (int32_t)training_filenames_a.size());
     Log::info("Distribution B training files: %d\n", (int32_t)training_filenames_b.size());
     Log::info("Distribution A eval files: %d\n", (int32_t)eval_filenames_a.size());
+    Log::info("Distribution B eval files: %d\n", (int32_t)eval_filenames_b.size());
 
     // --- Load Distribution A data ---
-    // Build arguments with A's training filenames
     vector<string> args_a = build_args_with_filenames(arguments, "--training_filenames", training_filenames_a);
 
     TimeSeriesSets* time_series_sets_a = TimeSeriesSets::generate_from_arguments(args_a);
-    slice_online_time_series(args_a, time_series_sets_a, time_series_inputs_a, time_series_outputs_a);
+    vector<vector<vector<double>>> inputs_a, outputs_a;
+    slice_online_time_series(args_a, time_series_sets_a, inputs_a, outputs_a);
     Log::info("Distribution A - inputs shape: %d, %d, %d\n",
-              time_series_inputs_a.size(), time_series_inputs_a[0].size(), time_series_inputs_a[0][0].size());
+              inputs_a.size(), inputs_a[0].size(), inputs_a[0][0].size());
 
-    // Get normalization bounds from A (which includes A+B data range ideally, but we use A's bounds)
+    // Get normalization bounds from A
     map<string, double> norm_mins = time_series_sets_a->get_normalize_mins();
     map<string, double> norm_maxs = time_series_sets_a->get_normalize_maxs();
     string norm_type = time_series_sets_a->get_normalize_type();
@@ -578,22 +591,7 @@ int main(int argc, char** argv) {
     // --- Load Distribution B data with A's normalization bounds ---
     vector<string> args_b = build_args_with_filenames(arguments, "--training_filenames", training_filenames_b);
 
-    // For B, we need to load but apply A's normalization. We create a modified arguments
-    // vector that disables auto-normalization, then manually apply A's bounds.
-    // However, for simplicity and correctness, we load B with --normalize none
-    // and then normalize with A's bounds.
-    // Replace the --normalize argument with "none" for B loading
-    vector<string> args_b_no_norm;
-    for (size_t i = 0; i < args_b.size(); i++) {
-        args_b_no_norm.push_back(args_b[i]);
-        if (args_b[i] == "--normalize" && i + 1 < args_b.size()) {
-            args_b_no_norm.push_back("none");
-            i++; // skip original normalize value
-        }
-    }
-
-    // Actually, we need to override normalize. Let's just replace the normalize arg.
-    // Re-do: remove --normalize and its value, add --normalize none
+    // Remove --normalize and its value, add --normalize none
     vector<string> args_b_custom;
     for (size_t i = 0; i < args_b.size(); i++) {
         if (args_b[i] == "--normalize") {
@@ -607,20 +605,29 @@ int main(int argc, char** argv) {
 
     TimeSeriesSets* time_series_sets_b = TimeSeriesSets::generate_from_arguments(args_b_custom);
 
-    // Now apply A's normalization bounds to B
+    // Apply A's normalization bounds to B
     if (norm_type == "min_max" && !norm_mins.empty()) {
         time_series_sets_b->normalize_min_max(norm_mins, norm_maxs);
         Log::info("Applied Distribution A's min_max normalization bounds to Distribution B\n");
     } else if (norm_type != "none") {
         Log::warning("Normalization type '%s' - B will use its own normalization. Consider using min_max.\n", norm_type.c_str());
-        // For avg_std_dev, we'd need a similar override - for now, just re-load with auto-norm
         delete time_series_sets_b;
         time_series_sets_b = TimeSeriesSets::generate_from_arguments(args_b);
     }
 
-    slice_online_time_series(args_b, time_series_sets_b, time_series_inputs_b, time_series_outputs_b);
+    vector<vector<vector<double>>> inputs_b, outputs_b;
+    slice_online_time_series(args_b, time_series_sets_b, inputs_b, outputs_b);
     Log::info("Distribution B - inputs shape: %d, %d, %d\n",
-              time_series_inputs_b.size(), time_series_inputs_b[0].size(), time_series_inputs_b[0][0].size());
+              inputs_b.size(), inputs_b[0].size(), inputs_b[0][0].size());
+
+    // --- Concatenate A and B into unified stream ---
+    num_episodes_a = inputs_a.size();
+    for (auto& ep : inputs_a)  time_series_inputs.push_back(std::move(ep));
+    for (auto& ep : outputs_a) time_series_outputs.push_back(std::move(ep));
+    for (auto& ep : inputs_b)  time_series_inputs.push_back(std::move(ep));
+    for (auto& ep : outputs_b) time_series_outputs.push_back(std::move(ep));
+    Log::info("Unified stream: %d total episodes (A: %d, B: %d)\n",
+              (int32_t)time_series_inputs.size(), num_episodes_a, (int32_t)inputs_b.size());
 
     // --- Load Distribution A evaluation data ---
     vector<string> input_param_names = time_series_sets_a->get_input_parameter_names();
@@ -638,35 +645,51 @@ int main(int argc, char** argv) {
     int32_t time_offset = 1;
     get_argument(arguments, "--time_offset", true, time_offset);
     time_series_sets_eval->export_test_series(time_offset, eval_inputs_a, eval_outputs_a);
+
+    // Slice eval data to match training sequence length
+    int32_t time_series_length = 25;
+    get_argument(arguments, "--time_series_length", true, time_series_length);
+    slice_input_data(eval_inputs_a, eval_outputs_a, time_series_length);
     Log::info("Distribution A eval - inputs shape: %d, %d, %d\n",
               eval_inputs_a.size(), eval_inputs_a[0].size(), eval_inputs_a[0][0].size());
 
-    // --- Create OnlineSeries for A and B ---
-    int32_t num_sets_a = time_series_inputs_a.size();
-    int32_t num_sets_b = time_series_inputs_b.size();
-    Log::info("Distribution A episodes: %d, Distribution B episodes: %d\n", num_sets_a, num_sets_b);
+    // --- Load Distribution B evaluation data ---
+    TimeSeriesSets* time_series_sets_eval_b = TimeSeriesSets::generate_test(
+        eval_filenames_b, input_param_names, output_param_names
+    );
 
-    // Validate that we have enough episodes for the requested generations
-    if (generations_a > num_sets_a) {
-        Log::warning("generations_a (%d) > num episodes A (%d), clamping to %d\n", generations_a, num_sets_a, num_sets_a);
-        generations_a = num_sets_a;
-    }
-    if (generations_b > num_sets_b) {
-        Log::warning("generations_b (%d) > num episodes B (%d), clamping to %d\n", generations_b, num_sets_b, num_sets_b);
-        generations_b = num_sets_b;
+    // Apply A's normalization to B eval data (same normalization as training)
+    if (norm_type == "min_max" && !norm_mins.empty()) {
+        time_series_sets_eval_b->normalize_min_max(norm_mins, norm_maxs);
     }
 
-    OnlineSeries* online_series_a = new OnlineSeries(num_sets_a, arguments);
-    OnlineSeries* online_series_b = new OnlineSeries(num_sets_b, arguments);
+    time_series_sets_eval_b->export_test_series(time_offset, eval_inputs_b, eval_outputs_b);
+    slice_input_data(eval_inputs_b, eval_outputs_b, time_series_length);
+    Log::info("Distribution B eval - inputs shape: %d, %d, %d\n",
+              eval_inputs_b.size(), eval_inputs_b[0].size(), eval_inputs_b[0][0].size());
 
-    // Initialize episodes for A and B
-    online_series_a->initialize_episodes(time_series_inputs_a, time_series_outputs_a);
-    online_series_a->print_episode_stats();
+    // --- Compute phase boundary and create single OnlineSeries ---
+    int32_t num_training_sets = 300;
+    int32_t num_validation_sets = 25;
+    get_argument(arguments, "--num_training_sets", false, num_training_sets);
+    get_argument(arguments, "--num_validation_sets", false, num_validation_sets);
 
-    online_series_b->initialize_episodes(time_series_inputs_b, time_series_outputs_b);
-    online_series_b->print_episode_stats();
+    phase_boundary_gen = num_episodes_a - num_training_sets;
+    Log::info("Phase boundary at generation %d (num_episodes_a=%d - num_training_sets=%d)\n",
+              phase_boundary_gen, num_episodes_a, num_training_sets);
 
-    total_generation = generations_a + generations_b;
+    int32_t total_episodes = time_series_inputs.size();
+    int32_t max_possible_gen = total_episodes - num_training_sets - num_validation_sets - 1;
+    if (total_generations > max_possible_gen) {
+        Log::warning("total_generations (%d) > max possible (%d), clamping\n", total_generations, max_possible_gen);
+        total_generations = max_possible_gen;
+    }
+
+    OnlineSeries* online_series = new OnlineSeries(total_episodes, arguments);
+    online_series->initialize_episodes(time_series_inputs, time_series_outputs);
+    online_series->print_episode_stats();
+
+    total_generation = total_generations;
 
     // --- Setup weight update and seed genome ---
     weight_update_method = new WeightUpdate();
@@ -694,48 +717,24 @@ int main(int argc, char** argv) {
         initialize_csv_files();
     }
 
-    // --- Main two-phase generation loop ---
+    // --- Main generation loop (single stream) ---
     for (int32_t gen = 0; gen < total_generation; gen++) {
-        // Determine current phase and online series
-        OnlineSeries* current_online_series;
-        string current_phase;
-        int32_t phase_gen;
+        string phase = (gen <= phase_boundary_gen) ? "pure_A" : "mixed_AB";
 
-        if (gen < generations_a) {
-            current_online_series = online_series_a;
-            current_phase = "A";
-            phase_gen = gen;
-        } else {
-            current_online_series = online_series_b;
-            current_phase = "B";
-            phase_gen = gen - generations_a;
-        }
-
-        // Set the global fallback arrays for the current phase
-        if (current_phase == "A") {
-            time_series_inputs = time_series_inputs_a;
-            time_series_outputs = time_series_outputs_a;
-        } else {
-            time_series_inputs = time_series_inputs_b;
-            time_series_outputs = time_series_outputs_b;
-        }
-
-        current_online_series->set_current_index(phase_gen);
+        online_series->set_current_index(gen);
 
         if (rank == 0) {
             Log::major_divider(Log::INFO, "New generation");
-            Log::info("Generation %d (Phase %s, phase_gen %d)\n", gen, current_phase.c_str(), phase_gen);
+            Log::info("Generation %d (Phase %s)\n", gen, phase.c_str());
             Log::log_memory_usage("Generation " + std::to_string(gen) + " start");
 
-            // Evaluate on A at phase boundary (start of Phase B)
-            if (gen == generations_a) {
-                Log::info("=== PHASE BOUNDARY: Switching from A to B ===\n");
-                evaluate_on_distribution_a(gen, "boundary", eval_inputs_a, eval_outputs_a);
+            if (gen == phase_boundary_gen) {
+                Log::info("=== PHASE BOUNDARY: B episodes entering training window ===\n");
             }
 
-            master(max_rank, current_online_series, gen);
+            master(max_rank, online_series, gen);
         } else {
-            worker(rank, current_online_series);
+            worker(rank, online_series);
         }
 
         MPI_Barrier(MPI_COMM_WORLD);
@@ -743,8 +742,8 @@ int main(int argc, char** argv) {
         if (rank == 0) {
             Log::minor_divider(Log::INFO);
             vector<int32_t> validation_index;
-            current_online_series->get_validation_index(validation_index);
-            int32_t test_index = current_online_series->get_test_index();
+            online_series->get_validation_index(validation_index);
+            int32_t test_index = online_series->get_test_index();
 
             write_validation_test_indices_to_csv(gen, validation_index, test_index);
 
@@ -754,7 +753,7 @@ int main(int argc, char** argv) {
             vector<vector<vector<double>>> current_validation_outputs;
 
             populate_test_and_validation_data(
-                current_online_series, test_index, validation_index,
+                online_series, test_index, validation_index,
                 current_test_inputs, current_test_outputs,
                 current_validation_inputs, current_validation_outputs
             );
@@ -776,11 +775,11 @@ int main(int argc, char** argv) {
             Log::info("=== Generation %d Finalization Complete ===\n", gen);
             Log::info("Received %d elite genomes from finalize_generation\n", (int32_t)elite_genomes.size());
 
-            // Update episode priorities (PER)
-            if (current_online_series->get_training_method().compare("PER") == 0) {
+            // Update episode priorities (PER) — now spans ALL historical episodes
+            if (online_series->get_training_method().compare("PER") == 0) {
                 Log::info("Training method is PER - updating episode priorities with elite genomes\n");
-                current_online_series->update_episode_priorities(elite_genomes, gen);
-                current_online_series->write_priorities_to_csv(gen, get_stats_directory());
+                online_series->update_episode_priorities(elite_genomes, gen);
+                online_series->write_priorities_to_csv(gen, get_stats_directory());
             }
 
             for (RNN_Genome* genome : elite_genomes) {
@@ -792,26 +791,12 @@ int main(int argc, char** argv) {
 
             onenas->update_log();
 
-            // Evaluate on A at key checkpoints
-            bool should_eval = false;
-
-            // End of Phase A (baseline)
-            if (gen == generations_a - 1) {
-                should_eval = true;
-            }
-
-            // During Phase B: evaluate at eval_frequency intervals
-            if (gen >= generations_a && (gen - generations_a) % eval_frequency == 0) {
-                should_eval = true;
-            }
-
-            // End of Phase B (final)
-            if (gen == total_generation - 1) {
-                should_eval = true;
-            }
+            // Evaluate on both distributions at regular intervals throughout training.
+            // This captures the full learning curve during pure-A and any forgetting during mixed-AB.
+            bool should_eval = (gen % eval_frequency == 0) || (gen == total_generation - 1);
 
             if (should_eval) {
-                evaluate_on_distribution_a(gen, current_phase, eval_inputs_a, eval_outputs_a);
+                evaluate_on_distributions(gen, phase, eval_inputs_a, eval_outputs_a, eval_inputs_b, eval_outputs_b);
             }
 
             Log::log_memory_usage("Generation " + std::to_string(gen) + " end");
@@ -825,11 +810,12 @@ int main(int argc, char** argv) {
 
         Log::log_memory_usage("Before cleanup");
         delete onenas;
-        delete online_series_a;
-        delete online_series_b;
-        delete weight_update_method;
         Log::log_memory_usage("After cleanup");
     }
+
+    // These are allocated by all ranks
+    delete online_series;
+    delete weight_update_method;
 
     Log::set_id("main_" + to_string(rank));
     finished = true;
@@ -840,13 +826,12 @@ int main(int argc, char** argv) {
     delete time_series_sets_a;
     delete time_series_sets_b;
     delete time_series_sets_eval;
+    delete time_series_sets_eval_b;
 
-    time_series_inputs_a.clear();
-    time_series_outputs_a.clear();
-    time_series_inputs_b.clear();
-    time_series_outputs_b.clear();
     eval_inputs_a.clear();
     eval_outputs_a.clear();
+    eval_inputs_b.clear();
+    eval_outputs_b.clear();
     time_series_inputs.clear();
     time_series_outputs.clear();
 

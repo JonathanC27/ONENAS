@@ -36,13 +36,26 @@ using std::pow;
 
 #include "online_series.hxx"
 
-OnlineSeries::OnlineSeries(const int32_t _total_num_sets,const vector<string> &arguments) {
+OnlineSeries::OnlineSeries(const int32_t _total_num_sets,const vector<string> &arguments)
+    : rng(random_device{}())
+{
     total_num_sets = _total_num_sets;
     current_index = 0;
     get_online_arguments(arguments);
     num_test_sets = 1;
     // Initialize episodes vector
     episodes.reserve(total_num_sets);
+
+    // Allow deterministic seeding for reproducibility across trials.
+    // When --seed is provided, the RNG produces identical sequences for
+    // identical seeds, enabling paired comparisons across conditions.
+    int32_t seed = -1;
+    if (get_argument(arguments, "--seed", false, seed) && seed >= 0) {
+        rng.seed(seed);
+        Log::info("OnlineSeries: RNG seeded deterministically with seed=%d\n", seed);
+    } else {
+        Log::info("OnlineSeries: RNG seeded from hardware entropy (non-deterministic)\n");
+    }
 }
 
 OnlineSeries::~OnlineSeries() {
@@ -87,7 +100,6 @@ void OnlineSeries::shuffle_data() {
         avalibale_training_index.push_back(i);  // i is the episode ID (original time series index)
     }
 
-    auto rng = std::default_random_engine {};
     shuffle(avalibale_training_index.begin(), avalibale_training_index.end(), rng);
 }
 
@@ -96,6 +108,25 @@ void OnlineSeries::uniform_random_sample_index(vector<int32_t>& training_index) 
     training_index.clear();
     for (int32_t i = 0; i < num_training_sets; i++) {
         training_index.push_back(avalibale_training_index[i]);
+    }
+}
+
+void OnlineSeries::sliding_window_sample_index(vector<int32_t>& training_index) {
+    // Only sample from the most recent num_training_sets episodes (no historical replay).
+    // This serves as a control to demonstrate that forgetting occurs without replay.
+    int32_t window_start = std::max(0, current_index - num_training_sets);
+
+    vector<int32_t> window_episodes;
+    for (int32_t i = window_start; i < current_index; i++) {
+        window_episodes.push_back(i);
+    }
+
+    shuffle(window_episodes.begin(), window_episodes.end(), rng);
+
+    training_index.clear();
+    int32_t sample_count = std::min(num_training_sets, (int32_t)window_episodes.size());
+    for (int32_t i = 0; i < sample_count; i++) {
+        training_index.push_back(window_episodes[i]);
     }
 }
 
@@ -132,15 +163,13 @@ void OnlineSeries::prioritized_experience_replay(vector<int32_t>& training_index
 
     Log::info("PER: Using priority-based sampling with alpha=%.3f, lambda=%.3f\n", per_alpha, per_lambda);
 
-    // Random number generator for sampling
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    // Use the class member RNG for reproducibility
     std::discrete_distribution<> dist(sampling_weights.begin(), sampling_weights.end());
 
     // Sample without replacement
     std::unordered_set<int32_t> seen;
     while ((int32_t)training_index.size() < num_training_sets) {
-        int32_t sampled_idx = dist(gen);  // Index into avalibale_training_index
+        int32_t sampled_idx = dist(rng);  // Index into avalibale_training_index
         int32_t actual_episode_id = avalibale_training_index[sampled_idx];
         
         if (seen.find(actual_episode_id) == seen.end()) {
@@ -161,6 +190,9 @@ vector<int32_t> OnlineSeries::get_training_index(vector<int32_t>& training_index
     if (get_training_data_method.compare("Uniform") == 0) {
         Log::info("getting historical data with uniform random sampling\n");
         uniform_random_sample_index(training_index);
+    } else if (get_training_data_method.compare("SlidingWindow") == 0) {
+        Log::info("getting historical data with sliding window (most recent episodes only)\n");
+        sliding_window_sample_index(training_index);
     } else if (get_training_data_method.compare("PER") == 0) {
         Log::info("getting historical data with Prioritized Experience Replay (PER)\n");
         prioritized_experience_replay(training_index);
@@ -185,9 +217,9 @@ int32_t OnlineSeries::get_test_index() {
 }
 
 void OnlineSeries::update_episode_priorities(const vector<RNN_Genome*>& elite_genomes, int32_t current_generation) {
-    // Skip priority updates for uniform sampling
-    if (get_training_data_method.compare("Uniform") == 0) {
-        Log::debug("Training data method is 'Uniform' - skipping priority updates\n");
+    // Skip priority updates for non-PER methods
+    if (get_training_data_method.compare("PER") != 0) {
+        Log::debug("Training data method is '%s' - skipping priority updates\n", get_training_data_method.c_str());
         return;
     }
     
@@ -299,7 +331,7 @@ void OnlineSeries::update_episode_priorities(const vector<RNN_Genome*>& elite_ge
 }
 
 void OnlineSeries::log_priority_statistics(int32_t current_generation) {
-    if (get_training_data_method.compare("Uniform") == 0) return;
+    if (get_training_data_method.compare("PER") != 0) return;
     
     Log::info("PER: Priority statistics for generation %d:\n", current_generation);
     
@@ -336,9 +368,9 @@ void OnlineSeries::log_priority_statistics(int32_t current_generation) {
 }
 
 void OnlineSeries::write_priorities_to_csv(int32_t generation, const string& stats_directory) {
-    // Skip CSV writing for uniform sampling
-    if (get_training_data_method.compare("Uniform") == 0) {
-        Log::debug("Training data method is 'Uniform' - skipping priority CSV writing\n");
+    // Skip CSV writing for non-PER methods
+    if (get_training_data_method.compare("PER") != 0) {
+        Log::debug("Training data method is '%s' - skipping priority CSV writing\n", get_training_data_method.c_str());
         return;
     }
     
@@ -421,11 +453,8 @@ void OnlineSeries::initialize_episodes(const vector<vector<vector<double>>>& inp
 }
 
 TimeSeriesEpisode* OnlineSeries::get_episode(int32_t episode_id) {
-    // Search for episode by ID, not by vector index
-    for (int32_t i = 0; i < (int32_t)episodes.size(); i++) {
-        if (episodes[i] != NULL && episodes[i]->get_episode_id() == episode_id) {
-            return episodes[i];
-        }
+    if (episode_id >= 0 && episode_id < (int32_t)episodes.size() && episodes[episode_id] != NULL) {
+        return episodes[episode_id];
     }
     return NULL;
 }

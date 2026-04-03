@@ -19,6 +19,8 @@ using std::unordered_set;
 #include <random>
 using std::normal_distribution;
 using std::default_random_engine;
+using std::mt19937;
+using std::random_device;
 
 #include "time_series_episode.hxx"
 
@@ -40,6 +42,9 @@ class OnlineSeries {
         int32_t num_test_sets;
         string get_training_data_method;
         
+        // RNG for sampling (seeded once from hardware entropy)
+        mt19937 rng;
+
         // PER parameters
         double per_alpha;    // prioritization strength [0, 1]
         double per_lambda;   // temporal decay rate
@@ -58,6 +63,7 @@ class OnlineSeries {
         // Core sampling methods
         void shuffle_data();
         void uniform_random_sample_index(vector<int32_t>& training_index);
+        void sliding_window_sample_index(vector<int32_t>& training_index);
         void prioritized_experience_replay(vector<int32_t>& training_index);
         void set_current_index(int32_t _current_gen);
         void get_online_arguments(const vector<string> &arguments);

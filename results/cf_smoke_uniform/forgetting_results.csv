@@ -1,0 +1,2 @@
+generation,phase,mse_on_a,mae_on_a,mse_on_b,mae_on_b,best_validation_mse
+49,pure_A,0.0256996,0.155903,0.0418247,0.15349,0.00237727
