@@ -1,16 +1,27 @@
 #!/bin/bash -l
-# Catastrophic Forgetting Experiment: ONE-NAS + Uniform Replay
+# Catastrophic Forgetting Experiment: ONE-NAS + Stratified Replay
 #
 # Uses SLURM job arrays to run 5 trials in parallel.
-# Submit with: sbatch scripts/experiments/catastrophic_forgetting.sh
+# Submit with: sbatch scripts/experiments/catastrophic_forgetting_stratified.sh
+#
+# Stratified replay samples proportionally from temporal bins derived from
+# the source data files (~1 bin per month). This guarantees that all observed
+# time periods are represented in each training batch, regardless of how far
+# back they occurred in the stream. Contrast with Uniform (equal probability
+# per episode) and SlidingWindow (recent episodes only).
 #
 # Distribution A (Summer): May-Sep data (files 5-18, file 19 held out for eval)
 # Distribution B (Winter): Nov-Mar data (files 1, 2, 25-29, 31; file 30 held out for eval)
+#
+# Unified stream: ~1454 total episodes (A: 822, B: 632)
+# Stratified bins: 14 (A files) + 8 (B files) = 22 temporal bins
+# Phase boundary: gen ~722 (822 - 100)
+# Max generations: ~1253 (1454 - 100 - 100 - 1)
 
-#SBATCH -J cf_onenas_uniform
+#SBATCH -J cf_onenas_stratified
 #SBATCH -A cis251123
-#SBATCH -o cf_onenas_uniform_%A_%a.output
-#SBATCH -e cf_onenas_uniform_%A_%a.error
+#SBATCH -o cf_onenas_stratified_%A_%a.output
+#SBATCH -e cf_onenas_stratified_%A_%a.error
 #SBATCH --mail-user=jchang1@ucvts.org
 #SBATCH --mail-type=ALL
 #SBATCH -t 4:0:0
@@ -35,6 +46,7 @@ INPUT_PARAMETERS="Ba_avg Rt_avg DCs_avg Cm_avg P_avg S_avg Cosphi_avg Db1t_avg D
 OUTPUT_PARAMETERS="P_avg"
 
 # Distribution A (Summer): training files 5-18
+# 14 files (~822 episodes at length 25)
 TRAINING_FILES_A="\
 ${DATA_DIR}/turbine_R80711_2017-2020_5.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_6.csv \
@@ -52,6 +64,7 @@ ${DATA_DIR}/turbine_R80711_2017-2020_17.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_18.csv"
 
 # Distribution B (Winter): files 1, 2, 25-29, 31 (Nov-Mar)
+# 8 files (~632 episodes at length 25)
 TRAINING_FILES_B="\
 ${DATA_DIR}/turbine_R80711_2017-2020_1.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_2.csv \
@@ -69,9 +82,9 @@ EVAL_FILES_B="${DATA_DIR}/turbine_R80711_2017-2020_30.csv"
 TOTAL_GENERATIONS=1250
 EVAL_FREQUENCY=5
 
-exp_name="$ONENAS/results/catastrophic_forgetting/$TRIAL"
+exp_name="$ONENAS/results/catastrophic_forgetting_stratified/$TRIAL"
 mkdir -p "$exp_name"
-echo "Running Catastrophic Forgetting Experiment (trial $TRIAL)"
+echo "Running Catastrophic Forgetting Experiment - Stratified Replay (trial $TRIAL)"
 echo "Results will be saved to: $exp_name"
 
 mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_mpi" \
@@ -91,7 +104,7 @@ mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_mpi" \
 --time_series_length 25 \
 --num_validation_sets 100 \
 --num_training_sets 100 \
---get_train_data_by Uniform \
+--get_train_data_by Stratified \
 --speciation_method onenas \
 --repopulation_frequency 200 \
 --generated_population_size 10 \

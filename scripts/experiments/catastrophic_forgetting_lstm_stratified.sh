@@ -1,22 +1,23 @@
 #!/bin/bash -l
-# Catastrophic Forgetting Experiment: ONE-NAS + Uniform Replay
+# Catastrophic Forgetting LSTM Baseline: LSTM + Stratified Replay
 #
 # Uses SLURM job arrays to run 5 trials in parallel.
-# Submit with: sbatch scripts/experiments/catastrophic_forgetting.sh
+# Submit with: sbatch scripts/experiments/catastrophic_forgetting_lstm_stratified.sh
 #
-# Distribution A (Summer): May-Sep data (files 5-18, file 19 held out for eval)
-# Distribution B (Winter): Nov-Mar data (files 1, 2, 25-29, 31; file 30 held out for eval)
+# Fixed-architecture online LSTM under the exact same experimental protocol,
+# using stratified replay (proportional sampling from temporal bins) instead
+# of uniform replay. This tests whether stratified replay benefits a fixed
+# architecture the same way it benefits ONE-NAS.
 
-#SBATCH -J cf_onenas_uniform
+#SBATCH -J cf_lstm_stratified
 #SBATCH -A cis251123
-#SBATCH -o cf_onenas_uniform_%A_%a.output
-#SBATCH -e cf_onenas_uniform_%A_%a.error
+#SBATCH -o cf_lstm_stratified_%A_%a.output
+#SBATCH -e cf_lstm_stratified_%A_%a.error
 #SBATCH --mail-user=jchang1@ucvts.org
 #SBATCH --mail-type=ALL
-#SBATCH -t 4:0:0
+#SBATCH -t 6:0:0
 #SBATCH --nodes=1
-#SBATCH --ntasks=22
-#SBATCH -p wholenode
+#SBATCH --ntasks=1
 #SBATCH --array=0-4
 
 set -euo pipefail
@@ -51,7 +52,7 @@ ${DATA_DIR}/turbine_R80711_2017-2020_16.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_17.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_18.csv"
 
-# Distribution B (Winter): files 1, 2, 25-29, 31 (Nov-Mar)
+# Distribution B (Winter): files 1, 2, 25-29, 31
 TRAINING_FILES_B="\
 ${DATA_DIR}/turbine_R80711_2017-2020_1.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_2.csv \
@@ -62,19 +63,19 @@ ${DATA_DIR}/turbine_R80711_2017-2020_28.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_29.csv \
 ${DATA_DIR}/turbine_R80711_2017-2020_31.csv"
 
-# Held-out eval sets (never seen during training)
+# Held-out eval sets
 EVAL_FILES_A="${DATA_DIR}/turbine_R80711_2017-2020_19.csv"
 EVAL_FILES_B="${DATA_DIR}/turbine_R80711_2017-2020_30.csv"
 
 TOTAL_GENERATIONS=1250
 EVAL_FREQUENCY=5
 
-exp_name="$ONENAS/results/catastrophic_forgetting/$TRIAL"
+exp_name="$ONENAS/results/catastrophic_forgetting_lstm_stratified/$TRIAL"
 mkdir -p "$exp_name"
-echo "Running Catastrophic Forgetting Experiment (trial $TRIAL)"
+echo "Running LSTM Stratified Replay Catastrophic Forgetting Experiment (trial $TRIAL)"
 echo "Results will be saved to: $exp_name"
 
-mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_mpi" \
+mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_lstm_mpi" \
 --training_filenames_a $TRAINING_FILES_A \
 --training_filenames_b $TRAINING_FILES_B \
 --eval_filenames_a $EVAL_FILES_A \
@@ -84,22 +85,18 @@ mpirun -np $SLURM_NTASKS "$ONENAS/build/mpi/catastrophic_forgetting_mpi" \
 --time_offset 1 \
 --input_parameter_names $INPUT_PARAMETERS \
 --output_parameter_names $OUTPUT_PARAMETERS \
---number_islands 20 \
 --bp_iterations 10 \
 --output_directory "$exp_name" \
---num_mutations 1 \
 --time_series_length 25 \
 --num_validation_sets 100 \
 --num_training_sets 100 \
---get_train_data_by Uniform \
---speciation_method onenas \
---repopulation_frequency 200 \
---generated_population_size 10 \
---elite_population_size 5 \
---possible_node_types simple UGRNN MGU GRU delta LSTM \
+--get_train_data_by Stratified \
 --normalize min_max \
---compare_with_naive \
---control_size_method reduce_add_mutation \
+--num_hidden_layers 1 \
+--num_hidden_nodes 22 \
+--rnn_type lstm \
+--max_recurrent_depth 10 \
+--learning_rate 0.001 \
 --std_message_level INFO \
 --file_message_level INFO
 
