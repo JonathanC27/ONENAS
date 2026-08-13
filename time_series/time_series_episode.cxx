@@ -9,12 +9,12 @@ using std::max;
 using std::ofstream;
 using std::ifstream;
 
-TimeSeriesEpisode::TimeSeriesEpisode(int32_t id) 
-    : episode_id(id), validation_mse(1.0), availability_generation(0), is_loaded(false) {
+TimeSeriesEpisode::TimeSeriesEpisode(int32_t id)
+    : episode_id(id), validation_mse(1.0), availability_generation(0), window_index(id), stock_index(0), is_loaded(false) {
 }
 
 TimeSeriesEpisode::TimeSeriesEpisode(int32_t id, const vector<vector<double>>& _inputs, const vector<vector<double>>& _outputs)
-    : episode_id(id), inputs(_inputs), outputs(_outputs), validation_mse(1.0), availability_generation(0), is_loaded(true) {
+    : episode_id(id), inputs(_inputs), outputs(_outputs), validation_mse(1.0), availability_generation(0), window_index(id), stock_index(0), is_loaded(true) {
 }
 
 TimeSeriesEpisode::~TimeSeriesEpisode() {
@@ -58,6 +58,22 @@ void TimeSeriesEpisode::set_availability_generation(int32_t generation) {
 
 int32_t TimeSeriesEpisode::get_availability_generation() const {
     return availability_generation;
+}
+
+void TimeSeriesEpisode::set_window_index(int32_t window) {
+    window_index = window;
+}
+
+int32_t TimeSeriesEpisode::get_window_index() const {
+    return window_index;
+}
+
+void TimeSeriesEpisode::set_stock_index(int32_t stock) {
+    stock_index = stock;
+}
+
+int32_t TimeSeriesEpisode::get_stock_index() const {
+    return stock_index;
 }
 
 double TimeSeriesEpisode::calculate_priority(int32_t current_generation, double alpha, double lambda, double epsilon) const {

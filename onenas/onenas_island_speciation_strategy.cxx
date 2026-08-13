@@ -901,24 +901,28 @@ bool OneNasIslandSpeciationStrategy::calculate_prediction_performance(const vect
     }
 
     int32_t num_outputs = global_best_genome->get_number_outputs();
-    int32_t time_length = (int32_t)test_output[0][0].size();
-    
+
     naive_mse = 0.0;
     genome_mse = 0.0;
     int32_t comparison_count = 0;
-    
-    for (int32_t j = 1; j < time_length; j++) {
-        for (int32_t i = 0; i < num_outputs; i++) {
-            double expected = test_output[0][i][j];
-            double naive_pred = test_output[0][i][j-1];  // previous timestep
-            double genome_pred = predictions[0][i][j];
-            
-            double naive_error = expected - naive_pred;
-            double genome_error = expected - genome_pred;
-            
-            naive_mse += naive_error * naive_error;
-            genome_mse += genome_error * genome_error;
-            comparison_count++;
+
+    // Average over all test series (a single series in the default mode, one per stock in
+    // pooled panel mode)
+    for (int32_t n = 0; n < (int32_t)test_output.size(); n++) {
+        int32_t time_length = (int32_t)test_output[n][0].size();
+        for (int32_t j = 1; j < time_length; j++) {
+            for (int32_t i = 0; i < num_outputs; i++) {
+                double expected = test_output[n][i][j];
+                double naive_pred = test_output[n][i][j-1];  // previous timestep
+                double genome_pred = predictions[n][i][j];
+
+                double naive_error = expected - naive_pred;
+                double genome_error = expected - genome_pred;
+
+                naive_mse += naive_error * naive_error;
+                genome_mse += genome_error * genome_error;
+                comparison_count++;
+            }
         }
     }
     
@@ -953,54 +957,65 @@ void OneNasIslandSpeciationStrategy::write_prediction_file(const string &filenam
 
     int32_t num_outputs = global_best_genome->get_number_outputs();
     vector<string> output_parameter_names = global_best_genome->get_output_parameter_names();
-    
+
+    // Number of test series: 1 in the default mode, one per stock in pooled panel mode.
+    // With a single series the file format is unchanged; with multiple series each stock
+    // gets its own column group with an _s<stock> suffix on every column name.
+    int32_t num_series = (int32_t)test_input.size();
+
     // Create output file
     ofstream outfile(filename + "_global_best.csv");
     outfile << "#";
 
-    // Write expected output headers
-    for (int32_t i = 0; i < num_outputs; i++) {
-        if (i > 0) outfile << ",";
-        outfile << "expected_" << output_parameter_names[i];
-    }
-    
-    // Write naive prediction headers (previous timestep)
-    for (int32_t i = 0; i < num_outputs; i++) {
-        outfile << ",";
-        outfile << "naive_" << output_parameter_names[i];
-    }
+    for (int32_t n = 0; n < num_series; n++) {
+        string suffix = (num_series > 1) ? ("_s" + to_string(n)) : "";
 
-    // Write global best genome prediction headers
-    for (int32_t i = 0; i < num_outputs; i++) {
-        outfile << ",";
-        outfile << "global_best_predicted_" << output_parameter_names[i];
+        // Write expected output headers
+        for (int32_t i = 0; i < num_outputs; i++) {
+            if (n > 0 || i > 0) outfile << ",";
+            outfile << "expected_" << output_parameter_names[i] << suffix;
+        }
+
+        // Write naive prediction headers (previous timestep)
+        for (int32_t i = 0; i < num_outputs; i++) {
+            outfile << ",";
+            outfile << "naive_" << output_parameter_names[i] << suffix;
+        }
+
+        // Write global best genome prediction headers
+        for (int32_t i = 0; i < num_outputs; i++) {
+            outfile << ",";
+            outfile << "global_best_predicted_" << output_parameter_names[i] << suffix;
+        }
     }
 
     outfile << endl;
 
-    // Write data rows
+    // Write data rows - all series share the same window length (contemporaneous windows)
     int32_t time_length = (int32_t)test_input[0][0].size();
     for (int32_t j = 1; j < time_length; j++) {
-        // Write expected values
-        for (int32_t i = 0; i < num_outputs; i++) {
-            if (i > 0) outfile << ",";
-            outfile << test_output[0][i][j];
-        }
+        for (int32_t n = 0; n < num_series; n++) {
+            // Write expected values
+            for (int32_t i = 0; i < num_outputs; i++) {
+                if (n > 0 || i > 0) outfile << ",";
+                outfile << test_output[n][i][j];
+            }
 
-        // Write naive predictions (previous timestep)
-        for (int32_t i = 0; i < num_outputs; i++) {
-            outfile << ",";
-            outfile << test_output[0][i][j-1];
-        }
+            // Write naive predictions (previous timestep)
+            for (int32_t i = 0; i < num_outputs; i++) {
+                outfile << ",";
+                outfile << test_output[n][i][j-1];
+            }
 
-        // Write global best genome predictions
-        for (int32_t i = 0; i < num_outputs; i++) {
-            outfile << ",";
-            outfile << predictions[0][i][j];
+            // Write global best genome predictions
+            for (int32_t i = 0; i < num_outputs; i++) {
+                outfile << ",";
+                outfile << predictions[n][i][j];
+            }
         }
         outfile << endl;
     }
     outfile.close();
-    
+
     Log::info("Global best genome predictions written to %s_global_best.csv\n", filename.c_str());
 }

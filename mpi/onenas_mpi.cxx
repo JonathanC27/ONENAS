@@ -156,18 +156,23 @@ void write_training_indices_to_csv(int32_t genome_id, int32_t generation, const 
 /**
  * Write validation and test indices for a generation to CSV
  */
-void write_validation_test_indices_to_csv(int32_t generation, const vector<int32_t>& validation_indices, int32_t test_index) {
+void write_validation_test_indices_to_csv(int32_t generation, const vector<int32_t>& validation_indices, const vector<int32_t>& test_indices) {
     if (!validation_test_indices_csv.is_open()) {
         Log::error("Validation/test indices CSV file is not open\n");
         return;
     }
-    
+
     validation_test_indices_csv << generation << ",\"";
     for (size_t i = 0; i < validation_indices.size(); i++) {
         if (i > 0) validation_test_indices_csv << ";";
         validation_test_indices_csv << validation_indices[i];
     }
-    validation_test_indices_csv << "\"," << test_index << "\n";
+    validation_test_indices_csv << "\",";
+    for (size_t i = 0; i < test_indices.size(); i++) {
+        if (i > 0) validation_test_indices_csv << ";";
+        validation_test_indices_csv << test_indices[i];
+    }
+    validation_test_indices_csv << "\n";
     validation_test_indices_csv.flush(); // Ensure data is written immediately
 }
 
@@ -291,23 +296,26 @@ void populate_current_time_series_data(
 
 void populate_test_and_validation_data(
     OnlineSeries* online_series,
-    int32_t test_index,
+    const vector<int32_t>& test_indices,
     const vector<int32_t>& validation_index,
     vector<vector<vector<double>>>& current_test_inputs,
     vector<vector<vector<double>>>& current_test_outputs,
     vector<vector<vector<double>>>& current_validation_inputs,
     vector<vector<vector<double>>>& current_validation_outputs
 ) {
-    // test_index is an episode ID (original time series index)
-    TimeSeriesEpisode* test_episode = online_series->get_episode(test_index);
-    if (test_episode != nullptr) {
-        current_test_inputs.push_back(test_episode->get_inputs());
-        current_test_outputs.push_back(test_episode->get_outputs());
-    } else {
-        Log::error("Test episode ID %d not found in episodes\n", test_index);
-        exit(1);
+    // test_indices contains episode IDs - a single episode in the default mode, or one
+    // episode per stock (all at the same window) in pooled panel mode
+    for (int32_t i = 0; i < (int32_t)test_indices.size(); i++) {
+        TimeSeriesEpisode* test_episode = online_series->get_episode(test_indices[i]);
+        if (test_episode != nullptr) {
+            current_test_inputs.push_back(test_episode->get_inputs());
+            current_test_outputs.push_back(test_episode->get_outputs());
+        } else {
+            Log::error("Test episode ID %d not found in episodes\n", test_indices[i]);
+            exit(1);
+        }
     }
-    
+
     // validation_index contains episode IDs (original time series indices)
     for (int32_t i = 0; i < (int32_t)validation_index.size(); i++) {
         int32_t episode_id = validation_index[i];  // This is the original episode ID
@@ -321,7 +329,7 @@ void populate_test_and_validation_data(
             exit(1);
         }
     }
-    Log::info("Current testing episode ID: %d\n", test_index);
+    Log::info("Current testing episode ID(s): %d test episodes, first ID %d\n", (int32_t)test_indices.size(), test_indices.empty() ? -1 : test_indices[0]);
 }
 
 void master(int32_t max_rank, OnlineSeries* online_series, int32_t current_generation) {
@@ -649,10 +657,11 @@ int main(int argc, char** argv) {
             Log::minor_divider(Log::INFO);
             vector <int32_t> validation_index;
             online_series->get_validation_index(validation_index);
-            int32_t test_index = online_series->get_test_index();
+            vector<int32_t> test_indices;
+            online_series->get_test_indices(test_indices);
 
             // Write validation and test indices to CSV
-            write_validation_test_indices_to_csv(current_generation, validation_index, test_index);
+            write_validation_test_indices_to_csv(current_generation, validation_index, test_indices);
 
             vector< vector< vector<double> > > current_test_inputs;
             vector< vector< vector<double> > > current_test_outputs;
@@ -661,7 +670,7 @@ int main(int argc, char** argv) {
 
             // Populate test and validation data from episodes
             populate_test_and_validation_data(
-                online_series, test_index, validation_index,
+                online_series, test_indices, validation_index,
                 current_test_inputs, current_test_outputs,
                 current_validation_inputs, current_validation_outputs
             );

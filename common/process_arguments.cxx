@@ -296,6 +296,25 @@ void slice_online_time_series(
     time_series_sets->export_training_series(time_offset, inputs, outputs);
     // time_series_sets->export_test_series(time_offset, validation_inputs, validation_outputs);
 
+    if (argument_exists(arguments, "--pooled_panel")) {
+        // Pooled panel mode requires all input series (stocks) to be date-aligned with
+        // equal row counts so windows at the same index are contemporaneous.
+        for (int32_t n = 1; n < (int32_t) inputs.size(); n++) {
+            if (inputs[n][0].size() != inputs[0][0].size()) {
+                Log::fatal(
+                    "Pooled panel mode: all --training_filenames must have equal row counts, but series 0 has %d "
+                    "rows and series %d has %d rows (after time offset)\n",
+                    (int32_t) inputs[0][0].size(), n, (int32_t) inputs[n][0].size()
+                );
+                exit(1);
+            }
+        }
+        Log::info(
+            "Pooled panel mode: verified %d series with equal length %d\n", (int32_t) inputs.size(),
+            (int32_t) inputs[0][0].size()
+        );
+    }
+
     int32_t sequence_length = 0;
     if (get_argument(arguments, "--time_series_length", true, sequence_length)) {
         Log::info("Slicing input training data with time sequence length: %d\n", sequence_length);

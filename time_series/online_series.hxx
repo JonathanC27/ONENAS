@@ -39,6 +39,14 @@ class OnlineSeries {
         int32_t num_validation_sets;
         int32_t num_test_sets;
         string get_training_data_method;
+
+        // Pooled panel mode: input is S date-aligned, equal-length series (stocks).
+        // Episode identity = (stock s, window w); flat episode id = s * num_windows + w.
+        // Windows at the same index across stocks are contemporaneous.
+        bool pooled_panel;
+        int32_t num_stocks;            // S: number of panel series (training files)
+        int32_t num_windows;           // W: windows per stock
+        int32_t num_training_windows;  // initial burn-in pool, in windows (replaces num_training_sets' role in set_current_index)
         
         // PER parameters
         double per_alpha;    // prioritization strength [0, 1]
@@ -66,6 +74,9 @@ class OnlineSeries {
         vector<int32_t> get_training_index(vector<int32_t>& training_index);
         vector< int32_t > get_validation_index(vector<int32_t>& validation_index);
         int32_t get_test_index();
+        void get_test_indices(vector<int32_t>& test_indices);
+        bool is_pooled_panel() const { return pooled_panel; }
+        int32_t get_num_stocks() const { return num_stocks; }
         
         // PER priority system methods
         void update_episode_priorities(const vector<RNN_Genome*>& elite_genomes, int32_t current_generation);

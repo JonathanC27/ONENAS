@@ -41,6 +41,27 @@ OnlineSeries::OnlineSeries(const int32_t _total_num_sets,const vector<string> &a
     current_index = 0;
     get_online_arguments(arguments);
     num_test_sets = 1;
+
+    if (pooled_panel) {
+        if (num_stocks <= 0) {
+            Log::fatal("Pooled panel mode requires at least one training filename\n");
+            exit(1);
+        }
+        if (total_num_sets % num_stocks != 0) {
+            Log::fatal(
+                "Pooled panel mode: total number of episodes (%d) is not divisible by the number of series (%d), "
+                "all --training_filenames must have equal row counts\n",
+                total_num_sets, num_stocks
+            );
+            exit(1);
+        }
+        num_windows = total_num_sets / num_stocks;
+        Log::info(
+            "Pooled panel mode: %d stocks, %d windows per stock, %d training windows (burn-in)\n",
+            num_stocks, num_windows, num_training_windows
+        );
+    }
+
     // Initialize episodes vector
     episodes.reserve(total_num_sets);
 }
@@ -70,9 +91,28 @@ void OnlineSeries::get_online_arguments(const vector<string> &arguments) {
     
     per_epsilon = 1e-8; // default small constant for priority calculation
     get_argument(arguments, "--per_epsilon", false, per_epsilon);
+
+    // Pooled panel mode arguments
+    pooled_panel = argument_exists(arguments, "--pooled_panel");
+    num_stocks = 1;
+    num_windows = total_num_sets;
+    num_training_windows = 0;
+    if (pooled_panel) {
+        get_argument(arguments, "--num_training_windows", true, num_training_windows);
+
+        vector<string> training_filenames;
+        get_argument_vector(arguments, "--training_filenames", true, training_filenames);
+        num_stocks = (int32_t)training_filenames.size();
+    }
 }
 
 void OnlineSeries::set_current_index(int32_t _current_gen) {
+    if (pooled_panel) {
+        // current index is the current WINDOW (beginning of validation windows)
+        current_index = _current_gen + num_training_windows;
+        Log::debug("current generation is %d, current window is %d\n", _current_gen, current_index);
+        return;
+    }
     //current index is the begining of validation index
     current_index = _current_gen + num_training_sets;
     Log::debug("current generation is %d, current index is %d\n", _current_gen, current_index);
@@ -83,8 +123,18 @@ void OnlineSeries::shuffle_data() {
     // avalibale_training_index contains episode IDs (original time series indices)
     avalibale_training_index.clear();
 
-    for (int32_t i = 0; i < current_index; i++) {
-        avalibale_training_index.push_back(i);  // i is the episode ID (original time series index)
+    if (pooled_panel) {
+        // training pool: all episodes (across all stocks) with window < current_index (current window)
+        int32_t available_windows = min(current_index, num_windows);
+        for (int32_t s = 0; s < num_stocks; s++) {
+            for (int32_t w = 0; w < available_windows; w++) {
+                avalibale_training_index.push_back(s * num_windows + w);
+            }
+        }
+    } else {
+        for (int32_t i = 0; i < current_index; i++) {
+            avalibale_training_index.push_back(i);  // i is the episode ID (original time series index)
+        }
     }
 
     auto rng = std::default_random_engine {};
@@ -103,7 +153,15 @@ void OnlineSeries::prioritized_experience_replay(vector<int32_t>& training_index
     shuffle_data();
     training_index.clear();
 
-    int32_t current_generation = current_index - num_training_sets; // Calculate current generation
+    // Reference point for the temporal decay term. In pooled panel mode episodes store
+    // their WINDOW index as availability_generation, so decay is computed on window
+    // distance from the current window. In non-pooled mode this is the current generation.
+    int32_t current_generation;
+    if (pooled_panel) {
+        current_generation = current_index; // current window
+    } else {
+        current_generation = current_index - num_training_sets; // Calculate current generation
+    }
 
     // Calculate priorities for all available episodes
     vector<double> priorities;
@@ -174,6 +232,15 @@ vector<int32_t> OnlineSeries::get_training_index(vector<int32_t>& training_index
 
 vector< int32_t > OnlineSeries::get_validation_index(vector<int32_t>& validation_index) {
     validation_index.clear();
+    if (pooled_panel) {
+        // ALL stocks' episodes for windows [current_index, current_index + num_validation_sets)
+        for (int32_t i = 0; i < num_validation_sets; i++) {
+            for (int32_t s = 0; s < num_stocks; s++) {
+                validation_index.push_back(s * num_windows + current_index + i);
+            }
+        }
+        return validation_index;
+    }
     for (int32_t i = 0; i < num_validation_sets; i++) {
         validation_index.push_back(current_index + i);
     }
@@ -182,6 +249,19 @@ vector< int32_t > OnlineSeries::get_validation_index(vector<int32_t>& validation
 
 int32_t OnlineSeries::get_test_index() {
     return current_index + num_validation_sets;
+}
+
+void OnlineSeries::get_test_indices(vector<int32_t>& test_indices) {
+    test_indices.clear();
+    if (pooled_panel) {
+        // ALL stocks' episodes at window current_index + num_validation_sets
+        int32_t test_window = current_index + num_validation_sets;
+        for (int32_t s = 0; s < num_stocks; s++) {
+            test_indices.push_back(s * num_windows + test_window);
+        }
+    } else {
+        test_indices.push_back(get_test_index());
+    }
 }
 
 void OnlineSeries::update_episode_priorities(const vector<RNN_Genome*>& elite_genomes, int32_t current_generation) {
@@ -230,10 +310,48 @@ void OnlineSeries::update_episode_priorities(const vector<RNN_Genome*>& elite_ge
     Log::info("PER: Elite genome statistics - Count: %d, Best MSE: %.6f, Avg MSE: %.6f, Worst MSE: %.6f\n",
              valid_genomes, best_mse, avg_mse, worst_mse);
     
+    if (pooled_panel) {
+        // Pooled panel: update ALL stocks' episodes at window == current_generation with the
+        // elite best MSE, and blend recent training windows with the average elite MSE.
+        int32_t new_window = current_generation;
+        if (new_window < num_windows) {
+            for (int32_t s = 0; s < num_stocks; s++) {
+                TimeSeriesEpisode* new_episode = get_episode(s * num_windows + new_window);
+                if (new_episode != NULL) {
+                    new_episode->set_validation_mse(best_mse);
+                }
+            }
+            Log::info("PER: Updated window %d across %d stocks with elite best MSE %.6f\n",
+                     new_window, num_stocks, best_mse);
+        }
+
+        int32_t window_start = std::max(0, current_generation - num_training_sets);
+        int32_t window_end = std::min(current_generation, num_windows);
+        int32_t episodes_updated = 0;
+        for (int32_t w = window_start; w < window_end; w++) {
+            for (int32_t s = 0; s < num_stocks; s++) {
+                TimeSeriesEpisode* episode = get_episode(s * num_windows + w);
+                if (episode != NULL) {
+                    double old_mse = episode->get_validation_mse();
+                    double blended_mse = 0.7 * old_mse + 0.3 * avg_mse;
+                    episode->set_validation_mse(blended_mse);
+                    episodes_updated++;
+                }
+            }
+        }
+        if (episodes_updated > 0) {
+            Log::info("PER: Updated %d training episodes with blended MSE (avg elite MSE: %.6f)\n",
+                     episodes_updated, avg_mse);
+        }
+
+        log_priority_statistics(current_generation);
+        return;
+    }
+
     // Update ALL episodes that are newly available this generation
     // In online learning, episode i becomes available at generation i
     int32_t new_episode_id = current_generation;
-    
+
     if (new_episode_id < total_num_sets) {
         TimeSeriesEpisode* new_episode = get_episode(new_episode_id);
         if (new_episode != NULL) {
@@ -309,12 +427,14 @@ void OnlineSeries::log_priority_statistics(int32_t current_generation) {
     int32_t available_episodes = 0;
     
     // Calculate statistics for available episodes only
-    int32_t current_index_gen = current_generation + num_training_sets;
-    
-    for (int32_t episode_id = 0; episode_id < current_index_gen && episode_id < total_num_sets; episode_id++) {
-        TimeSeriesEpisode* episode = get_episode(episode_id);
-        if (episode != NULL) {
-            double priority = episode->calculate_priority(current_generation, per_alpha, per_lambda, per_epsilon);
+    int32_t current_index_gen = current_generation + (pooled_panel ? num_training_windows : num_training_sets);
+    int32_t decay_reference = pooled_panel ? current_index_gen : current_generation;
+
+    for (int32_t i = 0; i < (int32_t)episodes.size(); i++) {
+        TimeSeriesEpisode* episode = episodes[i];
+        if (episode != NULL && episode->get_availability_generation() < current_index_gen) {
+            int32_t episode_id = episode->get_episode_id();
+            double priority = episode->calculate_priority(decay_reference, per_alpha, per_lambda, per_epsilon);
             total_priority += priority;
             min_priority = std::min(min_priority, priority);
             max_priority = std::max(max_priority, priority);
@@ -410,14 +530,29 @@ void OnlineSeries::initialize_episodes(const vector<vector<vector<double>>>& inp
     
     for (int32_t i = 0; i < num_episodes; i++) {
         TimeSeriesEpisode* episode = new TimeSeriesEpisode(i, inputs[i], outputs[i]);
-        // Set availability generation - episodes become available when they can be used for training
-        episode->set_availability_generation(i);
+        if (pooled_panel) {
+            // Episodes are sliced file-by-file (stock-major order): flat index i = stock * num_windows + window.
+            // Availability is governed by the WINDOW index - windows at the same index across
+            // stocks are contemporaneous and become available at the same time.
+            int32_t stock = i / num_windows;
+            int32_t window = i % num_windows;
+            episode->set_stock_index(stock);
+            episode->set_window_index(window);
+            episode->set_availability_generation(window);
+        } else {
+            // Set availability generation - episodes become available when they can be used for training
+            episode->set_availability_generation(i);
+        }
         // Initialize with default MSE - will be updated when genomes are evaluated
         episode->set_validation_mse(1.0);
         episodes.push_back(episode);
     }
-    
-    Log::info("Initialized %d episodes with PER priority system\n", num_episodes);
+
+    if (pooled_panel) {
+        Log::info("Initialized %d episodes (%d stocks x %d windows) with PER priority system\n", num_episodes, num_stocks, num_windows);
+    } else {
+        Log::info("Initialized %d episodes with PER priority system\n", num_episodes);
+    }
 }
 
 TimeSeriesEpisode* OnlineSeries::get_episode(int32_t episode_id) {
@@ -442,6 +577,11 @@ void OnlineSeries::print_episode_stats() {
 }
 
 int32_t OnlineSeries::get_max_generation() {
+    if (pooled_panel) {
+        // time advances by WINDOW: last usable generation must leave room for
+        // num_validation_sets validation windows and one test window
+        return num_windows - num_training_windows - num_validation_sets - num_test_sets;
+    }
     int32_t max_generation = total_num_sets - num_training_sets - num_validation_sets - num_test_sets;
     return max_generation;
 }
