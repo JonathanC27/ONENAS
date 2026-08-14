@@ -8,9 +8,13 @@ computes:
 
   1. Daily cross-sectional Pearson IC and Spearman rank IC (mean, SE, t-stat).
   2. Multi-horizon rank IC h=1..10 vs forward cumulative real returns.
-  3. A daily long-short book per the ICAIF Algorithm 1 (top-10 long / bottom-10
-     short, rebalanced only when all top-10 preds > 0 and all bottom-10 < 0),
-     with per-trade costs of TC/PRC on *netted* traded notional.
+  3. A daily long-short book, in one of two constructions (--book):
+       algo1   (default) the ICAIF Algorithm 1 -- top-10 long / bottom-10
+               short, rebalanced only when all top-10 preds > 0 and all
+               bottom-10 < 0, else held;
+       sleeves Jegadeesh-Titman overlapping portfolios -- one new sleeve every
+               day, held exactly --hold-days days, 1/H of capital per side;
+     both with per-trade costs of TC/PRC on *netted* traded notional.
   4. Naive-persistence baselines of 1 and 3.
 
 Realized series (--realized, see below):
@@ -30,8 +34,18 @@ Realized series (--realized, see below):
   the realized series, exactly as before.
 
   Note the predicted/naive SIGNALS always stay in <param> units: they only ever
-  get sorted and rank-correlated, and the book's rebalance trigger tests their
-  sign, which a rank-normal transform preserves.
+  get sorted and rank-correlated, and --book algo1's rebalance trigger tests
+  their sign, which a rank-normal transform preserves.
+
+Scale invariance (--book sleeves):
+  The Algorithm 1 trigger reads the LEVEL of the predictions, so it is not
+  invariant to rescaling them.  Under a cross-sectional rank-normal target
+  (--param RET_CS) the models emit rank-normal scores whose signs flip roughly
+  half the names every day, the trigger fires nearly every day, and turnover
+  explodes -- the trigger ends up measuring the signal's scale, not its
+  content.  --book sleeves uses nothing but the cross-sectional ORDER of the
+  predictions, so its net %, Sharpe, MDD, turnover and cost % are identical
+  under any strictly monotone per-day rescaling of the signal.
 
 Row mapping (VERIFIED EMPIRICALLY, see verify_mapping()):
   Generation g has clock window cw = g + num_training_windows and test window
@@ -58,6 +72,28 @@ closed.  Cost fraction per unit traded notional is TC/PRC priced at the
 previous panel row (= trade at prior close), or a flat one-way --cost-bps.
 Positions accrue that same day's realized return.  Daily net return is
 (P&L - costs) / initial $100 capital, so cumulative net % is additive.
+
+--book sleeves: every day forms ONE new sleeve -- top_k long / bottom_k short
+by that day's cross-sectional prediction rank, $100/H per side and hence
+($100/H)/top_k per name -- and retires the sleeve formed H days earlier.  At
+steady state H sleeves are live, so the aggregate book is again $100 long +
+$100 short and 1/H of it rolls each day.  The traded notional and the cost are
+computed on the change in the AGGREGATE position per name, so a name held by
+several live sleeves is never double-traded; the same netted TC/PRC (or
+--cost-bps) pricing at the previous panel row applies.  Every live sleeve
+accrues that day's realized return and drifts with it, exactly as algo1's book
+does.  There is no trigger and no threshold: only the rank ordering is read.
+
+--beta-neutral: scales the SHORT leg by s = beta(long leg) / beta(short leg)
+so the book's ex-ante exposure to the panel's equal-weight mean return is ~0.
+Per-stock betas are OLS slopes against that equal-weight mean over the
+--beta-window (default 60) panel rows STRICTLY BEFORE the formation day, so
+the construction stays causal.  Under --book sleeves the scale is applied per
+sleeve at its own formation day; under --book algo1 it is applied to the
+aggregate target book at each rebalance.  s is clipped to [0.2, 5] and falls
+back to 1.0 when either leg's summed beta is non-positive or the window holds
+fewer than 20 usable rows.  The book is then no longer exactly $100/$100:
+turnover stays normalised by the nominal $200 gross so it stays comparable.
 
 Outputs (to --out-dir, default <run-dir>):
   stitched_predictions.csv   date,stock,pred,real,naive  (tidy, full stream);
@@ -187,6 +223,29 @@ def load_panel(sidecar_dir):
             "panel_dates.csv; stock index mapping would be ambiguous"
         )
     return dates, tickers, prc, tc, ret_raw
+
+
+def load_stock_series(sidecar_dir, tickers, col):
+    """{panel_row: [n_stocks]} read from column `col` of the per-stock CSVs.
+
+    The per-stock CSVs are indexed by panel row in the same order as
+    panel_dates.csv (this is what verify_mapping relies on).  Returns None when
+    any file or the column is missing, so callers can fall back.
+    """
+    series = []
+    for t in tickers:
+        p = os.path.join(sidecar_dir, t + ".csv")
+        if not os.path.exists(p):
+            return None
+        with open(p, newline="") as fh:
+            rdr = csv.reader(fh)
+            hdr = next(rdr)
+            if col not in hdr:
+                return None
+            ci = hdr.index(col)
+            series.append([float(r[ci]) for r in rdr])
+    n = min(len(s) for s in series)
+    return {r: [s[r] for s in series] for r in range(n)}
 
 
 def load_generation(path, param, n_stocks):
@@ -336,12 +395,108 @@ def stitch(run_dir, gens, offset, dates, n_stocks, args, realized=None):
 CAPITAL = 100.0            # base capital; daily net returns are P&L / CAPITAL
 GROSS_NOTIONAL = 200.0     # $100 long + $100 short when fully invested
 
+BETA_SCALE_LO = 0.2        # clip on the beta-neutral short-leg scale
+BETA_SCALE_HI = 5.0
+BETA_MIN_OBS = 20          # usable rows needed in the window to trust a beta
 
-def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None):
-    """ICAIF Algorithm 1 long-short book with netted rebalancing.
+
+def _cost_frac(prc, tc, price_row, cost_bps):
+    """Cost fraction per unit traded notional, as a function of the stock."""
+    if cost_bps is None:
+        return lambda k: tc[price_row][k] / abs(prc[price_row][k])
+    return lambda k: cost_bps / 1e4
+
+
+def rolling_betas(days, ret_by_row, window):
+    """Per-day, per-stock beta against the panel's equal-weight mean return.
+
+    ret_by_row maps panel row -> [n_stocks] realized returns and must cover
+    rows BEFORE the scored range too.  For a day at panel row r the OLS slope
+    uses rows r-window .. r-1 only, so nothing from the formation day or later
+    can leak in.  Returns a list parallel to `days`; an entry is None when the
+    window has fewer than BETA_MIN_OBS usable rows or the market return has no
+    variation, and the caller then leaves the book un-neutralised that day.
+    """
+    mkt = {}
+    for r, v in ret_by_row.items():
+        fin = [x for x in v if x == x]
+        if fin:
+            mkt[r] = sum(fin) / len(fin)
+    out = []
+    for day in days:
+        r0 = day[0]
+        rows = [r for r in range(r0 - window, r0) if r in mkt]
+        if len(rows) < BETA_MIN_OBS:
+            out.append(None)
+            continue
+        m = [mkt[r] for r in rows]
+        mm = sum(m) / len(m)
+        var = sum((y - mm) ** 2 for y in m)
+        if var <= 0.0:
+            out.append(None)
+            continue
+        md = [y - mm for y in m]
+        betas = []
+        for k in range(len(day[3])):
+            xs = [ret_by_row[r][k] for r in rows]
+            mx = sum(xs) / len(xs)
+            betas.append(sum((x - mx) * d for x, d in zip(xs, md)) / var)
+        out.append(betas)
+    return out
+
+
+def short_leg_scale(beta, top, bot):
+    """Short-leg multiplier s making the two legs' betas cancel.
+
+    Equal weight w per name gives a long-leg market exposure of w*sum(beta over
+    top) and a short-leg exposure of -s*w*sum(beta over bot); setting the sum
+    to zero gives s = sum_top / sum_bot.  Returns 1.0 (no neutralisation) when
+    betas are unavailable or either leg's summed beta is non-positive, since a
+    negative s would mean going long the short leg.
+    """
+    if beta is None:
+        return 1.0
+    bl = sum(beta[k] for k in top)
+    bs = sum(beta[k] for k in bot)
+    if not (bl == bl and bs == bs) or bl <= 0.0 or bs <= 0.0:
+        return 1.0
+    return min(BETA_SCALE_HI, max(BETA_SCALE_LO, bl / bs))
+
+
+def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None,
+             book="algo1", hold_days=10, betas=None):
+    """Long-short book over the stitched stream.
 
     days: list of (panel_row, date, pred, real, naive); signal_idx selects
     which tuple slot (2=model pred, 4=naive) drives the sort.
+
+    book: "algo1" (default, the historical construction) or "sleeves"
+    (Jegadeesh-Titman overlapping portfolios with a --hold-days holding
+    period).  hold_days is ignored by algo1.
+
+    cost_bps: flat one-way cost in basis points on traded notional; when
+    None the per-name TC/|PRC| of the previous panel row is used instead.
+
+    betas: optional list parallel to `days` of [n_stocks] betas against the
+    panel's equal-weight mean return (see rolling_betas); when given the short
+    leg is scaled so the book's market exposure is ~zero.
+
+    The signature is positional-compatible with the pre-`--book` version --
+    run_book(days, idx, prc, tc, top_k, cost_bps) is unchanged in both meaning
+    and output -- because the baselines call it that way.
+
+    Returns dict with daily series and stats.
+    """
+    if book == "algo1":
+        return _run_algo1(days, signal_idx, prc, tc, top_k, cost_bps, betas)
+    if book == "sleeves":
+        return _run_sleeves(days, signal_idx, prc, tc, top_k, cost_bps,
+                            hold_days, betas)
+    raise ValueError(f"unknown book construction {book!r}")
+
+
+def _run_algo1(days, signal_idx, prc, tc, top_k, cost_bps, betas):
+    """ICAIF Algorithm 1 long-short book with netted rebalancing.
 
     Positions are signed notionals that drift with realized returns.  The
     rebalance trigger is unchanged (all top_k signals > 0 and all bottom_k
@@ -350,10 +505,8 @@ def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None):
     that stays on the same side pays only for its drift while a name that
     flips sides pays the full round trip.
 
-    cost_bps: flat one-way cost in basis points on traded notional; when
-    None the per-name TC/|PRC| of the previous panel row is used instead.
-
-    Returns dict with daily series and stats.
+    NOTE the trigger reads the SIGN of the signal, so this book is not
+    invariant to rescaling the predictions -- see --book sleeves.
     """
     positions = {}  # stock -> signed notional
     daily_ret, rebal_flags, cost_series, traded_series = [], [], [], []
@@ -369,12 +522,11 @@ def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None):
         rebal = all(sig[k] > 0 for k in top) and all(sig[k] < 0 for k in bot)
         if rebal:
             price_row = max(row - 1, 0)  # trade at prior close
-            if cost_bps is None:
-                frac = lambda k: tc[price_row][k] / abs(prc[price_row][k])
-            else:
-                frac = lambda k: cost_bps / 1e4
+            frac = _cost_frac(prc, tc, price_row, cost_bps)
+            s = short_leg_scale(betas[di] if betas is not None else None,
+                                top, bot)
             target = {k: per_name for k in top}
-            target.update({k: -per_name for k in bot})
+            target.update({k: -per_name * s for k in bot})
             for k in set(positions) | set(target):
                 delta = target.get(k, 0.0) - positions.get(k, 0.0)
                 if delta == 0.0:
@@ -403,6 +555,79 @@ def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None):
         "traded": traded_series,
         "n_rebalances": len(rebal_idx),
         "avg_holding_days": mean(holds) if holds else NAN,
+    }
+
+
+def _run_sleeves(days, signal_idx, prc, tc, top_k, cost_bps, hold_days, betas):
+    """Jegadeesh-Titman overlapping sleeves: scale-invariant, 1/H turnover.
+
+    Each day: aggregate the live sleeves, retire the one formed H days ago,
+    form a new one from today's cross-sectional prediction RANK at
+    ($100/H)/top_k per name per side, re-aggregate, and charge costs on the
+    per-name change in the AGGREGATE notional (so a name several sleeves hold
+    is netted, not traded twice).  Then every live sleeve accrues today's
+    realized return.
+
+    Nothing but the ordering of `sig` is read, so the daily return series --
+    and hence net %, Sharpe, MDD, turnover and cost % -- is unchanged by any
+    strictly monotone per-day transform of the predictions.
+    """
+    H = max(1, int(hold_days))
+    per_name = (CAPITAL / H) / top_k
+    sleeves = []  # list of [formation day index, {stock: signed notional}]
+    daily_ret, rebal_flags, cost_series, traded_series = [], [], [], []
+    for di, day in enumerate(days):
+        row, _, _, real, _ = day[0], day[1], day[2], day[3], day[4]
+        sig = day[signal_idx]
+        order = sorted(range(len(sig)), key=lambda k: sig[k], reverse=True)
+        top, bot = order[:top_k], order[-top_k:]
+
+        before = {}
+        for _, pos in sleeves:
+            for k, v in pos.items():
+                before[k] = before.get(k, 0.0) + v
+        # a sleeve formed on day f is live for the returns of days f..f+H-1
+        sleeves = [s for s in sleeves if s[0] > di - H]
+        s_scale = short_leg_scale(betas[di] if betas is not None else None,
+                                  top, bot)
+        new = {k: per_name for k in top}
+        new.update({k: -per_name * s_scale for k in bot})
+        sleeves.append([di, new])
+        after = {}
+        for _, pos in sleeves:
+            for k, v in pos.items():
+                after[k] = after.get(k, 0.0) + v
+
+        price_row = max(row - 1, 0)  # trade at prior close
+        frac = _cost_frac(prc, tc, price_row, cost_bps)
+        cost = 0.0
+        traded = 0.0
+        for k in set(before) | set(after):
+            delta = after.get(k, 0.0) - before.get(k, 0.0)
+            if delta == 0.0:
+                continue
+            traded += abs(delta)
+            cost += abs(delta) * frac(k)
+
+        pnl = 0.0
+        for _, pos in sleeves:
+            for k in list(pos):
+                r = real[k]
+                pnl += pos[k] * r
+                pos[k] *= 1.0 + r
+        daily_ret.append((pnl - cost) / CAPITAL)
+        rebal_flags.append(1)  # a sleeve is formed every single day
+        cost_series.append(cost)
+        traded_series.append(traded)
+    return {
+        "daily_ret": daily_ret,
+        "rebalanced": rebal_flags,
+        "cost": cost_series,
+        "traded": traded_series,
+        "n_rebalances": len(days),
+        # every sleeve is held exactly H days by construction; the min() only
+        # matters for a sample shorter than the holding period
+        "avg_holding_days": float(min(H, len(days))) if days else NAN,
     }
 
 
@@ -490,6 +715,27 @@ def main():
     ap.add_argument("--score-from", default="2020-01-01",
                     help="first date (inclusive) to score; ISO yyyy-mm-dd")
     ap.add_argument("--top-k", type=int, default=10)
+    ap.add_argument("--book", choices=("algo1", "sleeves"), default="algo1",
+                    help="portfolio construction: 'algo1' (default) = the "
+                         "ICAIF Algorithm 1 trigger book, kept as the default "
+                         "so published numbers stay reproducible; 'sleeves' = "
+                         "Jegadeesh-Titman overlapping portfolios, one new "
+                         "sleeve per day held --hold-days days, driven purely "
+                         "by cross-sectional rank and therefore invariant to "
+                         "any monotone rescaling of the predictions")
+    ap.add_argument("--hold-days", type=int, default=10, metavar="H",
+                    help="sleeve holding period for --book sleeves; H sleeves "
+                         "are live at steady state, each carrying 1/H of the "
+                         "capital per side, so 1/H of the book rolls daily "
+                         "(ignored by --book algo1)")
+    ap.add_argument("--beta-neutral", action="store_true",
+                    help="scale the short leg so the book's exposure to the "
+                         "panel's equal-weight mean return is ~zero, using "
+                         "per-stock betas estimated causally over the "
+                         "--beta-window rows strictly before formation")
+    ap.add_argument("--beta-window", type=int, default=60, metavar="N",
+                    help="lookback in panel rows for the --beta-neutral betas "
+                         "(default 60)")
     ap.add_argument("--cost-bps", type=float, default=None,
                     help="flat one-way transaction cost in basis points of "
                          "traded notional, overriding the panel's TC/PRC "
@@ -503,6 +749,11 @@ def main():
     ap.add_argument("--skip-verify", action="store_true",
                     help="skip empirical row-mapping verification (assume +2)")
     args = ap.parse_args()
+
+    if args.hold_days < 1:
+        sys.exit("--hold-days must be >= 1")
+    if args.beta_window < BETA_MIN_OBS:
+        sys.exit(f"--beta-window must be >= {BETA_MIN_OBS}")
 
     out_dir = args.out_dir or args.run_dir
     os.makedirs(out_dir, exist_ok=True)
@@ -567,8 +818,42 @@ def main():
     }
     spear = {name: hics[name][1] for name in hics}
 
-    books = {"model": run_book(days, PRED, prc, tc, args.top_k, args.cost_bps),
-             "naive": run_book(days, NAIVE, prc, tc, args.top_k, args.cost_bps)}
+    betas = None
+    if args.beta_neutral:
+        if realized is not None:
+            src = {r: realized[r] for r in range(len(realized))}
+            src_label = "sidecar RET_raw"
+        else:
+            src = src_label = None
+            for col in ("RET", args.param):
+                src = load_stock_series(args.sidecar_dir, tickers, col)
+                if src is not None:
+                    src_label = f"per-stock sidecar column '{col}'"
+                    break
+            if src is None:
+                src = {row: real for row, _, _, real, _ in stream}
+                src_label = ("the stitched stream itself (no per-stock CSVs; "
+                             "the first days have no pre-history and stay "
+                             "un-neutralised)")
+        betas = rolling_betas(days, src, args.beta_window)
+        n_ok = sum(1 for b in betas if b is not None)
+        print(f"# beta-neutral: {args.beta_window}-row causal betas vs the "
+              f"equal-weight panel mean from {src_label}; "
+              f"{n_ok}/{len(betas)} days neutralised")
+
+    def book_of(idx):
+        return run_book(days, idx, prc, tc, args.top_k, args.cost_bps,
+                        book=args.book, hold_days=args.hold_days, betas=betas)
+
+    books = {"model": book_of(PRED), "naive": book_of(NAIVE)}
+    # The legacy algo1 book with no beta neutralisation must stay byte-identical
+    # to pre-`--book` output, so this identifying line is printed only when the
+    # construction is NOT that legacy default.  --emit-json's meta always
+    # carries book/hold_days/beta_neutral regardless.
+    if args.book != "algo1" or args.beta_neutral:
+        h = f", H={args.hold_days}" if args.book == "sleeves" else ""
+        print(f"# book: {args.book}{h}, top-k {args.top_k}, beta-neutral "
+              f"{'on' if args.beta_neutral else 'off'}")
     print("# book costs: " + ("TC/PRC from the panel"
                               if args.cost_bps is None
                               else f"flat {args.cost_bps:g} bps one-way")
@@ -691,6 +976,10 @@ def main():
                 "score_from": args.score_from,
                 "top_k": args.top_k,
                 "cost_bps": args.cost_bps,
+                "book": args.book,
+                "hold_days": args.hold_days if args.book == "sleeves" else None,
+                "beta_neutral": args.beta_neutral,
+                "beta_window": args.beta_window if args.beta_neutral else None,
             },
             "summary": summary,
             "horizon_rank_ic": hz,
