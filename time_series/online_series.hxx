@@ -61,7 +61,17 @@ class OnlineSeries {
         double per_alpha;    // prioritization strength [0, 1]
         double per_lambda;   // temporal decay rate
         double per_epsilon;  // small constant for priority calculation
-        
+        int32_t per_blend_windows;  // pooled panel: how many recent WINDOWS get the blended-MSE update
+
+        // Highest window index actually drawn by the sampler on the last get_training_index() call
+        // (-1 before the first call). Used to verify that update_episode_priorities() writes
+        // priorities into the same window range the sampler reads from.
+        int32_t last_sampled_max_window;
+
+        // Newest window that may legally be sampled for training at the current clock, i.e.
+        // current_index - window_lag clamped into [0, num_windows). Pooled panel mode only.
+        int32_t newest_available_window() const;
+
     public:
         OnlineSeries(int32_t _num_sets, const vector<string> &arguments);
         ~OnlineSeries();
