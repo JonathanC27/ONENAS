@@ -14,7 +14,7 @@
 #   DATA : path to the uploaded *_clean panel directories
 
 #SBATCH -J onenas_vanilla
-#SBATCH -A YOUR_ALLOCATION_HERE
+#SBATCH -A cis251123
 #SBATCH -p shared
 #SBATCH -N 1
 #SBATCH -n 16
