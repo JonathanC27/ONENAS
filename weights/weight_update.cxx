@@ -18,7 +18,17 @@ WeightUpdate::WeightUpdate() {
     high_threshold = 1.0;
     low_threshold = 0.05;
     use_high_norm = true;
-    use_low_norm = true;
+    // Low-norm gradient AMPLIFICATION is opt-in (--low_norm_amplification) and defaults to OFF.
+    //
+    // norm_gradients() used to rescale any gradient whose L2 norm fell below low_threshold UP to
+    // exactly low_threshold. Combined with an adaptive optimizer (Adam/RMSProp/Adagrad, and Adam
+    // is the default here) this prevents convergence: those optimizers already normalize the step
+    // by a running estimate of the gradient magnitude, so forcing a constant floor on the norm
+    // makes every step approximately +/- learning_rate no matter how small the true gradient is.
+    // The weights then keep oscillating around the optimum instead of settling into it, and the
+    // shrinking-gradient signal that is supposed to end training is destroyed. Clipping LARGE
+    // gradients (use_high_norm) has no such problem and stays enabled by default.
+    use_low_norm = false;
 }
 
 WeightUpdate::WeightUpdate(const vector<string>& arguments) : WeightUpdate() {
@@ -68,6 +78,20 @@ void WeightUpdate::generate_from_arguments(const vector<string>& arguments) {
     get_argument(arguments, "--learning_rate", false, learning_rate);
     get_argument(arguments, "--high_threshold", false, high_threshold);
     get_argument(arguments, "--low_threshold", false, low_threshold);
+
+    // Opt-in restoration of the old low-norm amplification behavior (see the constructor for why
+    // the default flipped to disabled).
+    if (argument_exists(arguments, "--low_norm_amplification")) {
+        use_low_norm = true;
+        Log::info(
+            "--low_norm_amplification given: gradients with L2 norm < %f will be scaled UP to %f. "
+            "This is generally harmful with adaptive optimizers (adam/adam-bias/rmsprop/adagrad) "
+            "because it makes every step approximately the learning rate regardless of the true "
+            "gradient, so training never settles.\n",
+            low_threshold, low_threshold
+        );
+    }
+
     Log::info("Backprop learning rate: %f\n", learning_rate);
     Log::info("Use high norm is set to %s, high norm is %f\n", use_high_norm ? "True" : "False", high_threshold);
     Log::info("Use low norm is set to %s, low norm is %f\n", use_low_norm ? "True" : "False", low_threshold);
@@ -253,6 +277,7 @@ void WeightUpdate::norm_gradients(vector<double>& analytic_gradient, double norm
         }
 
     } else if (use_low_norm && norm < low_threshold) {
+        // Only reachable with --low_norm_amplification. See WeightUpdate::WeightUpdate().
         double low_threshold_norm = low_threshold / norm;
         Log::debug_no_header(", UNDER THRESHOLD, multiplier: %lf", low_threshold_norm);
 
