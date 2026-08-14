@@ -13,6 +13,26 @@ computes:
      with per-trade costs of TC/PRC on *netted* traded notional.
   4. Naive-persistence baselines of 1 and 3.
 
+Realized series (--realized, see below):
+  The model may be TRAINED on a transformed target -- e.g. --param RET_CS, a
+  per-date cross-sectional rank-normal transform of the next-day return.  The
+  expected_<param>_s<k> columns of the prediction files then hold rank-normal
+  scores, NOT returns, and using them as the realized series would make the
+  long-short book's P&L and the multi-horizon cumulative returns meaningless.
+
+  The v2 panels therefore carry the untransformed next-day simple returns in
+  the sidecar as RET_raw_<TICKER> columns of panel_dates.csv, in the same
+  sorted-ticker order as PRC_/TC_.  When they are present (--realized auto, the
+  default) they are the realized series for EVERY metric -- Pearson IC, rank
+  IC, multi-horizon rank IC and the book -- and the expected_<param> columns
+  are used only to verify the file-row -> panel-row mapping.  Older panels
+  (set*_clean) have no RET_raw_ columns; there the expected_<param> columns are
+  the realized series, exactly as before.
+
+  Note the predicted/naive SIGNALS always stay in <param> units: they only ever
+  get sorted and rank-correlated, and the book's rebalance trigger tests their
+  sign, which a rank-normal transform preserves.
+
 Row mapping (VERIFIED EMPIRICALLY, see verify_mapping()):
   Generation g has clock window cw = g + num_training_windows and test window
   tw = cw + V.  The input window starts at panel row tw*step + 1 (NOT tw*step),
@@ -40,7 +60,10 @@ Positions accrue that same day's realized return.  Daily net return is
 (P&L - costs) / initial $100 capital, so cumulative net % is additive.
 
 Outputs (to --out-dir, default <run-dir>):
-  stitched_predictions.csv   date,stock,pred,real,naive  (tidy, full stream)
+  stitched_predictions.csv   date,stock,pred,real,naive  (tidy, full stream);
+                             `real` is whichever realized series was used, so
+                             raw returns under --realized sidecar and the
+                             expected_<param> values otherwise
   book_daily.csv             daily book returns/equity for model and naive
   rolling_rank_ic.csv        trailing 63-day mean daily rank IC
 plus a per-year + overall summary table on stdout (--emit-json for JSON).
@@ -120,22 +143,38 @@ def mean_se_t(v):
 # ------------------------------------------------------------------- loading
 
 def load_panel(sidecar_dir):
-    """Return (dates, tickers, prc, tc): prc/tc are [row][stock] lists."""
+    """Return (dates, tickers, prc, tc, ret_raw).
+
+    prc/tc/ret_raw are [row][stock] lists.  ret_raw holds the untransformed
+    next-day simple returns from the RET_raw_<TICKER> columns, and is None on
+    older panels that do not carry them.
+    """
     path = os.path.join(sidecar_dir, "panel_dates.csv")
     with open(path, newline="") as fh:
         rdr = csv.reader(fh)
         header = next(rdr)
         prc_cols = [(i, c[4:]) for i, c in enumerate(header) if c.startswith("PRC_")]
         tc_cols = [(i, c[3:]) for i, c in enumerate(header) if c.startswith("TC_")]
+        raw_cols = [(i, c[8:]) for i, c in enumerate(header)
+                    if c.startswith("RET_raw_")]
         tickers = [t for _, t in prc_cols]
         if [t for _, t in tc_cols] != tickers:
             sys.exit("panel_dates.csv: TC_ column order does not match PRC_ order")
+        if raw_cols and [t for _, t in raw_cols] != tickers:
+            sys.exit(
+                "panel_dates.csv: RET_raw_ column order does not match PRC_ "
+                "order; the realized-return -> stock index mapping would be "
+                f"wrong (PRC_ {tickers}, RET_raw_ {[t for _, t in raw_cols]})"
+            )
         date_i = header.index("date")
         dates, prc, tc = [], [], []
+        ret_raw = [] if raw_cols else None
         for row in rdr:
             dates.append(row[date_i])
             prc.append([float(row[i]) for i, _ in prc_cols])
             tc.append([float(row[i]) for i, _ in tc_cols])
+            if raw_cols:
+                ret_raw.append([float(row[i]) for i, _ in raw_cols])
     # cross-check against sorted per-stock CSV filenames when present
     csvs = sorted(
         f[:-4]
@@ -147,7 +186,7 @@ def load_panel(sidecar_dir):
             "sorted per-stock CSV names do not match PRC_ column order in "
             "panel_dates.csv; stock index mapping would be ambiguous"
         )
-    return dates, tickers, prc, tc
+    return dates, tickers, prc, tc, ret_raw
 
 
 def load_generation(path, param, n_stocks):
@@ -197,6 +236,10 @@ def verify_mapping(run_dir, sidecar_dir, tickers, gens, args):
     Matches expected_<param>_s<k> columns of a few generation files against
     the <param> column of the k-th sorted per-stock CSV.  Returns the unique
     offset in 0..3 that matches every sampled (generation, stock) pair.
+
+    This is a check on the ROW MAPPING only, so it always runs against the
+    training target <param> (the column the prediction file's expected_ values
+    were written from) regardless of which series is used to score.
     """
     param, step, ntw, V = args.param, args.step, args.num_training_windows, args.validation_sets
     series = {}
@@ -208,7 +251,14 @@ def verify_mapping(run_dir, sidecar_dir, tickers, gens, args):
             return 2
         with open(p, newline="") as fh:
             rdr = csv.reader(fh)
-            ci = next(rdr).index(param)
+            hdr = next(rdr)
+            if param not in hdr:
+                sys.exit(
+                    f"{p}: no column named '{param}' (header: {','.join(hdr)}); "
+                    f"--param must name a column of the per-stock CSVs so the "
+                    f"expected_{param}_s<k> values can be matched against it"
+                )
+            ci = hdr.index(param)
             series[t] = [float(row[ci]) for row in rdr]
     sample = sorted({gens[0], gens[len(gens) // 2], gens[-1]})
     offsets = set()
@@ -229,7 +279,10 @@ def verify_mapping(run_dir, sidecar_dir, tickers, gens, args):
             if len(matched) != 1:
                 sys.exit(
                     f"row-mapping verification failed for generation {g} stock "
-                    f"s{k} ({t}): offsets matched = {matched}"
+                    f"s{k} ({t}): expected_{param}_s{k} could not be matched "
+                    f"against column '{param}' of "
+                    f"{os.path.join(sidecar_dir, t + '.csv')} at a unique "
+                    f"panel-row offset in 0..3 (offsets matched = {matched})"
                 )
             offsets.add(matched[0])
     if len(offsets) != 1:
@@ -245,8 +298,14 @@ def verify_mapping(run_dir, sidecar_dir, tickers, gens, args):
     return off
 
 
-def stitch(run_dir, gens, offset, dates, n_stocks, args):
-    """Return list of days: (panel_row, date, pred[], real[], naive[])."""
+def stitch(run_dir, gens, offset, dates, n_stocks, args, realized=None):
+    """Return list of days: (panel_row, date, pred[], real[], naive[]).
+
+    `realized`, when given, is the panel's [row][stock] raw-return array and
+    replaces the prediction file's expected_<param> values in the `real` slot,
+    so every downstream metric scores against raw returns.  When None the
+    expected_<param> values are the realized series, as before.
+    """
     step, L, ntw, V = args.step, args.length, args.num_training_windows, args.validation_sets
     stream = []
     prev_end = None
@@ -267,7 +326,8 @@ def stitch(run_dir, gens, offset, dates, n_stocks, args):
                     f"panel row {row} follows {prev_end}"
                 )
             prev_end = row
-            stream.append((row, dates[row], pred[i], real[i], naive[i]))
+            real_i = real[i] if realized is None else realized[row]
+            stream.append((row, dates[row], pred[i], real_i, naive[i]))
     return stream
 
 
@@ -414,7 +474,19 @@ def main():
     ap.add_argument("--length", type=int, required=True)
     ap.add_argument("--num-training-windows", type=int, required=True)
     ap.add_argument("--validation-sets", type=int, required=True)
-    ap.add_argument("--param", default="RET")
+    ap.add_argument("--param", default="RET",
+                    help="target the model was TRAINED on; names the "
+                         "expected_/naive_/global_best_predicted_ column "
+                         "groups of the prediction files (e.g. RET, RET_CS)")
+    ap.add_argument("--realized", choices=("auto", "sidecar", "expected"),
+                    default="auto",
+                    help="which series every metric is scored against: "
+                         "'sidecar' = the panel's RET_raw_<TICKER> raw returns "
+                         "(required when --param is a transform such as "
+                         "RET_CS); 'expected' = the prediction file's "
+                         "expected_<param> columns (pre-RET_raw behaviour); "
+                         "'auto' (default) = sidecar when the panel carries "
+                         "RET_raw_ columns, else expected")
     ap.add_argument("--score-from", default="2020-01-01",
                     help="first date (inclusive) to score; ISO yyyy-mm-dd")
     ap.add_argument("--top-k", type=int, default=10)
@@ -435,7 +507,25 @@ def main():
     out_dir = args.out_dir or args.run_dir
     os.makedirs(out_dir, exist_ok=True)
 
-    dates, tickers, prc, tc = load_panel(args.sidecar_dir)
+    dates, tickers, prc, tc, ret_raw = load_panel(args.sidecar_dir)
+
+    if args.realized == "sidecar" and ret_raw is None:
+        sys.exit(
+            f"--realized sidecar: {os.path.join(args.sidecar_dir, 'panel_dates.csv')} "
+            f"has no RET_raw_<TICKER> columns (only the v2 panels carry them); "
+            f"use --realized expected to score against the prediction file's "
+            f"expected_{args.param} columns instead"
+        )
+    use_sidecar = ret_raw is not None if args.realized == "auto" else \
+        args.realized == "sidecar"
+    realized = ret_raw if use_sidecar else None
+    realized_label = "sidecar RET_raw" if use_sidecar else f"expected_{args.param}"
+    print(f"# realized: {realized_label} (param {args.param})")
+    if not use_sidecar and args.param != "RET":
+        print(f"# warning: scoring against expected_{args.param}, which is NOT "
+              f"a return series; the book P&L and multi-horizon cumulative "
+              f"returns are not meaningful", file=sys.stderr)
+
     gens = find_generations(args.run_dir)
     if args.skip_verify:
         offset = 2
@@ -443,7 +533,8 @@ def main():
     else:
         offset = verify_mapping(args.run_dir, args.sidecar_dir, tickers, gens, args)
 
-    stream = stitch(args.run_dir, gens, offset, dates, len(tickers), args)
+    stream = stitch(args.run_dir, gens, offset, dates, len(tickers), args,
+                    realized=realized)
     print(
         f"# stitched {len(stream)} days from {len(gens)} generations "
         f"({len(gens)}*step = {len(gens) * args.step}); "
@@ -588,6 +679,9 @@ def main():
         payload = {
             "meta": {
                 "run_dir": args.run_dir,
+                "param": args.param,
+                "realized": realized_label,
+                "realized_mode": args.realized,
                 "generations": len(gens),
                 "row_offset": offset,
                 "stitched_days": len(stream),
