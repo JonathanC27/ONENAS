@@ -18,8 +18,9 @@
 #SBATCH -p shared
 #SBATCH -N 1
 #SBATCH -n 41
+#SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2G
-#SBATCH -t 06:00:00
+#SBATCH -t 02:00:00
 #SBATCH -o %x_set%a_%j.out
 #SBATCH -e %x_set%a_%j.err
 #SBATCH --mail-type=END,FAIL
