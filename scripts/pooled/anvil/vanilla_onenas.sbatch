@@ -23,13 +23,12 @@
 #SBATCH -o %x_set%a_%j.out
 #SBATCH -e %x_set%a_%j.err
 #SBATCH --mail-type=END,FAIL
-##SBATCH --mail-user=YOUR_EMAIL_HERE
+##SBATCH --mail-user=jonathanbokeunchang@gmail.com
 
-module purge
-module load gcc openmpi
+module load gcc/11.2.0 openmpi/4.0.6 libtiff/4.1.0
 
 ONENAS="$HOME/ONENAS"                    # your fork, built on Anvil
-DATA="$HOME/panels"                      # contains set1_clean .. set4_clean
+DATA="/anvil/scratch/x-jchang5/panels"   # contains set1_clean .. set4_clean
 SEED="${SEED:-42}"
 SET="set${SLURM_ARRAY_TASK_ID:-1}"
 
@@ -42,7 +41,7 @@ case "$SET" in
   *) echo "unknown set $SET"; exit 1 ;;
 esac
 
-OUT="$ONENAS/results/vanilla_uniform/${SET}_seed${SEED}"
+OUT="/anvil/scratch/x-jchang5/results/vanilla_uniform/${SET}_seed${SEED}"
 mkdir -p "$OUT"
 FILES=$(ls "$DATA/${SET}_clean/"*.csv | grep -v panel_)
 
