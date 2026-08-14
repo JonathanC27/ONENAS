@@ -712,8 +712,13 @@ int main(int argc, char** argv) {
                 Log::info("Training method is PER - updating episode priorities with elite genomes\n");
                 online_series->update_episode_priorities(elite_genomes, current_generation);
                 
-                // Write priority statistics to CSV (PER method only)
-                online_series->write_priorities_to_csv(current_generation, get_stats_directory());
+                // Write priority statistics to CSV (PER method only). This dump is one row
+                // per episode, so on a pooled panel it is several MB per generation; write it
+                // periodically rather than every generation to keep the diagnostic without
+                // saturating shared-filesystem I/O.
+                if (current_generation % 25 == 0) {
+                    online_series->write_priorities_to_csv(current_generation, get_stats_directory());
+                }
             } else {
                 Log::debug("Training method is %s - skipping priority updates\n", online_series->get_training_method().c_str());
             }

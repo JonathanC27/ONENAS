@@ -640,8 +640,18 @@ void OnlineSeries::initialize_episodes(const vector<vector<vector<double>>>& inp
 }
 
 TimeSeriesEpisode* OnlineSeries::get_episode(int32_t episode_id) {
-    // Search for episode by ID, not by vector index
-    for (int32_t i = 0; i < (int32_t)episodes.size(); i++) {
+    // Episodes are created in id order (initialize_episodes constructs episode i with id i),
+    // so the id is a direct index. The linear scan below is kept only as a defensive
+    // fallback: with a pooled panel the pool holds tens of thousands of episodes and PER
+    // looks up every one of them per genome, which made the scan dominate runtime.
+    if (episode_id >= 0 && episode_id < (int32_t) episodes.size()) {
+        TimeSeriesEpisode* episode = episodes[episode_id];
+        if (episode != NULL && episode->get_episode_id() == episode_id) {
+            return episode;
+        }
+    }
+
+    for (int32_t i = 0; i < (int32_t) episodes.size(); i++) {
         if (episodes[i] != NULL && episodes[i]->get_episode_id() == episode_id) {
             return episodes[i];
         }
