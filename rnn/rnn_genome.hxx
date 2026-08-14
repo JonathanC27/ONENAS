@@ -80,6 +80,13 @@ class RNN_Genome {
     // Recomputed from scratch on every ranking pass; never persisted.
     bool selection_gated = false;
 
+    // --- exploding-prediction guard -------------------------------------------------------
+    // last_pred_sd_ratio is SD(predictions) / SD(targets) on the most recent validation set;
+    // prediction_sd_rejected latches when that exceeded --max_pred_sd_ratio. A genome predicting
+    // a far wider distribution than the data has is broken no matter what its MSE says.
+    double last_pred_sd_ratio = NAN;
+    bool prediction_sd_rejected = false;
+
     minstd_rand0 generator;
 
     uniform_real_distribution<double> rng;
@@ -157,6 +164,12 @@ class RNN_Genome {
 
     bool is_selection_gated() const;
     void set_selection_gated(bool gated);
+
+    /** SD(predictions)/SD(targets) from the last evaluation (NAN if not measured). */
+    double get_prediction_sd_ratio() const;
+    /** true when the last evaluation exceeded --max_pred_sd_ratio. */
+    bool is_prediction_sd_rejected() const;
+    void set_prediction_sd_rejected(bool rejected);
 
     /**
      * Marks this genome as not yet evaluated: MSE/MAE go back to the EXAMM_MAX_DOUBLE sentinel and

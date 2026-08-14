@@ -223,6 +223,12 @@ class OneNasIsland {
         void apply_selection_flags();
 
         /**
+         * Applies the --max_pred_sd_ratio verdicts across the island, reprieving the best-by-MSE
+         * genome (with a warning) if every genome failed, so the guard can never empty an island.
+         */
+        void resolve_prediction_sd_rejections(vector<RNN_Genome*>& genomes);
+
+        /**
          * MSE ceiling for eligibility under --selection_metric ic_gated: --ic_gate_factor times
          * the island's best validation MSE. EXAMM_MAX_DOUBLE when gating is off.
          */

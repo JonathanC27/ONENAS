@@ -40,6 +40,7 @@ class SelectionConfig {
     static int32_t num_stocks;
     static int32_t ic_ewma_halflife;
     static double ic_gate_factor;
+    static double max_pred_sd_ratio;
 
    public:
     /**
@@ -73,6 +74,21 @@ class SelectionConfig {
     static int32_t get_ic_ewma_halflife() { return ic_ewma_halflife; }
     static double get_ic_gate_factor() { return ic_gate_factor; }
 
+    /**
+     * Ceiling on (SD of a genome's validation predictions) / (SD of the validation targets).
+     * A genome above it is predicting a wildly wider distribution than the data has and is
+     * treated as unfit. Non-positive disables the guard.
+     */
+    static double get_max_pred_sd_ratio() { return max_pred_sd_ratio; }
+    static bool guards_prediction_sd() { return max_pred_sd_ratio > 0.0; }
+
+    /**
+     * true when evaluate_online() has to materialize the predictions: the IC needs them to rank
+     * the cross-section, and the prediction-SD guard needs their spread. get_mse() alone only
+     * returns the aggregate error.
+     */
+    static bool needs_predictions() { return ic_available() || guards_prediction_sd(); }
+
     /** EWMA smoothing factor derived from the half-life in generations. */
     static double get_ic_ewma_alpha();
 
@@ -103,5 +119,20 @@ double cross_sectional_rank_ic(
 
 /** Spearman rank correlation between two equal-length samples. NAN when either side is constant. */
 double spearman_rank_correlation(const vector<double>& a, const vector<double>& b);
+
+/**
+ * Ratio of the standard deviation of a genome's predictions to that of the targets, pooled over
+ * every (series, output, timestep) value.
+ *
+ * Diagnostics on the pooled stock panel found 0.8-3.2% of predictions saturating at |p| ~ 1 (a
+ * 40-sigma daily return) in whole-generation blocks, and the model losing to a constant-zero
+ * predictor on MSE in 8 of 8 runs. A genome whose predictions are far wider than the data is
+ * broken regardless of what its MSE says, and this ratio detects it cheaply.
+ *
+ * Returns NAN when the targets have no spread (no meaningful ratio exists).
+ */
+double prediction_sd_ratio(
+    const vector<vector<vector<double> > >& predictions, const vector<vector<vector<double> > >& expected
+);
 
 #endif

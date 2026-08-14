@@ -22,6 +22,7 @@ bool SelectionConfig::pooled_panel = false;
 int32_t SelectionConfig::num_stocks = 1;
 int32_t SelectionConfig::ic_ewma_halflife = 8;
 double SelectionConfig::ic_gate_factor = 1.5;
+double SelectionConfig::max_pred_sd_ratio = 3.0;
 
 void SelectionConfig::initialize_from_arguments(
     const vector<string>& arguments, bool _pooled_panel, int32_t _num_stocks
@@ -79,6 +80,17 @@ void SelectionConfig::initialize_from_arguments(
             ic_gate_factor
         );
         exit(1);
+    }
+
+    get_argument(arguments, "--max_pred_sd_ratio", false, max_pred_sd_ratio);
+    if (guards_prediction_sd()) {
+        Log::info(
+            "Exploding-prediction guard: a genome whose validation predictions have more than %fx "
+            "the standard deviation of the validation targets is treated as unfit\n",
+            max_pred_sd_ratio
+        );
+    } else {
+        Log::info("Exploding-prediction guard disabled (--max_pred_sd_ratio %f)\n", max_pred_sd_ratio);
     }
 
     Log::info("Genome selection metric: %s\n", get_metric_name().c_str());
@@ -223,4 +235,52 @@ double cross_sectional_rank_ic(
 
     if (num_cross_sections == 0) return NAN;
     return ic_sum / (double) num_cross_sections;
+}
+
+/** Population standard deviation of every value in a [series][output][timestep] block. */
+static double pooled_sd(const vector<vector<vector<double> > >& block) {
+    double sum = 0.0;
+    int64_t n = 0;
+
+    for (int32_t s = 0; s < (int32_t) block.size(); s++) {
+        for (int32_t o = 0; o < (int32_t) block[s].size(); o++) {
+            for (int32_t t = 0; t < (int32_t) block[s][o].size(); t++) {
+                double v = block[s][o][t];
+                if (std::isnan(v) || std::isinf(v)) continue;
+                sum += v;
+                n++;
+            }
+        }
+    }
+
+    if (n < 2) return NAN;
+    double mean = sum / (double) n;
+
+    double sq = 0.0;
+    for (int32_t s = 0; s < (int32_t) block.size(); s++) {
+        for (int32_t o = 0; o < (int32_t) block[s].size(); o++) {
+            for (int32_t t = 0; t < (int32_t) block[s][o].size(); t++) {
+                double v = block[s][o][t];
+                if (std::isnan(v) || std::isinf(v)) continue;
+                double d = v - mean;
+                sq += d * d;
+            }
+        }
+    }
+
+    return sqrt(sq / (double) n);
+}
+
+double prediction_sd_ratio(
+    const vector<vector<vector<double> > >& predictions, const vector<vector<vector<double> > >& expected
+) {
+    double target_sd = pooled_sd(expected);
+    // No spread in the targets means no scale to compare against; report "no opinion" rather than
+    // dividing by (almost) zero and rejecting everything.
+    if (std::isnan(target_sd) || target_sd <= 0.0) return NAN;
+
+    double predicted_sd = pooled_sd(predictions);
+    if (std::isnan(predicted_sd)) return INFINITY;  // all-NaN predictions are as broken as it gets
+
+    return predicted_sd / target_sd;
 }

@@ -3,6 +3,8 @@ using std::sort;
 using std::lower_bound;
 using std::upper_bound;
 
+#include <cmath>
+
 #include <iomanip>
 using std::setw;
 
@@ -266,12 +268,16 @@ void OneNasIsland::evaluate_elite_population(const vector< vector< vector<double
         RNN_Genome* g = elite_genomes[i];
         if (SelectionConfig::ic_available()) {
             Log::info(
-                "Island %d: elite genome %d fitness: %f (MSE %.8f, IC %.6f, IC EWMA %.6f%s)\n", id, i,
-                g->get_fitness(), g->get_best_validation_mse(), g->get_validation_ic(), g->get_ic_ewma(),
-                g->is_selection_gated() ? ", GATED" : ""
+                "Island %d: elite genome %d fitness: %f (MSE %.8f, IC %.6f, IC EWMA %.6f, SD ratio %.3f%s%s)\n",
+                id, i, g->get_fitness(), g->get_best_validation_mse(), g->get_validation_ic(), g->get_ic_ewma(),
+                g->get_prediction_sd_ratio(), g->is_selection_gated() ? ", GATED" : "",
+                g->is_prediction_sd_rejected() ? ", UNFIT" : ""
             );
         } else {
-            Log::info("Island %d: elite genome %d fitness: %f\n", id, i, g->get_fitness());
+            Log::info(
+                "Island %d: elite genome %d fitness: %f%s\n", id, i, g->get_fitness(),
+                g->is_prediction_sd_rejected() ? " (UNFIT: exploding predictions)" : ""
+            );
         }
     }
 }
@@ -287,6 +293,8 @@ void OneNasIsland::evaluate_elite_population(const vector< vector< vector<double
 void OneNasIsland::apply_selection_flags() {
     vector<RNN_Genome*> genomes = elite_population->get_genomes();
     if (genomes.empty()) return;
+
+    resolve_prediction_sd_rejections(genomes);
 
     if (!SelectionConfig::gates_by_mse()) {
         // Not gating: make sure no stale flag survives a metric change or a promoted copy.
@@ -310,6 +318,57 @@ void OneNasIsland::apply_selection_flags() {
             "Island %d: IC gate (%.3fx best MSE = %.8f) made %d of %d elite genomes ineligible\n", id,
             SelectionConfig::get_ic_gate_factor(), threshold, gated, (int32_t)genomes.size()
         );
+    }
+}
+
+/**
+ * Safety valve for the exploding-prediction guard (--max_pred_sd_ratio).
+ *
+ * The guard is a per-genome verdict, so in principle it can fire on an entire island at once --
+ * and an island where every genome is unfit would have nothing to evolve from and nothing to
+ * predict with. If that happens, the genome with the best validation MSE is reprieved so the
+ * island always retains at least one usable genome, and the event is logged as a warning because
+ * it means the whole population is behaving badly, not just one member.
+ */
+void OneNasIsland::resolve_prediction_sd_rejections(vector<RNN_Genome*>& genomes) {
+    if (!SelectionConfig::guards_prediction_sd()) return;
+
+    int32_t total = 0;
+    int32_t rejected = 0;
+    RNN_Genome* best_by_mse = NULL;
+    double best_mse = EXAMM_MAX_DOUBLE;
+
+    for (int32_t i = 0; i < (int32_t)genomes.size(); i++) {
+        RNN_Genome* g = genomes[i];
+        if (g == NULL) continue;
+        total++;
+        if (g->is_prediction_sd_rejected()) rejected++;
+
+        double mse = g->get_best_validation_mse();
+        if (!std::isnan(mse) && mse < best_mse) {
+            best_mse = mse;
+            best_by_mse = g;
+        }
+    }
+
+    if (total == 0) return;
+
+    if (rejected > 0 && rejected < total) {
+        Log::info(
+            "Island %d: exploding-prediction guard marked %d of %d elite genomes unfit\n", id, rejected, total
+        );
+        return;
+    }
+
+    if (rejected == total && best_by_mse != NULL) {
+        Log::warning(
+            "Island %d: ALL %d elite genomes failed the exploding-prediction guard (prediction SD > %.3fx "
+            "target SD). Keeping genome %d (MSE %.8f, SD ratio %.3f) so the island is not wiped out; the "
+            "whole population is predicting far too wide a distribution\n",
+            id, total, SelectionConfig::get_max_pred_sd_ratio(), best_by_mse->get_generation_id(), best_mse,
+            best_by_mse->get_prediction_sd_ratio()
+        );
+        best_by_mse->set_prediction_sd_rejected(false);
     }
 }
 
@@ -353,9 +412,10 @@ void OneNasIsland::select_elite_population() {
 
     generated_population->erase_population();
 
-    // The promotions can move the island's best MSE, so re-derive the flags over the merged
-    // population and re-sort. Both are no-ops unless gating is on.
-    if (SelectionConfig::gates_by_mse()) {
+    // The promotions can move the island's best MSE and can change whether every genome in the
+    // island is currently rejected, so re-derive the flags over the merged population and re-sort.
+    // Both are no-ops under the default metric with the guard disabled.
+    if (SelectionConfig::gates_by_mse() || SelectionConfig::guards_prediction_sd()) {
         apply_selection_flags();
         elite_population->sort_population("fitness");
     }
