@@ -321,8 +321,9 @@ RNN_Genome* OneNasIslandSpeciationStrategy::generate_for_initializing_island(
             }
         }
     }
-    new_genome->best_validation_mse = EXAMM_MAX_DOUBLE;
-    new_genome->best_validation_mae = EXAMM_MAX_DOUBLE;
+    // Untrained: clear MSE/MAE and the IC inherited through copy() so this genome ranks worst
+    // under every selection metric until a worker has actually trained and evaluated it.
+    new_genome->mark_unevaluated();
 
     return new_genome;
 }
@@ -593,23 +594,54 @@ RNN_Genome* OneNasIslandSpeciationStrategy::get_global_best_genome(){
 
 RNN_Genome* OneNasIslandSpeciationStrategy::select_global_best_genome() {
     RNN_Genome* best_genome = NULL;
-    double best_validation_mse = EXAMM_MAX_DOUBLE;
-    
+    double best_fitness = EXAMM_MAX_DOUBLE;
+
+    // Ranks by get_fitness() rather than by validation MSE directly, so the global best follows
+    // whatever --selection_metric the run chose (and, under the default mse metric, is exactly the
+    // lowest-MSE genome as before -- except that a genome flagged unfit by the exploding-prediction
+    // guard can no longer be picked).
     for (int32_t i = 0; i < number_of_islands; i++) {
         // Get the best genome from current island (genomes[0] of elite population)
         RNN_Genome* island_best = islands[i]->get_best_genome();
-        
+
         if (island_best != NULL) {
-            double current_mse = island_best->get_best_validation_mse();
-            
-            // Check if this genome has a better (smaller) validation MSE
-            if (current_mse < best_validation_mse) {
-                best_validation_mse = current_mse;
+            double current_fitness = island_best->get_fitness();
+
+            if (std::isnan(current_fitness)) continue;
+
+            // Check if this genome has a better (smaller) fitness
+            if (current_fitness < best_fitness) {
+                best_fitness = current_fitness;
                 best_genome = island_best;
             }
         }
     }
-    
+
+    // MSE-optimal genome, for reference. Under an IC metric the two selections diverge whenever the
+    // lowest-MSE genome is not the one that ranks the cross-section best, which is exactly the
+    // situation the IC metric exists to exploit, so log both.
+    if (SelectionConfig::uses_ic() && best_genome != NULL) {
+        RNN_Genome* mse_best = NULL;
+        double best_mse = EXAMM_MAX_DOUBLE;
+        for (int32_t i = 0; i < number_of_islands; i++) {
+            RNN_Genome* island_best = islands[i]->get_best_genome();
+            if (island_best == NULL) continue;
+            double mse = island_best->get_best_validation_mse();
+            if (!std::isnan(mse) && mse < best_mse) {
+                best_mse = mse;
+                mse_best = island_best;
+            }
+        }
+        Log::info(
+            "Global best selection: %s picked genome %d (MSE %.8f, IC EWMA %.6f); "
+            "MSE selection would have picked genome %d (MSE %.8f, IC EWMA %.6f) -- selections %s\n",
+            SelectionConfig::get_metric_name().c_str(), best_genome->get_generation_id(),
+            best_genome->get_best_validation_mse(), best_genome->get_ic_ewma(),
+            mse_best == NULL ? -1 : mse_best->get_generation_id(), best_mse,
+            mse_best == NULL ? NAN : mse_best->get_ic_ewma(), mse_best == best_genome ? "AGREE" : "DIFFER"
+        );
+    }
+
     return best_genome;
 }
 

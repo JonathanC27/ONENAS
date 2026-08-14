@@ -116,6 +116,12 @@ void ONENAS::generate_log() {
         (*log_file) << "Inserted Genomes, Total BP Epochs, Time, Best Val. MAE, Best Val. MSE, Enabled Nodes, Enabled "
                        "Edges, Enabled Rec. Edges";
         (*log_file) << speciation_strategy->get_strategy_information_headers();
+        // MSE stays in the log under every selection metric; the IC columns are appended (at the
+        // very end, so existing column positions are untouched) only when a cross-sectional IC can
+        // actually be formed, i.e. in pooled panel mode with a wide enough panel.
+        if (SelectionConfig::ic_available()) {
+            (*log_file) << ",Best Val. IC,Best Val. IC EWMA";
+        }
         (*log_file) << endl;
 
     } else {
@@ -150,7 +156,11 @@ void ONENAS::update_log() {
                     << "," << best_genome->best_validation_mae << "," << best_genome->best_validation_mse << ","
                     << best_genome->get_enabled_node_count() << "," << best_genome->get_enabled_edge_count() << ","
                     << best_genome->get_enabled_recurrent_edge_count()
-                    << speciation_strategy->get_strategy_information_values() << endl;
+                    << speciation_strategy->get_strategy_information_values();
+        if (SelectionConfig::ic_available()) {
+            (*log_file) << "," << best_genome->get_validation_ic() << "," << best_genome->get_ic_ewma();
+        }
+        (*log_file) << endl;
     }
 }
 
@@ -390,9 +400,10 @@ void ONENAS::mutate(int32_t max_mutations, RNN_Genome* g) {
 
     g->assign_reachability();
 
-    // reset the genomes statistics (as these carry over on copy)
-    g->best_validation_mse = EXAMM_MAX_DOUBLE;
-    g->best_validation_mae = EXAMM_MAX_DOUBLE;
+    // reset the genomes statistics (as these carry over on copy).
+    // mark_unevaluated() also drops the inherited cross-sectional IC state, so a mutated child
+    // cannot be ranked on its parent's IC before it has been trained and evaluated itself.
+    g->mark_unevaluated();
 
     if (Log::at_level(Log::DEBUG)) {
         Log::debug("checking parameters after mutation\n");
@@ -837,9 +848,8 @@ RNN_Genome* ONENAS::crossover(RNN_Genome* p1, RNN_Genome* p2) {
 
     child->assign_reachability();
 
-    // reset the genomes statistics (as these carry over on copy)
-    child->best_validation_mse = EXAMM_MAX_DOUBLE;
-    child->best_validation_mae = EXAMM_MAX_DOUBLE;
+    // reset the genomes statistics (as these carry over on copy), including the IC state
+    child->mark_unevaluated();
 
     // get the new set of parameters (as new paramters may have been
     // added duriung mutatino) and set them to the initial parameters
@@ -902,9 +912,7 @@ void ONENAS::initialize_seed_genome() {
     node_innovation_count = seed_genome->get_max_node_innovation_count() + 1;
 
 
-    seed_genome->best_validation_mse = EXAMM_MAX_DOUBLE;
-    seed_genome->best_validation_mse = EXAMM_MAX_DOUBLE;
-    seed_genome->best_validation_mae = EXAMM_MAX_DOUBLE;
+    seed_genome->mark_unevaluated();
     seed_genome->best_parameters.clear();
 }
 

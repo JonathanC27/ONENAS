@@ -186,6 +186,13 @@ RNN_Genome* RNN_Genome::copy() {
     other->best_validation_mae = best_validation_mae;
     other->best_parameters = best_parameters;
 
+    // Carry the IC smoothing state: elites are promoted and re-inserted by copy, so resetting it
+    // here would silently restart the EWMA every generation and defeat the smoothing.
+    other->validation_ic = validation_ic;
+    other->ic_ewma = ic_ewma;
+    other->ic_ewma_initialized = ic_ewma_initialized;
+    other->selection_gated = selection_gated;
+
     other->input_parameter_names = input_parameter_names;
     other->output_parameter_names = output_parameter_names;
 
@@ -872,9 +879,74 @@ void RNN_Genome::set_generation_id(int32_t _generation_id) {
     generation_id = _generation_id;
 }
 
+// Ineligible genomes must sort after every eligible one without becoming inf/NaN (ONENAS discards
+// non-finite fitness outright, and Population::insert_genome compares fitness numerically). A
+// finite offset larger than any plausible MSE or IC keeps the relative order inside the penalized
+// group intact, so "worst" still means "least bad of the bad".
+#define SELECTION_GATE_PENALTY 1000.0
+
 double RNN_Genome::get_fitness() const {
-    return best_validation_mse;
-    // return best_validation_mae;
+    // Lower is better in every mode.
+    //
+    // MSE mode is the historical path and returns exactly best_validation_mse, so runs without
+    // --selection_metric behave as before. IC modes return the NEGATED EWMA of the cross-sectional
+    // rank IC: an IC of +0.05 is better than +0.01, and negating keeps the "smaller is better"
+    // convention every comparator in the codebase relies on. A genome that has never produced an
+    // IC observation is unranked, not best, so it gets the worst possible fitness.
+    double base;
+    if (SelectionConfig::uses_ic()) {
+        base = ic_ewma_initialized ? -ic_ewma : EXAMM_MAX_DOUBLE;
+    } else {
+        base = best_validation_mse;
+    }
+
+    if (std::isnan(base) || base >= EXAMM_MAX_DOUBLE) return base;
+
+    if (selection_gated) base += SELECTION_GATE_PENALTY;
+
+    return base;
+}
+
+double RNN_Genome::get_validation_ic() const {
+    return validation_ic;
+}
+
+double RNN_Genome::get_ic_ewma() const {
+    return ic_ewma_initialized ? ic_ewma : NAN;
+}
+
+bool RNN_Genome::has_ic() const {
+    return ic_ewma_initialized;
+}
+
+void RNN_Genome::update_ic_ewma(double ic) {
+    validation_ic = ic;
+    if (std::isnan(ic)) return;
+
+    if (!ic_ewma_initialized) {
+        ic_ewma = ic;
+        ic_ewma_initialized = true;
+    } else {
+        double alpha = SelectionConfig::get_ic_ewma_alpha();
+        ic_ewma = alpha * ic + (1.0 - alpha) * ic_ewma;
+    }
+}
+
+bool RNN_Genome::is_selection_gated() const {
+    return selection_gated;
+}
+
+void RNN_Genome::set_selection_gated(bool gated) {
+    selection_gated = gated;
+}
+
+void RNN_Genome::mark_unevaluated() {
+    best_validation_mse = EXAMM_MAX_DOUBLE;
+    best_validation_mae = EXAMM_MAX_DOUBLE;
+    validation_ic = NAN;
+    ic_ewma = 0.0;
+    ic_ewma_initialized = false;
+    selection_gated = false;
 }
 
 double RNN_Genome::get_best_validation_mse() const {
@@ -1353,12 +1425,32 @@ void RNN_Genome::write_predictions(
 
 void RNN_Genome::evaluate_online(const vector< vector< vector<double> > > &inputs, const vector< vector< vector<double> > > &output) {
 
-    if (best_parameters.size() > 0) {
-        best_validation_mse = get_mse(best_parameters, inputs, output);
+    const vector<double>& parameters = best_parameters.size() > 0 ? best_parameters : initial_parameters;
+
+    // MSE is computed and recorded in every mode, whatever the selection metric is.
+    best_validation_mse = get_mse(parameters, inputs, output);
+
+    if (!SelectionConfig::ic_available()) return;
+
+    // A second pass is needed because get_mse() only returns the aggregate error; the IC needs the
+    // individual predictions so they can be ranked across the panel at each timestep.
+    vector< vector< vector<double> > > predictions = get_predictions(parameters, inputs, output);
+
+    int32_t num_cross_sections = 0;
+    double ic = cross_sectional_rank_ic(predictions, output, SelectionConfig::get_num_stocks(), num_cross_sections);
+    update_ic_ewma(ic);
+
+    if (std::isnan(ic)) {
+        Log::debug(
+            "Genome %d: cross-sectional IC undefined on this validation set (%d usable cross-sections)\n",
+            generation_id, num_cross_sections
+        );
     } else {
-        // Log::error("initial parameter size %d\n", initial_parameters.size());
-        best_validation_mse = get_mse(initial_parameters, inputs, output);
-    }   
+        Log::info(
+            "Genome %d: validation MSE %.8lf, cross-sectional rank IC %.6lf over %d cross-sections, IC EWMA %.6lf\n",
+            generation_id, best_validation_mse, ic, num_cross_sections, ic_ewma
+        );
+    }
 }
 
 void RNN_Genome::set_genome_type(int32_t type) {
@@ -3532,6 +3624,16 @@ void RNN_Genome::read_from_stream(istream& bin_istream) {
         bin_istream.read((char*) &training_indices[i], sizeof(int32_t));
     }
 
+    // Cross-sectional IC selection state. Appended last and read only if the stream still has
+    // bytes, so genome .bin files written before this field existed still load (they simply keep
+    // the "no IC observed yet" defaults). A genome trained on an MPI worker computes its IC there,
+    // and this is how the value reaches the master that ranks it.
+    if (bin_istream.good() && bin_istream.peek() != EOF) {
+        bin_istream.read((char*) &validation_ic, sizeof(double));
+        bin_istream.read((char*) &ic_ewma, sizeof(double));
+        bin_istream.read((char*) &ic_ewma_initialized, sizeof(bool));
+    }
+
     assign_reachability();
 }
 
@@ -3687,6 +3789,12 @@ void RNN_Genome::write_to_stream(ostream& bin_ostream) {
     for (int32_t i = 0; i < training_indices_size; i++) {
         bin_ostream.write((char*) &training_indices[i], sizeof(int32_t));
     }
+
+    // Cross-sectional IC selection state, appended last so that older readers / older .bin files
+    // stay compatible (see the matching guarded read in read_from_stream).
+    bin_ostream.write((char*) &validation_ic, sizeof(double));
+    bin_ostream.write((char*) &ic_ewma, sizeof(double));
+    bin_ostream.write((char*) &ic_ewma_initialized, sizeof(bool));
 }
 
 void RNN_Genome::update_innovation_counts(int32_t& node_innovation_count, int32_t& edge_innovation_count) {

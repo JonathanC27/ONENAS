@@ -603,6 +603,13 @@ int main(int argc, char** argv) {
     Log::info("Time series number of sets after slicing: %d\n", num_sets);
     OnlineSeries* online_series = new OnlineSeries(num_sets, arguments);
 
+    // Selection settings are process-global and every rank parses the same argv, so master and
+    // workers agree on how a genome is scored. This must run after OnlineSeries so the panel width
+    // (and whether we are in pooled panel mode at all) is known -- the IC needs a cross-section.
+    SelectionConfig::initialize_from_arguments(
+        arguments, online_series->is_pooled_panel(), online_series->get_num_stocks()
+    );
+
     int32_t max_generation = online_series->get_max_generation(); // default to the number of sets
     total_generation = max_generation;
     get_argument(arguments, "--total_generation", false, total_generation); 

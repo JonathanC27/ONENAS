@@ -244,10 +244,17 @@ int32_t Population::insert_genome(RNN_Genome *genome) {
 
         Log::debug("new best fitness for island: %d!\n", population_type);
 
-        if (genome->get_fitness() != EXAMM_MAX_DOUBLE) {
-            //need to set the weights for non-initial genomes so we
-            //can generate a proper graphviz file
-            vector<double> best_parameters = genome->get_best_parameters();
+        //need to set the weights for non-initial genomes so we
+        //can generate a proper graphviz file.
+        //
+        //This used to be guarded by `get_fitness() != EXAMM_MAX_DOUBLE`, using the fitness
+        //sentinel as a proxy for "this genome has trained weights". That proxy only holds while
+        //fitness IS the validation MSE -- under --selection_metric ic the fitness is derived from
+        //the IC instead, so a freshly generated genome could pass the guard with an empty
+        //best_parameters vector and take down the whole run inside set_weights(). Test the thing
+        //we actually depend on instead: that best_parameters matches this genome's weight count.
+        vector<double> best_parameters = genome->get_best_parameters();
+        if ((int32_t) best_parameters.size() == genome->get_number_weights()) {
             genome->set_weights(best_parameters);
         }
     }
@@ -345,7 +352,10 @@ void Population::erase_structure_map() {
 }
 
 void Population::sort_population(string sort_by) {
-    if (sort_by.compare("MSE") == 0) {
+    // "MSE" is the historical spelling; both sort by RNN_Genome::get_fitness(), which is the
+    // validation MSE unless --selection_metric selects an IC-based metric. "fitness" is the
+    // metric-agnostic spelling used by the newer call sites.
+    if (sort_by.compare("MSE") == 0 || sort_by.compare("fitness") == 0) {
         sort (genomes.begin(), genomes.end(), sort_genomes_by_fitness());
     } else {
         Log::fatal("Invalid sort by parameter: %s\n", sort_by.c_str());

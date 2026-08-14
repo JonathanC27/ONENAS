@@ -1,6 +1,8 @@
 #ifndef RNN_BPTT_HXX
 #define RNN_BPTT_HXX
 
+#include <cmath>
+
 #include <fstream>
 using std::ifstream;
 using std::istream;
@@ -24,6 +26,7 @@ using std::vector;
 #include "rnn_edge.hxx"
 #include "rnn_node_interface.hxx"
 #include "rnn_recurrent_edge.hxx"
+#include "selection_metric.hxx"
 #include "time_series/time_series.hxx"
 #include "weights/weight_rules.hxx"
 #include "weights/weight_update.hxx"
@@ -61,6 +64,21 @@ class RNN_Genome {
     double best_validation_mse;
     double best_validation_mae;
     vector<double> best_parameters;
+
+    // --- cross-sectional rank IC selection state (pooled panel mode) -----------------------
+    // validation_ic is the mean daily cross-sectional Spearman rank IC from the MOST RECENT
+    // evaluate_online() call; ic_ewma smooths it across generations with a half-life of
+    // --ic_ewma_halflife. Elite genomes are re-evaluated every generation and survive as
+    // objects, so their EWMA accumulates over their whole lifetime; a genome that is copied
+    // (mutation/crossover parent, elite promotion) or shipped to an MPI worker carries its
+    // EWMA with it, so the smoothing is not reset by the round trip.
+    double validation_ic = NAN;
+    double ic_ewma = 0.0;
+    bool ic_ewma_initialized = false;
+
+    // Set when the island's MSE gate rejects this genome under --selection_metric ic_gated.
+    // Recomputed from scratch on every ranking pass; never persisted.
+    bool selection_gated = false;
 
     minstd_rand0 generator;
 
@@ -128,6 +146,28 @@ class RNN_Genome {
     double get_best_validation_softmax() const;
     double get_best_validation_mse() const;
     double get_best_validation_mae() const;
+
+    /** Mean daily cross-sectional rank IC from the last evaluation (NAN if none was computed). */
+    double get_validation_ic() const;
+    /** EWMA of the above across generations (NAN until the first IC observation). */
+    double get_ic_ewma() const;
+    bool has_ic() const;
+    /** Folds a fresh IC observation into the EWMA. */
+    void update_ic_ewma(double ic);
+
+    bool is_selection_gated() const;
+    void set_selection_gated(bool gated);
+
+    /**
+     * Marks this genome as not yet evaluated: MSE/MAE go back to the EXAMM_MAX_DOUBLE sentinel and
+     * the inherited IC state is dropped, so get_fitness() reports "worst possible" under every
+     * selection metric until the genome is actually evaluated.
+     *
+     * Call this on freshly generated (mutated / crossed-over / seeded) genomes. Clearing the IC
+     * matters because copy() deliberately carries the EWMA -- without this a brand new, untrained
+     * child would inherit its parent's IC and could outrank trained genomes.
+     */
+    void mark_unevaluated();
 
     void set_normalize_bounds(
         string _normalize_type, const map<string, double>& _normalize_mins, const map<string, double>& _normalize_maxs,

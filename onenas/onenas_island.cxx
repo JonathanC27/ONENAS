@@ -256,26 +256,109 @@ void OneNasIsland::evaluate_elite_population(const vector< vector< vector<double
         RNN_Genome* g = elite_genomes[i];
         g->evaluate_online(validation_input, validation_output);
     }
-    elite_population->sort_population("MSE");
+
+    // The gate and the exploding-prediction guard are relative to the rest of the island, so they
+    // can only be resolved once every elite has been re-evaluated on this generation's data.
+    apply_selection_flags();
+
+    elite_population->sort_population("fitness");
     for (int32_t i = 0; i < elite_population_size; i++) {
-        Log::info("Island %d: elite genome %d fitness: %f\n", id, i, elite_genomes[i]->get_fitness());
+        RNN_Genome* g = elite_genomes[i];
+        if (SelectionConfig::ic_available()) {
+            Log::info(
+                "Island %d: elite genome %d fitness: %f (MSE %.8f, IC %.6f, IC EWMA %.6f%s)\n", id, i,
+                g->get_fitness(), g->get_best_validation_mse(), g->get_validation_ic(), g->get_ic_ewma(),
+                g->is_selection_gated() ? ", GATED" : ""
+            );
+        } else {
+            Log::info("Island %d: elite genome %d fitness: %f\n", id, i, g->get_fitness());
+        }
     }
 }
 
+/**
+ * Recomputes the island-relative selection flags over the current elite population.
+ *
+ * Only --selection_metric ic_gated sets any flag: a genome is eligible when its validation MSE is
+ * within --ic_gate_factor of the island's best MSE, and ineligible genomes are pushed behind every
+ * eligible one by get_fitness(). Because the factor is >= 1 the island's own best-MSE genome is
+ * always eligible, so gating can never empty the island.
+ */
+void OneNasIsland::apply_selection_flags() {
+    vector<RNN_Genome*> genomes = elite_population->get_genomes();
+    if (genomes.empty()) return;
+
+    if (!SelectionConfig::gates_by_mse()) {
+        // Not gating: make sure no stale flag survives a metric change or a promoted copy.
+        for (int32_t i = 0; i < (int32_t)genomes.size(); i++) {
+            if (genomes[i] != NULL) genomes[i]->set_selection_gated(false);
+        }
+        return;
+    }
+
+    double threshold = get_mse_gate_threshold();
+    int32_t gated = 0;
+    for (int32_t i = 0; i < (int32_t)genomes.size(); i++) {
+        if (genomes[i] == NULL) continue;
+        bool gate = genomes[i]->get_best_validation_mse() > threshold;
+        genomes[i]->set_selection_gated(gate);
+        if (gate) gated++;
+    }
+
+    if (gated > 0) {
+        Log::info(
+            "Island %d: IC gate (%.3fx best MSE = %.8f) made %d of %d elite genomes ineligible\n", id,
+            SelectionConfig::get_ic_gate_factor(), threshold, gated, (int32_t)genomes.size()
+        );
+    }
+}
+
+/**
+ * MSE ceiling for eligibility under --selection_metric ic_gated: ic_gate_factor times the best
+ * validation MSE currently in the island. Returns EXAMM_MAX_DOUBLE when gating is off or when no
+ * genome has a usable MSE, which makes every genome eligible.
+ */
+double OneNasIsland::get_mse_gate_threshold() {
+    if (!SelectionConfig::gates_by_mse()) return EXAMM_MAX_DOUBLE;
+
+    vector<RNN_Genome*> genomes = elite_population->get_genomes();
+    double best_mse = EXAMM_MAX_DOUBLE;
+    for (int32_t i = 0; i < (int32_t)genomes.size(); i++) {
+        if (genomes[i] == NULL) continue;
+        double mse = genomes[i]->get_best_validation_mse();
+        if (!std::isnan(mse) && mse < best_mse) best_mse = mse;
+    }
+
+    if (best_mse >= EXAMM_MAX_DOUBLE) return EXAMM_MAX_DOUBLE;
+    return best_mse * SelectionConfig::get_ic_gate_factor();
+}
 
 void OneNasIsland::select_elite_population() {
     // vector<RNN_Genome*> elite_genomes = Elite_population->get_genomes();
     Log::info("Finalizing generation: Selecting elite population on island %d\n", id);
     vector<RNN_Genome*> trained_genomes = generated_population->get_genomes();
 
+    // Threshold from the elites that were just re-evaluated. Promoted genomes are flagged BEFORE
+    // insertion so that insert_genome()'s keep/discard comparison already sees the gated ordering.
+    double gate_threshold = get_mse_gate_threshold();
+
     for (int i = 0; i < (int32_t)trained_genomes.size(); i++) {
         RNN_Genome* genome_copy = trained_genomes[i]->copy();
         genome_copy->set_genome_type(ELITE);
+        genome_copy->set_selection_gated(
+            SelectionConfig::gates_by_mse() && genome_copy->get_best_validation_mse() > gate_threshold
+        );
         elite_population->insert_genome(genome_copy);
     }
 
     generated_population->erase_population();
 
+    // The promotions can move the island's best MSE, so re-derive the flags over the merged
+    // population and re-sort. Both are no-ops unless gating is on.
+    if (SelectionConfig::gates_by_mse()) {
+        apply_selection_flags();
+        elite_population->sort_population("fitness");
+    }
 }
 
 void OneNasIsland::write_prediction(string filename, const vector< vector< vector<double> > > &test_input, const vector< vector< vector<double> > > &test_output) {
