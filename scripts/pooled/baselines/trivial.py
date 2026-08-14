@@ -63,7 +63,8 @@ def main():
                     "hyperparameters_note": "none -- parameter-free baseline"},
         default_cfg={"kind": args.model})
 
-    if args.model == "naive" and not args.quiet:
+    if args.model == "naive" and not args.quiet \
+            and panel.param == panel.score_param:
         # our naive must be bit-identical to score_stream's naive column
         r = res["summary"]["overall"]
         assert abs(r["model"]["rank_ic_1"] - r["naive"]["rank_ic_1"]) < 1e-12, \

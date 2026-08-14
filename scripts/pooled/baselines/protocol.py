@@ -232,7 +232,13 @@ def add_common_args(ap):
                     help="panel directory (per-stock CSVs + panel_dates.csv)")
     ap.add_argument("--out-dir", default=None,
                     help="write predictions.csv / meta.json / metrics.json here")
-    ap.add_argument("--param", default="RET", help="target column")
+    ap.add_argument("--param", default="RET",
+                    help="column the model is TRAINED on")
+    ap.add_argument("--score-param", default=None,
+                    help="realised-return column the IC and the long-short "
+                         "book are SCORED against (default: --param). On a v2 "
+                         "panel use --param RET_CS --score-param RET to train "
+                         "on the rank-normal target but book real returns")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--score-from", default=SCORE_FROM)
     ap.add_argument("--score-to", default=SCORE_TO)
@@ -289,6 +295,7 @@ def finalize(panel, factory, grid, args, model_name, extra_meta=None,
             "panel": panel.path,
             "panel_name": panel.name(),
             "param": panel.param,
+            "score_param": panel.score_param,
             "features": panel.features,
             "hyperparameters": cfg,
             "tuned_on": None if (args.config or args.no_tune)
@@ -319,4 +326,4 @@ def finalize(panel, factory, grid, args, model_name, extra_meta=None,
 
 
 def load_panel(args):
-    return Panel(args.panel, args.param)
+    return Panel(args.panel, args.param, getattr(args, "score_param", None))

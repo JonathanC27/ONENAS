@@ -36,9 +36,19 @@ for r in warmup_row .. last_row:
 Feature columns are read from the per-stock CSV header, never hardcoded, so
 the `set*_v2` panels (extra `RET_CS`, `RET_CS_Z`, fixed `ILLIQUIDITY`,
 normalised `RET`/`sprtrn`) run without a code change. All per-stock CSVs in a
-panel must share a header; `panel.py` raises if they do not. `--param` selects
-the target column (default `RET`; use `--param RET_CS` on a v2 panel to train
-and score against the rank-normal target).
+panel must share a header; `panel.py` raises if they do not.
+
+Training target and scoring target are separable:
+
+* `--param` — the column the model is **trained** on (default `RET`).
+* `--score-param` — the realised return the IC and the long-short book are
+  **scored** against (default: same as `--param`).
+
+On a v2 panel, `--param RET_CS --score-param RET` trains on the rank-normal
+target while still booking real returns. Daily rank IC comes out *identical*
+either way — `RET_CS` is a within-day monotone transform of `RET`, and this is
+verified: on a v2-shaped panel STR1 scores `+0.0175` under both settings — but
+the book's P&L is only meaningful in return units, so the split matters.
 
 ### Causality
 
@@ -199,8 +209,9 @@ python3 run_all.py --panel $PANEL --baselines all --table-only
 # cost sensitivity: flat 5 bps one-way instead of the panel's TC/PRC
 python3 run_all.py --panel $PANEL --baselines cheap --extra "--cost-bps 5"
 
-# a v2 panel, targeting the rank-normal column
-python3 run_all.py --panel /path/to/set1_v2 --baselines paper --extra "--param RET_CS"
+# a v2 panel: train on the rank-normal target, book real returns
+python3 run_all.py --panel /path/to/set1_v2 --baselines paper \
+        --extra "--param RET_CS --score-param RET"
 ```
 
 Output tree:

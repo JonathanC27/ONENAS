@@ -30,13 +30,21 @@ class Panel:
       tickers    list[str]                 stock order (sorted filenames)
       features   list[str]                 feature column names, from the header
       X          ndarray [n_rows, n_stocks, n_feats]
-      Y          ndarray [n_rows, n_stocks]   the target column (default RET)
+      Y          ndarray [n_rows, n_stocks]   the column models are TRAINED on
+      Yscore     ndarray [n_rows, n_stocks]   the realised return SCORED against
       prc, tc    list[list[float]]         as score_stream.load_panel returns
+
+    Y and Yscore differ only when --score-param is given.  That matters on the
+    v2 panels: a model can be trained on the rank-normal RET_CS while the IC
+    and the long-short book are still evaluated against the real RET.  Daily
+    rank IC is identical either way (RET_CS is a within-day monotone transform
+    of RET) but the book's P&L is only meaningful in return units.
     """
 
-    def __init__(self, path, param="RET"):
+    def __init__(self, path, param="RET", score_param=None):
         self.path = os.path.abspath(path)
         self.param = param
+        self.score_param = score_param or param
         self.dates, self.tickers, self.prc, self.tc = _load_panel_dates(self.path)
 
         header = None
@@ -62,12 +70,15 @@ class Panel:
             cols.append(np.asarray(body, dtype=np.float64))
 
         self.features = list(header)
-        if param not in self.features:
-            raise SystemExit(
-                f"target column {param!r} not in panel features {self.features}"
-            )
+        for role, col in (("--param", param), ("--score-param", self.score_param)):
+            if col not in self.features:
+                raise SystemExit(
+                    f"{role} column {col!r} not in panel features {self.features}"
+                )
         self.X = np.stack(cols, axis=1)          # [row, stock, feat]
         self.Y = self.X[:, :, self.features.index(param)].copy()
+        self.Yscore = (self.Y if self.score_param == param
+                       else self.X[:, :, self.features.index(self.score_param)].copy())
         if not np.isfinite(self.X).all():
             raise SystemExit(f"{self.path}: non-finite values in the feature data")
         self.date_index = {d: i for i, d in enumerate(self.dates)}

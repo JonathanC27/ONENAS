@@ -60,7 +60,7 @@ def build_days(panel, preds, rows):
         if not np.isfinite(p).all():
             raise SystemExit(f"non-finite prediction for row {r} ({panel.dates[r]})")
         days.append((r, panel.dates[r], list(p),
-                     list(panel.Y[r]), list(panel.Y[r - 1])))
+                     list(panel.Yscore[r]), list(panel.Yscore[r - 1])))
     return days
 
 
