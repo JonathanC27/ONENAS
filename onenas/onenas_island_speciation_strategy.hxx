@@ -71,6 +71,8 @@ class OneNasIslandSpeciationStrategy : public SpeciationStrategy {
         // Control size method and comparison flag
         string control_size_method;   /**< Method for controlling network size when genome outperforms naive */
         bool compare_with_naive;      /**< Flag to enable/disable naive vs genome comparison */
+
+        bool write_elite_predictions; /**< Flag to additionally dump every island's elite predictions each generation */
         
         // Forward declaration to avoid circular dependency
         ONENAS* onenas_instance;  /**< Reference to ONENAS instance for accessing mutation rates */
@@ -89,8 +91,8 @@ class OneNasIslandSpeciationStrategy : public SpeciationStrategy {
         int32_t _elite_population_size, double _mutation_rate, double _intra_island_crossover_rate,
         double _inter_island_crossover_rate, RNN_Genome *_seed_genome, string _island_ranking_method, 
         string _repopulation_method, int32_t _repopulation_frequency, int32_t _num_mutations, int32_t _repopulation_mutations,
-        int32_t _islands_to_exterminate, bool _repeat_extinction, string _output_directory, 
-        string _control_size_method, bool _compare_with_naive);
+        int32_t _islands_to_exterminate, bool _repeat_extinction, string _output_directory,
+        string _control_size_method, bool _compare_with_naive, bool _write_elite_predictions = false);
 
         /**
          * Destructor - properly cleans up global_best_genome memory
@@ -270,6 +272,22 @@ class OneNasIslandSpeciationStrategy : public SpeciationStrategy {
          * \param test_output the test output data
          */
         void write_prediction_file(const string &filename, const vector< vector< vector<double> > > &predictions, const vector< vector< vector<double> > > &test_input, const vector< vector< vector<double> > > &test_output);
+
+        /**
+         * Writes the test-window predictions of EVERY elite genome of EVERY island to
+         * <output_directory>/generation_<g>_elites.csv in long/tidy form, one row per
+         * island x elite x series x timestep, with the columns
+         *      island,elite_rank,stock,row,predicted
+         * elite_rank 0 is the best genome of that island (elites are kept in fitness
+         * order) and `row` is the 0-based row index of the matching data row in the
+         * generation_<g>_global_best.csv file, so the two files join on (stock, row).
+         * Only written when --write_elite_predictions is given.
+         *
+         * \param current_generation the current generation number
+         * \param test_input the test input data (same data as the global best path)
+         * \param test_output the test output data (same data as the global best path)
+         */
+        void write_elite_prediction_file(int32_t current_generation, const vector< vector< vector<double> > > &test_input, const vector< vector< vector<double> > > &test_output);
 
         void set_erased_islands_status();
         

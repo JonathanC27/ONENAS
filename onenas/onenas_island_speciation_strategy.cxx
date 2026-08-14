@@ -34,7 +34,7 @@ OneNasIslandSpeciationStrategy::OneNasIslandSpeciationStrategy(
         string _island_ranking_method, string _repopulation_method,
         int32_t _repopulation_frequency, int32_t _num_mutations, int32_t _repopulation_mutations,
         int32_t _islands_to_exterminate, bool _repeat_extinction, string _output_directory,
-        string _control_size_method, bool _compare_with_naive
+        string _control_size_method, bool _compare_with_naive, bool _write_elite_predictions
         ) :
                         generation_island(0),
                         number_of_islands(_number_of_islands),
@@ -58,6 +58,7 @@ OneNasIslandSpeciationStrategy::OneNasIslandSpeciationStrategy(
                         genome_better_count(0),
                         control_size_method(_control_size_method),
                         compare_with_naive(_compare_with_naive),
+                        write_elite_predictions(_write_elite_predictions),
                         onenas_instance(nullptr) {
     double rate_sum = mutation_rate + intra_island_crossover_rate + inter_island_crossover_rate;
     if (rate_sum != 1.0) {
@@ -72,6 +73,9 @@ OneNasIslandSpeciationStrategy::OneNasIslandSpeciationStrategy(
     Log::info("OneNAS Strategy: Mutation rate %f, inter-island crossover rate %f, intra island crossover rate %f\n", mutation_rate, inter_island_crossover_rate, intra_island_crossover_rate);
     Log::info("OneNAS Strategy: Repopulation frequency is %d, islands to exterminate is %d\n", repopulation_frequency, islands_to_exterminate);
     Log::info("OneNAS Strategy: Doing repopulation is set to %s, and it will start at generation %d\n", repopulation_frequency > 0 ? "TRUE" : "FALSE", repopulation_frequency * 2);
+    if (write_elite_predictions) {
+        Log::info("OneNAS Strategy: Writing per-elite test predictions to generation_<g>_elites.csv every generation\n");
+    }
     //set the generation id for the initial minimal genome
     seed_genome->set_generation_id(generated_genomes);
     generated_genomes++;
@@ -640,6 +644,76 @@ void OneNasIslandSpeciationStrategy::write_global_best_prediction(int32_t curren
     write_prediction_file(filename, predictions, test_input, test_output);
 }
 
+void OneNasIslandSpeciationStrategy::write_elite_prediction_file(int32_t current_generation, const vector< vector< vector<double> > > &test_input, const vector< vector< vector<double> > > &test_output) {
+    if (test_input.size() == 0 || test_input[0].size() == 0) {
+        Log::error("Cannot write elite predictions: test input is empty\n");
+        return;
+    }
+
+    string filename = output_directory + "/generation_" + std::to_string(current_generation) + "_elites.csv";
+    ofstream outfile(filename);
+    if (!outfile.is_open()) {
+        Log::error("Cannot write elite predictions: could not open %s\n", filename.c_str());
+        return;
+    }
+
+    outfile << "island,elite_rank,stock,row,predicted\n";
+
+    // Number of test series: 1 in the default mode, one per stock in pooled panel mode.
+    // All series share the same window length (contemporaneous windows).
+    int32_t num_series = (int32_t)test_input.size();
+    int32_t time_length = (int32_t)test_input[0][0].size();
+
+    int64_t rows_written = 0;
+    int32_t genomes_written = 0;
+    bool multi_output_warned = false;
+
+    for (int32_t island = 0; island < number_of_islands; island++) {
+        // elites are kept in fitness order by evaluate_elite_population/select_elite_population,
+        // so index 0 is the best genome of the island
+        vector<RNN_Genome*> elites = islands[island]->get_genomes();
+
+        for (int32_t elite_rank = 0; elite_rank < (int32_t)elites.size(); elite_rank++) {
+            RNN_Genome* genome = elites[elite_rank];
+            if (genome == NULL) {
+                Log::error("Elite predictions: island %d elite %d is NULL, skipping\n", island, elite_rank);
+                continue;
+            }
+
+            vector<double> parameters = genome->get_best_parameters();
+            if (parameters.size() <= 0) {
+                Log::error("Elite predictions: island %d elite %d (genome %d) best parameter size is %d, skipping\n", island, elite_rank, genome->get_generation_id(), (int32_t)parameters.size());
+                continue;
+            }
+
+            if (!multi_output_warned && genome->get_number_outputs() > 1) {
+                Log::warning("Elite predictions: genomes have %d outputs, only the first output is written to %s\n", genome->get_number_outputs(), filename.c_str());
+                multi_output_warned = true;
+            }
+
+            vector< vector< vector<double> > > predictions = genome->get_predictions(parameters, test_input, test_output);
+            if ((int32_t)predictions.size() != num_series) {
+                Log::error("Elite predictions: island %d elite %d returned %d series, expected %d, skipping\n", island, elite_rank, (int32_t)predictions.size(), num_series);
+                continue;
+            }
+
+            for (int32_t n = 0; n < num_series; n++) {
+                // rows mirror the data rows of generation_<g>_global_best.csv, which start
+                // at timestep 1 (timestep 0 has no naive prediction), so row = j - 1
+                for (int32_t j = 1; j < time_length; j++) {
+                    outfile << island << "," << elite_rank << "," << n << "," << (j - 1) << "," << predictions[n][0][j] << "\n";
+                    rows_written++;
+                }
+            }
+            genomes_written++;
+        }
+    }
+
+    outfile.close();
+
+    Log::info("Elite genome predictions written to %s (%d genomes, %lld rows)\n", filename.c_str(), genomes_written, (long long)rows_written);
+}
+
 void OneNasIslandSpeciationStrategy::set_erased_islands_status() {
     for (int i = 0; i < (int32_t)islands.size(); i++) {
         if (islands[i] -> get_erase_again_num() > 0) {
@@ -713,6 +787,9 @@ vector<RNN_Genome*> OneNasIslandSpeciationStrategy::finalize_generation_with_gen
     }
     
     write_global_best_prediction(current_generation, test_input, test_output);
+    if (write_elite_predictions) {
+        write_elite_prediction_file(current_generation, test_input, test_output);
+    }
     save_genome(global_best_genome);
     
     // Check if we should trigger network size control (only when compare_with_naive is still enabled)

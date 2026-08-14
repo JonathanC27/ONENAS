@@ -168,6 +168,10 @@ OneNasIslandSpeciationStrategy* generate_onenas_island_speciation_strategy_from_
 
     bool compare_with_naive = argument_exists(arguments, "--compare_with_naive");
 
+    // when set, every island's elite genomes also predict the test window each generation and
+    // are dumped to generation_<g>_elites.csv for offline ensembling
+    bool write_elite_predictions = argument_exists(arguments, "--write_elite_predictions");
+
     if (number_islands == 1) {
         inter_island_co_rate = 0.0;
         intra_island_co_rate = 0.30;
@@ -180,7 +184,7 @@ OneNasIslandSpeciationStrategy* generate_onenas_island_speciation_strategy_from_
         ,
         inter_island_co_rate, seed_genome, island_ranking_method, repopulation_method,
         repopulation_frequency, num_mutations, repopulation_mutations, islands_to_exterminate, repeat_extinction, output_directory,
-        control_size_method, compare_with_naive
+        control_size_method, compare_with_naive, write_elite_predictions
     );
 
     return island_strategy;
