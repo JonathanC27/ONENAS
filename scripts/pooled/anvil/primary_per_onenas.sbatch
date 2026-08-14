@@ -17,9 +17,9 @@
 #SBATCH -A cis251123
 #SBATCH -p shared
 #SBATCH -N 1
-#SBATCH -n 16
+#SBATCH -n 41
 #SBATCH --mem-per-cpu=2G
-#SBATCH -t 12:00:00
+#SBATCH -t 06:00:00
 #SBATCH -o %x_set%a_%j.out
 #SBATCH -e %x_set%a_%j.err
 #SBATCH --mail-type=END,FAIL
