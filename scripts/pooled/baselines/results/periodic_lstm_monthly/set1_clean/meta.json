@@ -1,0 +1,44 @@
+{
+ "model": "periodic-lstm-monthly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_clean",
+ "panel_name": "set1_clean",
+ "param": "RET",
+ "score_param": "RET",
+ "features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER"
+ ],
+ "hyperparameters": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 5,
+  "max_steps": 4000,
+  "lookback_days": 0,
+  "cs_demean_y": true
+ },
+ "tuned_on": null,
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": null,
+ "warmup_from": "2020-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 171.31,
+ "total_seconds": 171.31,
+ "cadence": "monthly",
+ "retrain_model": "lstm",
+ "inherited_architecture": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 5,
+  "cs_demean_y": true
+ },
+ "arch_from": "/tmp/bl_results/lstm/set1_clean/meta.json"
+}

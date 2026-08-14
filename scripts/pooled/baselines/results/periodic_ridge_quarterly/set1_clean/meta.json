@@ -1,0 +1,38 @@
+{
+ "model": "periodic-ridge-quarterly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_clean",
+ "panel_name": "set1_clean",
+ "param": "RET",
+ "score_param": "RET",
+ "features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER"
+ ],
+ "hyperparameters": {
+  "delta": 0.001,
+  "lags": 1,
+  "cs_demean": false,
+  "cs_demean_y": true,
+  "lookback_days": 0
+ },
+ "tuned_on": null,
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": null,
+ "warmup_from": "2020-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 0.29,
+ "total_seconds": 0.29,
+ "cadence": "quarterly",
+ "retrain_model": "ridge",
+ "inherited_architecture": null,
+ "arch_from": null
+}

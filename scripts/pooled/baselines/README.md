@@ -185,7 +185,7 @@ Everything is local, CPU-only, deterministic given `--seed`. **No cluster jobs.*
 cd scripts/pooled/baselines
 PANEL=/path/to/set1_clean
 
-# the whole suite (~13 min on a laptop), tuning included
+# the whole suite (~20 min on an M-series laptop), tuning included
 python3 run_all.py --panel $PANEL --baselines all --results-dir results
 
 # or a subset: trivial | cheap | neural | periodic | paper | all
@@ -248,6 +248,65 @@ believed:
 * `str1` rank IC ≈ **+0.018** and exactly `-1 ×` the naive rank IC.
 * `naive`'s printed `model` row equals its `naive` reference row exactly
   (asserted in `trivial.py`).
+
+---
+
+## 5. Measured results — `set1_clean`, 2020-01-01 .. 2024-12-31
+
+1258 scored days, 50 stocks, long-short top/bottom-10, `TC/PRC` costs, seed 42.
+Reproduced in full by `python3 run_all.py --panel set1_clean --baselines all`.
+`secs` is wall clock **including** the pre-2020 tuning search.
+
+| baseline | pearsIC | t | rIC@1 | rIC@5 | rIC@10 | net% | Sharpe | MDD% | turnover | cost% | secs |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| naive persistence | -0.0172 | -2.28 | -0.0175 | -0.0165 | -0.0157 | -96.04 | -0.81 | 98.93 | 1.166 | 52.32 | 4 |
+| **str1** | +0.0172 | +2.28 | **+0.0175** | +0.0165 | +0.0157 | -8.53 | -0.07 | 43.07 | 1.166 | 52.32 | 3 |
+| str5 | +0.0162 | +2.18 | +0.0144 | +0.0211 | +0.0122 | +14.99 | +0.11 | 62.75 | 0.594 | 27.06 | 3 |
+| online ridge/RLS | +0.0193 | +2.73 | +0.0126 | +0.0188 | +0.0242 | +0.81 | +0.01 | 46.05 | 0.991 | 45.94 | 68 |
+| online AR (OGD) | +0.0177 | +3.27 | +0.0147 | +0.0082 | +0.0100 | -9.64 | -0.11 | 51.00 | 0.488 | 22.84 | 18 |
+| online LSTM | +0.0162 | +2.39 | +0.0111 | +0.0117 | +0.0132 | +7.92 | +0.08 | 69.93 | 0.379 | 20.46 | 409 |
+| online GRU | +0.0103 | +1.64 | +0.0105 | +0.0149 | +0.0130 | +36.63 | +0.40 | 24.61 | 0.435 | 20.62 | 272 |
+| periodic ridge, yearly | +0.0197 | +2.70 | +0.0149 | +0.0179 | +0.0194 | +53.12 | +0.44 | 52.03 | 0.933 | 44.66 | 25 |
+| periodic ridge, quarterly | +0.0203 | +2.79 | +0.0147 | +0.0198 | +0.0229 | +41.94 | +0.35 | 51.42 | 0.918 | 43.63 | 4 |
+| periodic ridge, monthly | +0.0204 | +2.81 | +0.0143 | +0.0194 | +0.0234 | +23.79 | +0.20 | 50.04 | 0.912 | 43.11 | 4 |
+| **periodic LSTM, yearly** | +0.0180 | +2.70 | **+0.0181** | +0.0229 | +0.0211 | +41.21 | +0.42 | 30.67 | 0.108 | 6.51 | 20 |
+| periodic LSTM, quarterly | +0.0150 | +2.26 | +0.0177 | +0.0185 | +0.0185 | +45.43 | +0.45 | 25.23 | 0.170 | 10.31 | 200 |
+| periodic LSTM, monthly | +0.0134 | +2.05 | +0.0117 | +0.0207 | +0.0173 | +44.50 | +0.48 | 32.55 | 0.201 | 11.99 | 175 |
+
+Frozen hyperparameters (all chosen on 2016-2019 only):
+
+| baseline | config |
+|---|---|
+| online ridge | `lam=1.0, delta=1e-3, lags=1, cs_demean=False, cs_demean_y=True` |
+| online AR | `method=ogd, p=1, eta=1e-4, diff=0` |
+| online LSTM | `hidden=8, lr=1e-3, seq_len=5, steps_per_day=8, replay_days=1000, cs_demean_y=True` |
+| online GRU | `hidden=16, lr=3e-3, seq_len=20, steps_per_day=1, replay_days=1000, cs_demean_y=False` |
+| periodic ridge | `delta=1e-3, lags=1, cs_demean=False, cs_demean_y=True, lookback_days=0` |
+| periodic LSTM | `hidden=8, lr=1e-3, seq_len=5, max_steps=4000, lookback_days=0, cs_demean_y=True` |
+
+### What this suite says about the paper's claim
+
+Read these numbers before writing the abstract, because two of them are
+inconvenient:
+
+1. **`str1` is a genuinely hard bar.** A free, zero-parameter signal scores
+   rank IC `+0.0175`. Of the five learned arms, only the periodic LSTM clears
+   it, and only barely. Online ridge (`+0.0126`), online AR (`+0.0147`),
+   online LSTM (`+0.0111`) and online GRU (`+0.0105`) all score *below* a
+   one-line reversal rule. Any headline of the form "our model achieves rank
+   IC 0.0x" has to be read against `+0.0175`.
+2. **Periodic retraining currently beats the online arms here.** Periodic
+   ridge beats online ridge on rank IC (`+0.0149` vs `+0.0126`) and on net
+   return (`+53%` vs `+0.8%`); the periodic LSTM beats the online LSTM on
+   every column. So "online neuroevolution beats periodic retraining" is a
+   real, unearned-by-default claim — this suite does not hand it over.
+3. **Costs decide the book, not IC.** The high-IC arms churn ~1.0 turnover and
+   pay 43-52% of capital in costs over five years, which is what turns `str1`'s
+   positive IC into `-8.5%` net. The periodic LSTM wins net return with a
+   *lower* IC than online ridge purely because it trades at 0.11 turnover for
+   6.5% cost. Report IC and net% together, or the story is not honest.
+4. Pearson IC and rank IC disagree in places (online ridge has the second-best
+   Pearson but a middling rank IC), so quote both, as the table above does.
 
 ### Dependencies
 

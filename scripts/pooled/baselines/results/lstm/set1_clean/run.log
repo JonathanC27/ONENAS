@@ -1,0 +1,48 @@
+# staged tuning on 2016-01-04..2019-12-31 (1006 days), 3 stages / 24 runs, objective = mean daily rank IC
+#   [stage 0] {"hidden": 8, "lr": 0.001}  val rank IC +0.00889  (10.4s)
+#   [stage 0] {"hidden": 8, "lr": 0.003}  val rank IC -0.00486  (9.4s)
+#   [stage 0] {"hidden": 8, "lr": 0.01}  val rank IC -0.00701  (8.9s)
+#   [stage 0] {"hidden": 16, "lr": 0.001}  val rank IC +0.00271  (10.5s)
+#   [stage 0] {"hidden": 16, "lr": 0.003}  val rank IC +0.00341  (10.7s)
+#   [stage 0] {"hidden": 16, "lr": 0.01}  val rank IC +0.00526  (10.9s)
+#   [stage 0] {"hidden": 32, "lr": 0.001}  val rank IC -0.00219  (14.2s)
+#   [stage 0] {"hidden": 32, "lr": 0.003}  val rank IC +0.00067  (14.8s)
+#   [stage 0] {"hidden": 32, "lr": 0.01}  val rank IC -0.00265  (14.0s)
+#   [stage 0] best {"hidden": 8, "lr": 0.001}  -> running config {"cs_demean_y": false, "hidden": 8, "lr": 0.001, "replay_days": 250, "seq_len": 10, "steps_per_day": 3}
+#   [stage 1] {"replay_days": 60, "steps_per_day": 1}  val rank IC +0.00364  (4.0s)
+#   [stage 1] {"replay_days": 250, "steps_per_day": 1}  val rank IC +0.00659  (4.2s)
+#   [stage 1] {"replay_days": 1000, "steps_per_day": 1}  val rank IC +0.01023  (4.5s)
+#   [stage 1] {"replay_days": 60, "steps_per_day": 3}  val rank IC +0.00358  (9.6s)
+#   [stage 1] {"replay_days": 250, "steps_per_day": 3}  val rank IC +0.00889  (9.7s)
+#   [stage 1] {"replay_days": 1000, "steps_per_day": 3}  val rank IC +0.00320  (10.8s)
+#   [stage 1] {"replay_days": 60, "steps_per_day": 8}  val rank IC -0.00157  (22.9s)
+#   [stage 1] {"replay_days": 250, "steps_per_day": 8}  val rank IC +0.00277  (22.4s)
+#   [stage 1] {"replay_days": 1000, "steps_per_day": 8}  val rank IC +0.01415  (25.4s)
+#   [stage 1] best {"replay_days": 1000, "steps_per_day": 8}  -> running config {"cs_demean_y": false, "hidden": 8, "lr": 0.001, "replay_days": 1000, "seq_len": 10, "steps_per_day": 8}
+#   [stage 2] {"cs_demean_y": false, "seq_len": 5}  val rank IC +0.00658  (14.8s)
+#   [stage 2] {"cs_demean_y": true, "seq_len": 5}  val rank IC +0.01576  (14.8s)
+#   [stage 2] {"cs_demean_y": false, "seq_len": 10}  val rank IC +0.01415  (34.8s)
+#   [stage 2] {"cs_demean_y": true, "seq_len": 10}  val rank IC +0.01503  (23.2s)
+#   [stage 2] {"cs_demean_y": false, "seq_len": 20}  val rank IC -0.00001  (38.9s)
+#   [stage 2] {"cs_demean_y": true, "seq_len": 20}  val rank IC +0.01395  (39.1s)
+#   [stage 2] best {"cs_demean_y": true, "seq_len": 5}  -> running config {"cs_demean_y": true, "hidden": 8, "lr": 0.001, "replay_days": 1000, "seq_len": 5, "steps_per_day": 8}
+# chosen: {"cs_demean_y": true, "hidden": 8, "lr": 0.001, "replay_days": 1000, "seq_len": 5, "steps_per_day": 8}  (val rank IC +0.01576)
+# online-lstm
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0300   +0.0252   +0.0277   +0.0331    -32.75    -0.96    69.93   0.4835     7.25
+2020      naive    253  -0.0029   -0.0082   -0.0170   -0.0165     -7.89    -0.25    34.21   1.0411    12.43
+2021      model    252  +0.0073   +0.0039   +0.0093   +0.0156    +21.21    +1.39     7.98   0.2735     3.20
+2021      naive    252  -0.0203   -0.0272   -0.0121   -0.0209    -21.88    -0.92    36.66   1.3312    13.43
+2022      model    251  +0.0191   +0.0115   +0.0233   +0.0312    +15.36    +0.88    10.93   0.5846     5.25
+2022      naive    251  +0.0032   +0.0017   -0.0131   -0.0086    -22.44    -0.98    27.85   1.0082     8.46
+2023      model    250  -0.0022   +0.0039   -0.0097   -0.0034    -14.71    -1.06    21.69   0.2900     2.09
+2023      naive    250  -0.0206   -0.0210   -0.0171   -0.0176    -11.85    -0.65    18.04   1.1705     7.81
+2024      model    252  +0.0267   +0.0110   +0.0076   -0.0113    +18.81    +1.29    12.35   0.2636     2.68
+2024      naive    252  -0.0453   -0.0328   -0.0234   -0.0149    -31.98    -1.65    38.13   1.2810    10.19
+overall   model   1258  +0.0162   +0.0111   +0.0117   +0.0132     +7.92    +0.08    69.93   0.3791    20.46
+overall   naive   1258  -0.0172   -0.0175   -0.0165   -0.0157    -96.04    -0.81    98.93   1.1664    52.32
+# model overall: pearson IC +0.0162 (SE 0.0068, t +2.39); rank IC +0.0111 (SE 0.0052, t +2.14); rebalances 356, avg holding 3.5 days
+# naive overall: pearson IC -0.0172 (SE 0.0075, t -2.28); rank IC -0.0175 (SE 0.0072, t -2.44); rebalances 939, avg holding 1.3 days
+# rank IC by horizon (model): h=1:+0.0111  h=2:+0.0111  h=3:+0.0130  h=4:+0.0129  h=5:+0.0117  h=6:+0.0117  h=7:+0.0121  h=8:+0.0147  h=9:+0.0135  h=10:+0.0132
+# rank IC by horizon (naive): h=1:-0.0175  h=2:-0.0104  h=3:-0.0135  h=4:-0.0152  h=5:-0.0165  h=6:-0.0129  h=7:-0.0158  h=8:-0.0165  h=9:-0.0174  h=10:-0.0157
+# online-lstm: run 22.2s, total 407.4s, wrote /tmp/bl_results/lstm/set1_clean

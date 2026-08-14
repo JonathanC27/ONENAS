@@ -1,0 +1,29 @@
+# architecture inherited from /tmp/bl_results/lstm/set1_clean/meta.json: {"cs_demean_y": true, "hidden": 8, "lr": 0.001, "seq_len": 5}
+# staged tuning on 2016-01-04..2019-12-31 (1006 days), 1 stages / 6 runs, objective = mean daily rank IC
+#   [stage 0] {"lookback_days": 0, "max_steps": 500}  val rank IC +0.00842  (6.8s)
+#   [stage 0] {"lookback_days": 1250, "max_steps": 500}  val rank IC -0.00089  (6.0s)
+#   [stage 0] {"lookback_days": 0, "max_steps": 1500}  val rank IC +0.00993  (17.3s)
+#   [stage 0] {"lookback_days": 1250, "max_steps": 1500}  val rank IC +0.00148  (16.9s)
+#   [stage 0] {"lookback_days": 0, "max_steps": 4000}  val rank IC +0.01194  (46.6s)
+#   [stage 0] {"lookback_days": 1250, "max_steps": 4000}  val rank IC +0.00474  (45.5s)
+#   [stage 0] best {"lookback_days": 0, "max_steps": 4000}  -> running config {"cs_demean_y": true, "hidden": 8, "lookback_days": 0, "lr": 0.001, "max_steps": 4000, "seq_len": 5}
+# chosen: {"cs_demean_y": true, "hidden": 8, "lookback_days": 0, "lr": 0.001, "max_steps": 4000, "seq_len": 5}  (val rank IC +0.01194)
+# periodic-lstm-quarterly
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0100   +0.0186   +0.0394   +0.0423     -9.91    -0.35    25.23   0.2727     5.05
+2020      naive    253  -0.0029   -0.0082   -0.0170   -0.0165     -7.89    -0.25    34.21   1.0411    12.43
+2021      model    252  +0.0143   +0.0201   -0.0003   -0.0060    +26.17    +1.49     8.00   0.1005     1.06
+2021      naive    252  -0.0203   -0.0272   -0.0121   -0.0209    -21.88    -0.92    36.66   1.3312    13.43
+2022      model    251  +0.0119   +0.0073   +0.0129   +0.0120    +16.16    +0.78    17.30   0.2400     2.32
+2022      naive    251  +0.0032   +0.0017   -0.0131   -0.0086    -22.44    -0.98    27.85   1.0082     8.46
+2023      model    250  +0.0208   +0.0219   +0.0203   +0.0329    +16.23    +1.26     5.46   0.1682     1.30
+2023      naive    250  -0.0206   -0.0210   -0.0171   -0.0176    -11.85    -0.65    18.04   1.1705     7.81
+2024      model    252  +0.0183   +0.0207   +0.0203   +0.0111     -3.22    -0.18    27.77   0.0677     0.59
+2024      naive    252  -0.0453   -0.0328   -0.0234   -0.0149    -31.98    -1.65    38.13   1.2810    10.19
+overall   model   1258  +0.0150   +0.0177   +0.0185   +0.0185    +45.43    +0.45    25.23   0.1699    10.31
+overall   naive   1258  -0.0172   -0.0175   -0.0165   -0.0157    -96.04    -0.81    98.93   1.1664    52.32
+# model overall: pearson IC +0.0150 (SE 0.0067, t +2.26); rank IC +0.0177 (SE 0.0059, t +2.99); rebalances 172, avg holding 7.1 days
+# naive overall: pearson IC -0.0172 (SE 0.0075, t -2.28); rank IC -0.0175 (SE 0.0072, t -2.44); rebalances 939, avg holding 1.3 days
+# rank IC by horizon (model): h=1:+0.0177  h=2:+0.0182  h=3:+0.0193  h=4:+0.0188  h=5:+0.0185  h=6:+0.0194  h=7:+0.0192  h=8:+0.0190  h=9:+0.0178  h=10:+0.0185
+# rank IC by horizon (naive): h=1:-0.0175  h=2:-0.0104  h=3:-0.0135  h=4:-0.0152  h=5:-0.0165  h=6:-0.0129  h=7:-0.0158  h=8:-0.0165  h=9:-0.0174  h=10:-0.0157
+# periodic-lstm-quarterly: run 56.9s, total 198.6s, wrote /tmp/bl_results/periodic_lstm_quarterly/set1_clean

@@ -1,0 +1,147 @@
+{
+ "model": "periodic-lstm-quarterly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_clean",
+ "panel_name": "set1_clean",
+ "param": "RET",
+ "score_param": "RET",
+ "features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER"
+ ],
+ "hyperparameters": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 5,
+  "max_steps": 4000,
+  "lookback_days": 0,
+  "cs_demean_y": true
+ },
+ "tuned_on": "2016-01-01..2019-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 500,
+    "lookback_days": 0,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.008419751112896579,
+   "seconds": 6.78
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 500,
+    "lookback_days": 1250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": -0.0008886804323435674,
+   "seconds": 6.04
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 1500,
+    "lookback_days": 0,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.009929984442908952,
+   "seconds": 17.27
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 1500,
+    "lookback_days": 1250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.00147822305015661,
+   "seconds": 16.9
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 4000,
+    "lookback_days": 0,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.011936305007850008,
+   "seconds": 46.62
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "max_steps": 4000,
+    "lookback_days": 1250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.004737170582739368,
+   "seconds": 45.48
+  }
+ ],
+ "warmup_from": "2020-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 56.95,
+ "total_seconds": 196.05,
+ "cadence": "quarterly",
+ "retrain_model": "lstm",
+ "inherited_architecture": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 5,
+  "cs_demean_y": true
+ },
+ "arch_from": "/tmp/bl_results/lstm/set1_clean/meta.json"
+}

@@ -1,0 +1,101 @@
+# tuning on 2016-01-04..2019-12-31 (1006 days), 80 configs, objective = mean daily rank IC
+#   {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 1}  val rank IC +0.01432  (0.1s)
+#   {"diff": 1, "eta": 0.0001, "method": "ogd", "p": 1}  val rank IC -0.01576  (0.1s)
+#   {"diff": 0, "eta": 0.001, "method": "ogd", "p": 1}  val rank IC +0.00593  (0.1s)
+#   {"diff": 1, "eta": 0.001, "method": "ogd", "p": 1}  val rank IC -0.01348  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ogd", "p": 1}  val rank IC -0.00305  (0.1s)
+#   {"diff": 1, "eta": 0.01, "method": "ogd", "p": 1}  val rank IC -0.01365  (0.1s)
+#   {"diff": 0, "eta": 0.1, "method": "ogd", "p": 1}  val rank IC -0.00660  (0.1s)
+#   {"diff": 1, "eta": 0.1, "method": "ogd", "p": 1}  val rank IC -0.01335  (0.1s)
+#   {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 2}  val rank IC +0.01092  (0.1s)
+#   {"diff": 1, "eta": 0.0001, "method": "ogd", "p": 2}  val rank IC -0.01571  (0.1s)
+#   {"diff": 0, "eta": 0.001, "method": "ogd", "p": 2}  val rank IC +0.00044  (0.1s)
+#   {"diff": 1, "eta": 0.001, "method": "ogd", "p": 2}  val rank IC -0.01069  (0.1s)
+#   {"diff": 0, "eta": 0.01, "method": "ogd", "p": 2}  val rank IC -0.00569  (0.1s)
+#   {"diff": 1, "eta": 0.01, "method": "ogd", "p": 2}  val rank IC -0.01186  (0.1s)
+#   {"diff": 0, "eta": 0.1, "method": "ogd", "p": 2}  val rank IC -0.00380  (0.1s)
+#   {"diff": 1, "eta": 0.1, "method": "ogd", "p": 2}  val rank IC -0.00587  (0.1s)
+#   {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 3}  val rank IC +0.00981  (0.1s)
+#   {"diff": 1, "eta": 0.0001, "method": "ogd", "p": 3}  val rank IC -0.01509  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ogd", "p": 3}  val rank IC -0.00115  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ogd", "p": 3}  val rank IC -0.01279  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ogd", "p": 3}  val rank IC -0.00527  (0.1s)
+#   {"diff": 1, "eta": 0.01, "method": "ogd", "p": 3}  val rank IC -0.01002  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ogd", "p": 3}  val rank IC -0.00120  (0.1s)
+#   {"diff": 1, "eta": 0.1, "method": "ogd", "p": 3}  val rank IC -0.00238  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 5}  val rank IC +0.00601  (0.2s)
+#   {"diff": 1, "eta": 0.0001, "method": "ogd", "p": 5}  val rank IC -0.01498  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ogd", "p": 5}  val rank IC -0.00160  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ogd", "p": 5}  val rank IC -0.01215  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ogd", "p": 5}  val rank IC -0.00170  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ogd", "p": 5}  val rank IC -0.00482  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ogd", "p": 5}  val rank IC -0.00370  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ogd", "p": 5}  val rank IC +0.01054  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 10}  val rank IC +0.00417  (0.2s)
+#   {"diff": 1, "eta": 0.0001, "method": "ogd", "p": 10}  val rank IC -0.01496  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ogd", "p": 10}  val rank IC +0.00149  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ogd", "p": 10}  val rank IC -0.01256  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ogd", "p": 10}  val rank IC +0.00144  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ogd", "p": 10}  val rank IC -0.00618  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ogd", "p": 10}  val rank IC +0.00090  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ogd", "p": 10}  val rank IC +0.00146  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ons", "p": 1}  val rank IC -0.01264  (0.2s)
+#   {"diff": 1, "eta": 0.0001, "method": "ons", "p": 1}  val rank IC -0.01558  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ons", "p": 1}  val rank IC -0.01265  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ons", "p": 1}  val rank IC -0.01576  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ons", "p": 1}  val rank IC -0.01259  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ons", "p": 1}  val rank IC -0.01746  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ons", "p": 1}  val rank IC -0.01306  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ons", "p": 1}  val rank IC -0.01406  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ons", "p": 2}  val rank IC -0.00709  (0.2s)
+#   {"diff": 1, "eta": 0.0001, "method": "ons", "p": 2}  val rank IC -0.01561  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ons", "p": 2}  val rank IC -0.00731  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ons", "p": 2}  val rank IC -0.01564  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ons", "p": 2}  val rank IC -0.00742  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ons", "p": 2}  val rank IC -0.01587  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ons", "p": 2}  val rank IC -0.01029  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ons", "p": 2}  val rank IC -0.01228  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ons", "p": 3}  val rank IC -0.01076  (0.3s)
+#   {"diff": 1, "eta": 0.0001, "method": "ons", "p": 3}  val rank IC -0.01566  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ons", "p": 3}  val rank IC -0.01053  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ons", "p": 3}  val rank IC -0.01556  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ons", "p": 3}  val rank IC -0.00738  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ons", "p": 3}  val rank IC -0.01528  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ons", "p": 3}  val rank IC -0.00966  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ons", "p": 3}  val rank IC -0.00911  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ons", "p": 5}  val rank IC -0.00302  (0.2s)
+#   {"diff": 1, "eta": 0.0001, "method": "ons", "p": 5}  val rank IC -0.01559  (0.2s)
+#   {"diff": 0, "eta": 0.001, "method": "ons", "p": 5}  val rank IC -0.00292  (0.2s)
+#   {"diff": 1, "eta": 0.001, "method": "ons", "p": 5}  val rank IC -0.01550  (0.2s)
+#   {"diff": 0, "eta": 0.01, "method": "ons", "p": 5}  val rank IC -0.00115  (0.2s)
+#   {"diff": 1, "eta": 0.01, "method": "ons", "p": 5}  val rank IC -0.01517  (0.2s)
+#   {"diff": 0, "eta": 0.1, "method": "ons", "p": 5}  val rank IC -0.00414  (0.2s)
+#   {"diff": 1, "eta": 0.1, "method": "ons", "p": 5}  val rank IC -0.00946  (0.2s)
+#   {"diff": 0, "eta": 0.0001, "method": "ons", "p": 10}  val rank IC +0.00119  (0.3s)
+#   {"diff": 1, "eta": 0.0001, "method": "ons", "p": 10}  val rank IC -0.01560  (0.3s)
+#   {"diff": 0, "eta": 0.001, "method": "ons", "p": 10}  val rank IC +0.00179  (0.3s)
+#   {"diff": 1, "eta": 0.001, "method": "ons", "p": 10}  val rank IC -0.01552  (0.3s)
+#   {"diff": 0, "eta": 0.01, "method": "ons", "p": 10}  val rank IC +0.00486  (0.3s)
+#   {"diff": 1, "eta": 0.01, "method": "ons", "p": 10}  val rank IC -0.01590  (0.3s)
+#   {"diff": 0, "eta": 0.1, "method": "ons", "p": 10}  val rank IC +0.00123  (0.3s)
+#   {"diff": 1, "eta": 0.1, "method": "ons", "p": 10}  val rank IC -0.00913  (0.3s)
+# chosen: {"diff": 0, "eta": 0.0001, "method": "ogd", "p": 1}  (val rank IC +0.01432)
+# online-ar
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0036   +0.0155   +0.0281   +0.0333    -21.43    -0.92    51.00   0.6372     8.11
+2020      naive    253  -0.0029   -0.0082   -0.0170   -0.0165     -7.89    -0.25    34.21   1.0411    12.43
+2021      model    252  +0.0151   +0.0128   -0.0005   -0.0038     +3.32    +0.20    12.40   0.5388     5.36
+2021      naive    252  -0.0203   -0.0272   -0.0121   -0.0209    -21.88    -0.92    36.66   1.3312    13.43
+2022      model    251  -0.0004   -0.0038   -0.0221   -0.0178     -3.76    -0.22    18.14   0.4316     3.33
+2022      naive    251  +0.0032   +0.0017   -0.0131   -0.0086    -22.44    -0.98    27.85   1.0082     8.46
+2023      model    250  +0.0404   +0.0317   +0.0310   +0.0326    +14.04    +1.07     9.85   0.4014     2.68
+2023      naive    250  -0.0206   -0.0210   -0.0171   -0.0176    -11.85    -0.65    18.04   1.1705     7.81
+2024      model    252  +0.0301   +0.0175   +0.0045   +0.0055     -1.81    -0.14    11.75   0.4286     3.38
+2024      naive    252  -0.0453   -0.0328   -0.0234   -0.0149    -31.98    -1.65    38.13   1.2810    10.19
+overall   model   1258  +0.0177   +0.0147   +0.0082   +0.0100     -9.64    -0.11    51.00   0.4878    22.84
+overall   naive   1258  -0.0172   -0.0175   -0.0165   -0.0157    -96.04    -0.81    98.93   1.1664    52.32
+# model overall: pearson IC +0.0177 (SE 0.0054, t +3.27); rank IC +0.0147 (SE 0.0054, t +2.73); rebalances 505, avg holding 2.5 days
+# naive overall: pearson IC -0.0172 (SE 0.0075, t -2.28); rank IC -0.0175 (SE 0.0072, t -2.44); rebalances 939, avg holding 1.3 days
+# rank IC by horizon (model): h=1:+0.0147  h=2:+0.0096  h=3:+0.0065  h=4:+0.0071  h=5:+0.0082  h=6:+0.0068  h=7:+0.0070  h=8:+0.0099  h=9:+0.0126  h=10:+0.0100
+# rank IC by horizon (naive): h=1:-0.0175  h=2:-0.0104  h=3:-0.0135  h=4:-0.0152  h=5:-0.0165  h=6:-0.0129  h=7:-0.0158  h=8:-0.0165  h=9:-0.0174  h=10:-0.0157
+# online-ar: run 0.1s, total 17.6s, wrote /tmp/bl_results/ar/set1_clean
