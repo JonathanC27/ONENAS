@@ -6,12 +6,10 @@
 #   sbatch --array=1-4 --export=ALL,TARGET=RET_CS,SELECT=ic_gated factorial_v2.sbatch # C: + IC selection
 #SBATCH -J onenas_fact
 #SBATCH -A cis251123
-#SBATCH -p shared
+#SBATCH -p wholenode
 #SBATCH -N 1
-#SBATCH -n 41
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=2G
-#SBATCH -t 02:00:00
+#SBATCH -n 128
+#SBATCH -t 00:25:00
 #SBATCH -o %x_%j.out
 #SBATCH -e %x_%j.err
 
@@ -22,6 +20,8 @@ DATA="/anvil/scratch/x-jchang5/panels_v2"
 SEED="${SEED:-42}"
 TARGET="${TARGET:-RET_CS}"
 SELECT="${SELECT:-ic_gated}"
+INPUTS="${INPUTS:-RET VOL_CHANGE BA_SPREAD ILLIQUIDITY sprtrn TURNOVER}"
+ARM="${ARM:-${TARGET}_${SELECT}}"
 SET="set${SLURM_ARRAY_TASK_ID:-1}"
 
 case "$SET" in
@@ -32,7 +32,7 @@ case "$SET" in
   *) echo "unknown set $SET"; exit 1 ;;
 esac
 
-OUT="/anvil/scratch/x-jchang5/results_v2/${TARGET}_${SELECT}/${SET}_seed${SEED}"
+OUT="/anvil/scratch/x-jchang5/results_v2/${ARM}/${SET}_seed${SEED}"
 mkdir -p "$OUT"
 FILES=$(ls "$DATA/${SET}_v2/"*.csv | grep -v panel_)
 
@@ -40,7 +40,7 @@ echo "arm target=$TARGET selection=$SELECT $SET seed=$SEED -> $OUT"
 time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
   --training_filenames $FILES \
   --pooled_panel --time_offset 1 \
-  --input_parameter_names RET VOL_CHANGE BA_SPREAD ILLIQUIDITY sprtrn TURNOVER \
+  --input_parameter_names $INPUTS \
   --output_parameter_names "$TARGET" \
   --number_islands 8 --bp_iterations 10 --num_mutations 1 \
   --time_series_length 40 --window_step 5 \
