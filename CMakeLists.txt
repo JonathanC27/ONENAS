@@ -26,7 +26,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 2 This line for cluster
 #SET (CMAKE_CXX_FLAGS                "-std=gnu++17 -Wall -O3 -funroll-loops  -msse3 -fno-omit-frame-pointer -D_GLIBCXX_DEBUG")
 
-SET (CMAKE_CXX_FLAGS                " -Wall -O3 -funroll-loops -ggdb3 -fsanitize=address")
+# ASan is kept available for debugging but off by default: it costs 2-3x runtime
+# and breaks under srun ("ASan runtime does not come first"). Enable with
+# -DENABLE_ASAN=ON.
+OPTION (ENABLE_ASAN "build with AddressSanitizer" OFF)
+IF (ENABLE_ASAN)
+    SET (CMAKE_CXX_FLAGS            " -Wall -O3 -funroll-loops -ggdb3 -fsanitize=address")
+ELSE ()
+    SET (CMAKE_CXX_FLAGS            " -Wall -O3 -funroll-loops -ggdb3")
+ENDIF ()
 #SET (CMAKE_CXX_FLAGS                " -Wall -O1 -funroll-loops -msse3 -g -fsanitize=address -fno-omit-frame-pointer -shared-libasan -DGLIBCXX_DEBUG")
 #SET (CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS} -g")
 #SET (CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS} -Os -DNDEBUG")
