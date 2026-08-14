@@ -44,11 +44,33 @@ Training target and scoring target are separable:
 * `--score-param` — the realised return the IC and the long-short book are
   **scored** against (default: same as `--param`).
 
-On a v2 panel, `--param RET_CS --score-param RET` trains on the rank-normal
-target while still booking real returns. Daily rank IC comes out *identical*
-either way — `RET_CS` is a within-day monotone transform of `RET`, and this is
-verified: on a v2-shaped panel STR1 scores `+0.0175` under both settings — but
-the book's P&L is only meaningful in return units, so the split matters.
+Daily rank IC comes out *identical* either way — `RET_CS` is a within-day
+monotone transform of `RET`, and this is verified: on a v2-shaped panel STR1
+scores `+0.0175` under both settings — but the book's P&L is only meaningful in
+return units, so the split matters.
+
+`--realized {auto,sidecar,param}` mirrors `score_stream --realized` and is what
+you actually want on a v2 panel:
+
+* The v2 panels **normalise** the per-stock `RET` column and carry the true
+  next-day simple returns in the sidecar as `RET_raw_<TICKER>` columns of
+  `panel_dates.csv`. Scoring against the normalised per-stock `RET` would book
+  nonsense.
+* `auto` (default) uses those sidecar columns whenever the panel has them, and
+  falls back to the `--score-param` column otherwise, so `set*_clean` is
+  unaffected. An explicit `--score-param` overrides `auto`.
+* Verified end-to-end on a v2-shaped panel carrying `RET_raw_`: training on
+  `RET_CS` with `--realized auto` reproduces `set1_clean`'s STR1 rank IC of
+  `+0.0175 / +0.0165 / +0.0157` at h=1/5/10 exactly, and the naive reference
+  row matches `set1_clean`'s to the digit.
+
+> **Warning for the v2 re-run.** Predictions trained on `RET_CS` come out on a
+> rank-normal scale, roughly symmetric about zero, so the book's rebalance
+> trigger (all top-10 `> 0` and all bottom-10 `< 0`) fires nearly every day:
+> measured turnover jumps from ~0.99 to ~1.43 and cost from 46% to 63% for the
+> same ridge model. That is a property of the ICAIF Algorithm 1 trigger meeting
+> a rescaled signal, not a modelling result. Compare v2 and v1 on IC, and treat
+> the v2 net%/turnover columns as needing a trigger rethink first.
 
 ### Causality
 

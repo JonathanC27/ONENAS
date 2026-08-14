@@ -236,9 +236,17 @@ def add_common_args(ap):
                     help="column the model is TRAINED on")
     ap.add_argument("--score-param", default=None,
                     help="realised-return column the IC and the long-short "
-                         "book are SCORED against (default: --param). On a v2 "
-                         "panel use --param RET_CS --score-param RET to train "
-                         "on the rank-normal target but book real returns")
+                         "book are SCORED against (default: --param, or the "
+                         "sidecar RET_raw_ columns when the panel carries "
+                         "them). Passing this explicitly overrides --realized "
+                         "auto")
+    ap.add_argument("--realized", default="auto",
+                    choices=["auto", "sidecar", "param"],
+                    help="where the realised returns come from, matching "
+                         "score_stream --realized: auto uses the sidecar's "
+                         "RET_raw_<TICKER> columns iff the panel has them "
+                         "(the v2 panels do, and their per-stock RET column is "
+                         "normalised, so booking it would be nonsense)")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--score-from", default=SCORE_FROM)
     ap.add_argument("--score-to", default=SCORE_TO)
@@ -296,6 +304,7 @@ def finalize(panel, factory, grid, args, model_name, extra_meta=None,
             "panel_name": panel.name(),
             "param": panel.param,
             "score_param": panel.score_param,
+            "realized_source": panel.realized,
             "features": panel.features,
             "hyperparameters": cfg,
             "tuned_on": None if (args.config or args.no_tune)
@@ -326,4 +335,10 @@ def finalize(panel, factory, grid, args, model_name, extra_meta=None,
 
 
 def load_panel(args):
-    return Panel(args.panel, args.param, getattr(args, "score_param", None))
+    panel = Panel(args.panel, args.param, getattr(args, "score_param", None),
+                  getattr(args, "realized", "auto"))
+    if not getattr(args, "quiet", False):
+        print(f"# realized: {panel.realized} ({panel.score_param}), "
+              f"trained on {panel.param}; {panel.n_feats} features "
+              f"{panel.features}")
+    return panel

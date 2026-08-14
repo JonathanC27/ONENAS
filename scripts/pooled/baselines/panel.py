@@ -41,11 +41,28 @@ class Panel:
     of RET) but the book's P&L is only meaningful in return units.
     """
 
-    def __init__(self, path, param="RET", score_param=None):
+    def __init__(self, path, param="RET", score_param=None, realized="auto"):
         self.path = os.path.abspath(path)
         self.param = param
         self.score_param = score_param or param
-        self.dates, self.tickers, self.prc, self.tc = _load_panel_dates(self.path)
+        (self.dates, self.tickers, self.prc, self.tc,
+         ret_raw) = _load_panel_dates(self.path)
+        if realized not in ("auto", "sidecar", "param"):
+            raise SystemExit(f"--realized must be auto|sidecar|param, got {realized!r}")
+        if realized == "sidecar" and ret_raw is None:
+            raise SystemExit(
+                f"{self.path}/panel_dates.csv has no RET_raw_<TICKER> columns; "
+                "--realized sidecar is unavailable on this panel"
+            )
+        # auto == score_stream's --realized auto: prefer the sidecar's raw
+        # returns whenever the panel carries them, because a v2 panel's
+        # per-stock RET column is normalised and would book nonsense.  An
+        # explicit --score-param is a deliberate override and wins over auto.
+        self.realized = "param"
+        if realized == "sidecar" or (realized == "auto" and ret_raw is not None
+                                     and score_param is None):
+            self.realized = "sidecar"
+        self._ret_raw = ret_raw
 
         header = None
         cols = []
@@ -77,8 +94,15 @@ class Panel:
                 )
         self.X = np.stack(cols, axis=1)          # [row, stock, feat]
         self.Y = self.X[:, :, self.features.index(param)].copy()
-        self.Yscore = (self.Y if self.score_param == param
-                       else self.X[:, :, self.features.index(self.score_param)].copy())
+        if self.realized == "sidecar":
+            # v2 panels normalise the per-stock RET column, so the only true
+            # simple returns live in the sidecar; score_stream --realized auto
+            # makes the same choice, and the book is only meaningful there.
+            self.Yscore = np.asarray(self._ret_raw, dtype=np.float64)
+            self.score_param = "RET_raw (sidecar)"
+        else:
+            self.Yscore = (self.Y if self.score_param == param
+                           else self.X[:, :, self.features.index(self.score_param)].copy())
         if not np.isfinite(self.X).all():
             raise SystemExit(f"{self.path}: non-finite values in the feature data")
         self.date_index = {d: i for i, d in enumerate(self.dates)}
@@ -112,7 +136,12 @@ class Panel:
 
 
 def _load_panel_dates(path):
-    """Mirror of score_stream.load_panel, returning (dates, tickers, prc, tc)."""
+    """Mirror of score_stream.load_panel.
+
+    Returns (dates, tickers, prc, tc, ret_raw); ret_raw holds the v2 panels'
+    untransformed next-day simple returns from the RET_raw_<TICKER> columns and
+    is None on older panels that do not carry them.
+    """
     p = os.path.join(path, "panel_dates.csv")
     with open(p, newline="") as fh:
         rdr = csv.reader(fh)
@@ -122,12 +151,23 @@ def _load_panel_dates(path):
         tickers = [t for _, t in prc_cols]
         if [t for _, t in tc_cols] != tickers:
             raise SystemExit("panel_dates.csv: TC_ order does not match PRC_ order")
+        raw_cols = [(i, c[8:]) for i, c in enumerate(header)
+                    if c.startswith("RET_raw_")]
+        if raw_cols and [t for _, t in raw_cols] != tickers:
+            raise SystemExit(
+                "panel_dates.csv: RET_raw_ column order does not match PRC_ "
+                "order; the realized-return -> stock index mapping would be "
+                "wrong"
+            )
         date_i = header.index("date")
         dates, prc, tc = [], [], []
+        ret_raw = [] if raw_cols else None
         for row in rdr:
             dates.append(row[date_i])
             prc.append([float(row[i]) for i, _ in prc_cols])
             tc.append([float(row[i]) for i, _ in tc_cols])
+            if raw_cols:
+                ret_raw.append([float(row[i]) for i, _ in raw_cols])
     csvs = sorted(f[:-4] for f in os.listdir(path)
                   if f.endswith(".csv") and f != "panel_dates.csv")
     if csvs and csvs != tickers:
@@ -135,7 +175,7 @@ def _load_panel_dates(path):
             "sorted per-stock CSV names do not match the PRC_ column order in "
             "panel_dates.csv; the stock index mapping would be ambiguous"
         )
-    return dates, tickers, prc, tc
+    return dates, tickers, prc, tc, ret_raw
 
 
 # --------------------------------------------------------------- normalisation
