@@ -565,6 +565,16 @@ int main(int argc, char** argv) {
     get_argument(arguments, "--generated_population_size", true, generated_population_size);
     get_argument(arguments, "--output_directory", true, output_directory);
 
+    // Gens-per-tick knob: run R rounds of generate+train+insert per data tick (window advance).
+    // The window clock (set_current_index) and elite finalization keep their once-per-tick cadence.
+    int32_t rounds_per_generation = 1;
+    get_argument(arguments, "--rounds_per_generation", false, rounds_per_generation);
+    if (rounds_per_generation < 1) {
+        Log::fatal("--rounds_per_generation must be >= 1, got %d\n", rounds_per_generation);
+        exit(1);
+    }
+    Log::info("Rounds per generation (genome-generation rounds per data tick): %d\n", rounds_per_generation);
+
     // Log::info("ONENAS will generate %d genomes per generation\n", generated_population_size * number_islands);
     Log::info("Output directory: %s\n", output_directory.c_str());
 
@@ -639,20 +649,28 @@ int main(int argc, char** argv) {
     }
 
     for (int32_t  current_generation = 0; current_generation < total_generation; current_generation ++) {
+        // The window clock advances once per generation (data tick), regardless of how many
+        // genome-generation rounds are run within the tick.
         online_series->set_current_index(current_generation);
 
-        if (rank ==0) {
-            Log::major_divider(Log::INFO, "New generation");
-            Log::info("Current generation: %d \n", current_generation);
-            
-            // Track memory usage at start of generation
-            Log::log_memory_usage("Generation " + std::to_string(current_generation) + " start");
-            
-            master(max_rank, online_series, current_generation);           
-        } else {
-            worker(rank, online_series);
+        // Run R rounds of generate+train+insert per data tick. Each round is a full
+        // master/worker exchange (the master terminates the workers at the end of a round, so
+        // both sides re-enter their loops for the next round). Validation/test indices and
+        // elite finalization happen ONCE per tick, after all R rounds.
+        for (int32_t round = 0; round < rounds_per_generation; round++) {
+            if (rank ==0) {
+                Log::major_divider(Log::INFO, "New generation");
+                Log::info("Current generation: %d (round %d of %d)\n", current_generation, round + 1, rounds_per_generation);
+
+                // Track memory usage at start of generation
+                Log::log_memory_usage("Generation " + std::to_string(current_generation) + " start");
+
+                master(max_rank, online_series, current_generation);
+            } else {
+                worker(rank, online_series);
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
         }
-        MPI_Barrier(MPI_COMM_WORLD);
         if (rank == 0) {
             Log::minor_divider(Log::INFO);
             vector <int32_t> validation_index;

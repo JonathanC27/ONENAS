@@ -19,6 +19,7 @@ using std::unordered_set;
 #include <random>
 using std::normal_distribution;
 using std::default_random_engine;
+using std::mt19937;
 
 #include "time_series_episode.hxx"
 
@@ -47,7 +48,15 @@ class OnlineSeries {
         int32_t num_stocks;            // S: number of panel series (training files)
         int32_t num_windows;           // W: windows per stock
         int32_t num_training_windows;  // initial burn-in pool, in windows (replaces num_training_sets' role in set_current_index)
-        
+        int32_t window_step;           // s: row stride between consecutive windows (defaults to sequence_length -> non-overlapping)
+        int32_t window_lag;            // ceil(L/s): number of window indices a training window must trail the clock by
+                                       // so that its last row precedes the first row of the earliest validation window
+
+        // Persistent seeded RNG used for ALL sampling (uniform shuffle + PER's discrete_distribution).
+        // Seeded once from --online_series_seed if given, otherwise from std::random_device.
+        mt19937 sampling_rng;
+
+
         // PER parameters
         double per_alpha;    // prioritization strength [0, 1]
         double per_lambda;   // temporal decay rate

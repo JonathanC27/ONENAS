@@ -317,8 +317,27 @@ void slice_online_time_series(
 
     int32_t sequence_length = 0;
     if (get_argument(arguments, "--time_series_length", true, sequence_length)) {
-        Log::info("Slicing input training data with time sequence length: %d\n", sequence_length);
-        slice_input_data(inputs, outputs, sequence_length);
+        // Sliding window stride. Defaults to the sequence length, which reproduces the
+        // original non-overlapping slicing exactly. With --window_step s < L, consecutive
+        // windows overlap by (L - s) rows.
+        int32_t window_step = sequence_length;
+        get_argument(arguments, "--window_step", false, window_step);
+        if (window_step <= 0) {
+            Log::fatal("--window_step must be a positive integer, got %d\n", window_step);
+            exit(1);
+        }
+        if (window_step != sequence_length && !argument_exists(arguments, "--pooled_panel")) {
+            Log::warning(
+                "--window_step %d != --time_series_length %d without --pooled_panel: overlapping windows are only "
+                "leak-protected (end-row availability) in pooled panel mode\n",
+                window_step, sequence_length
+            );
+        }
+        Log::info(
+            "Slicing input training data with time sequence length: %d, window step: %d\n", sequence_length,
+            window_step
+        );
+        slice_input_data(inputs, outputs, sequence_length, window_step);
     }
 
     Log::info("Generating time series data finished! \n");
@@ -351,8 +370,13 @@ void get_train_validation_data(
 }
 
 void slice_input_data(
-    vector<vector<vector<double> > >& inputs, vector<vector<vector<double> > >& outputs, int32_t sequence_length
+    vector<vector<vector<double> > >& inputs, vector<vector<vector<double> > >& outputs, int32_t sequence_length,
+    int32_t window_step
 ) {
+    // window_step == 0 (default) means non-overlapping windows: advance by the full sequence length.
+    if (window_step <= 0) {
+        window_step = sequence_length;
+    }
     vector<vector<vector<double> > > sliced_inputs;
     vector<vector<vector<double> > > sliced_outputs;
     for (int32_t n = 0; n < (int32_t) inputs.size(); n++) {
@@ -367,7 +391,7 @@ void slice_input_data(
             current_time_series_output = slice_time_series(current_row, sequence_length, num_outputs, outputs[n]);
             sliced_inputs.push_back(current_time_series_input);
             sliced_outputs.push_back(current_time_series_output);
-            current_row = current_row + sequence_length;
+            current_row = current_row + window_step;
         }
         Log::info("Before slicing, original time series %d has %d parameters, and %d length\n", n, num_inputs, num_row);
     }

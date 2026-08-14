@@ -718,23 +718,37 @@ vector<RNN_Genome*> OneNasIslandSpeciationStrategy::finalize_generation_with_gen
     // Check if we should trigger network size control (only when compare_with_naive is still enabled)
     if (compare_with_naive && current_generation > 10) {
         if (genome_better_count > naive_better_count) {
-            Log::info("=== PERFORMANCE THRESHOLD REACHED ===\n");
-            Log::info("Generation %d: Genome consistently outperforming naive (Genome: %d > Naive: %d)\n", 
-                     current_generation, genome_better_count, naive_better_count);
-            Log::info("Triggering network size control method: %s\n", control_size_method.c_str());
-            
-            // Apply network size control
-            control_network_size(control_size_method);
-            generated_population_size = (int32_t)(std::floor(generated_population_size * 0.25));
-            if (generated_population_size < 1) {
-                generated_population_size = 1;
+            if (control_size_method.compare("none") == 0) {
+                // 'none' is a strict no-op: no mutation-rate changes AND no population shrink.
+                // Naive-vs-genome tracking keeps running since nothing will ever fire.
+                Log::info(
+                    "Generation %d: Genome consistently outperforming naive (Genome: %d > Naive: %d), but "
+                    "control_size_method is 'none' - size control is a no-op (no rate changes, no population shrink)\n",
+                    current_generation, genome_better_count, naive_better_count);
+            } else {
+                Log::info("=== PERFORMANCE THRESHOLD REACHED ===\n");
+                Log::info("Generation %d: Genome consistently outperforming naive (Genome: %d > Naive: %d)\n",
+                         current_generation, genome_better_count, naive_better_count);
+                Log::info("Triggering network size control method: %s\n", control_size_method.c_str());
+
+                // Apply network size control
+                int32_t previous_population_size = generated_population_size;
+                control_network_size(control_size_method);
+                generated_population_size = (int32_t)(std::floor(generated_population_size * 0.25));
+                if (generated_population_size < 1) {
+                    generated_population_size = 1;
+                }
+                Log::info(
+                    "SIZE CONTROL FIRED at generation %d: method '%s' applied, generated population size reduced "
+                    "from %d to %d (one-shot)\n",
+                    current_generation, control_size_method.c_str(), previous_population_size,
+                    generated_population_size);
+
+                // Disable further comparisons - this only happens once
+                compare_with_naive = false;
+                Log::info("Network size control applied. Disabling further naive comparisons.\n");
+                Log::info("=== PERFORMANCE CONTROL ACTIVATED ===\n");
             }
-            Log::info("Generation %d: Reduced generated population size to %d\n", current_generation, generated_population_size);
-            
-            // Disable further comparisons - this only happens once
-            compare_with_naive = false;
-            Log::info("Network size control applied. Disabling further naive comparisons.\n");
-            Log::info("=== PERFORMANCE CONTROL ACTIVATED ===\n");
         } else {
             Log::info("Generation %d: Performance tracking - Naive: %d, Genome: %d (threshold not reached)\n", 
                      current_generation, naive_better_count, genome_better_count);

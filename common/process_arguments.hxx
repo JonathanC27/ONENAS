@@ -57,7 +57,7 @@ void get_train_validation_data(
 );
 void slice_input_data(
     vector<vector<vector<double> > >& traing_inputs, vector<vector<vector<double> > >& train_outputs,
-    int32_t sequence_length
+    int32_t sequence_length, int32_t window_step = 0
 );
 vector<vector<double> > slice_time_series(
     int32_t start_index, int32_t sequence_length, int32_t num_parameter, const vector<vector<double> >& time_series

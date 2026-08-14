@@ -57,9 +57,18 @@ OnlineSeries::OnlineSeries(const int32_t _total_num_sets,const vector<string> &a
         }
         num_windows = total_num_sets / num_stocks;
         Log::info(
-            "Pooled panel mode: %d stocks, %d windows per stock, %d training windows (burn-in)\n",
-            num_stocks, num_windows, num_training_windows
+            "Pooled panel mode: %d stocks, %d windows per stock, %d training windows (burn-in), "
+            "window step %d, window lag %d\n",
+            num_stocks, num_windows, num_training_windows, window_step, window_lag
         );
+        if (num_training_windows < window_lag) {
+            Log::fatal(
+                "Pooled panel mode: --num_training_windows (%d) must be >= ceil(time_series_length / window_step) "
+                "(%d), otherwise the training pool is empty at generation 0\n",
+                num_training_windows, window_lag
+            );
+            exit(1);
+        }
     }
 
     // Initialize episodes vector
@@ -92,6 +101,33 @@ void OnlineSeries::get_online_arguments(const vector<string> &arguments) {
     per_epsilon = 1e-8; // default small constant for priority calculation
     get_argument(arguments, "--per_epsilon", false, per_epsilon);
 
+    // Persistent RNG for all sampling paths. Seeding once here (instead of constructing a
+    // default-seeded engine on every shuffle) makes successive samples actually independent.
+    int32_t online_series_seed = 0;
+    if (get_argument(arguments, "--online_series_seed", false, online_series_seed)) {
+        Log::info("OnlineSeries sampling RNG seeded with --online_series_seed %d\n", online_series_seed);
+        sampling_rng.seed((uint32_t)online_series_seed);
+    } else {
+        std::random_device rd;
+        uint32_t seed = rd();
+        Log::info("OnlineSeries sampling RNG seeded from std::random_device: %u\n", seed);
+        sampling_rng.seed(seed);
+    }
+
+    // Window geometry (rows). sequence_length = L, window_step = s. In pooled panel mode the
+    // availability clock advances in STEP units, so the training-pool cutoff needs both.
+    sequence_length = 0;
+    get_argument(arguments, "--time_series_length", false, sequence_length);
+    window_step = sequence_length;
+    get_argument(arguments, "--window_step", false, window_step);
+    if (window_step > 0 && sequence_length > 0) {
+        // window_lag = ceil(L/s): window w's last row is w*s + L - 1; it precedes row cw*s
+        // (first row of the earliest validation window) iff w <= cw - ceil(L/s).
+        window_lag = (sequence_length + window_step - 1) / window_step;
+    } else {
+        window_lag = 1;
+    }
+
     // Pooled panel mode arguments
     pooled_panel = argument_exists(arguments, "--pooled_panel");
     num_stocks = 1;
@@ -103,6 +139,15 @@ void OnlineSeries::get_online_arguments(const vector<string> &arguments) {
         vector<string> training_filenames;
         get_argument_vector(arguments, "--training_filenames", true, training_filenames);
         num_stocks = (int32_t)training_filenames.size();
+
+        if (sequence_length <= 0 || window_step <= 0) {
+            Log::fatal(
+                "Pooled panel mode requires --time_series_length (> 0) and a positive window step "
+                "(got L=%d, s=%d)\n",
+                sequence_length, window_step
+            );
+            exit(1);
+        }
     }
 }
 
@@ -124,8 +169,17 @@ void OnlineSeries::shuffle_data() {
     avalibale_training_index.clear();
 
     if (pooled_panel) {
-        // training pool: all episodes (across all stocks) with window < current_index (current window)
-        int32_t available_windows = min(current_index, num_windows);
+        // Training pool with end-row availability. The clock is the current window index
+        // cw = current_index; validation windows are cw .. cw+V-1 and the test window is cw+V.
+        // With stride s and length L, window w covers rows [w*s, w*s + L - 1]. A window may be
+        // trained on iff its LAST row strictly precedes the FIRST row of the earliest
+        // validation window:
+        //     w*s + L - 1 < cw*s   <=>   w <= cw - ceil(L/s)   (window_lag = ceil(L/s))
+        // With the default non-overlapping step (s = L) window_lag = 1, so the pool is
+        // {w < cw} - identical to the previous behavior. Using w < cw with s < L would leak
+        // rows shared between overlapping training and validation/test windows.
+        int32_t available_windows = min(current_index - window_lag + 1, num_windows);
+        if (available_windows < 0) available_windows = 0;
         for (int32_t s = 0; s < num_stocks; s++) {
             for (int32_t w = 0; w < available_windows; w++) {
                 avalibale_training_index.push_back(s * num_windows + w);
@@ -137,8 +191,16 @@ void OnlineSeries::shuffle_data() {
         }
     }
 
-    auto rng = std::default_random_engine {};
-    shuffle(avalibale_training_index.begin(), avalibale_training_index.end(), rng);
+    if ((int32_t)avalibale_training_index.size() < num_training_sets) {
+        Log::fatal(
+            "Training pool has only %d episodes but --num_training_sets is %d; increase the burn-in "
+            "(--num_training_windows / --num_training_sets) or reduce the requested training sets\n",
+            (int32_t)avalibale_training_index.size(), num_training_sets
+        );
+        exit(1);
+    }
+
+    shuffle(avalibale_training_index.begin(), avalibale_training_index.end(), sampling_rng);
 }
 
 void OnlineSeries::uniform_random_sample_index(vector<int32_t>& training_index) {
@@ -190,15 +252,13 @@ void OnlineSeries::prioritized_experience_replay(vector<int32_t>& training_index
 
     Log::info("PER: Using priority-based sampling with alpha=%.3f, lambda=%.3f\n", per_alpha, per_lambda);
 
-    // Random number generator for sampling
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    // Use the persistent seeded member RNG (same generator as the uniform path)
     std::discrete_distribution<> dist(sampling_weights.begin(), sampling_weights.end());
 
     // Sample without replacement
     std::unordered_set<int32_t> seen;
     while ((int32_t)training_index.size() < num_training_sets) {
-        int32_t sampled_idx = dist(gen);  // Index into avalibale_training_index
+        int32_t sampled_idx = dist(sampling_rng);  // Index into avalibale_training_index
         int32_t actual_episode_id = avalibale_training_index[sampled_idx];
         
         if (seen.find(actual_episode_id) == seen.end()) {
@@ -225,6 +285,30 @@ vector<int32_t> OnlineSeries::get_training_index(vector<int32_t>& training_index
     } else {
         Log::error("Invalid training data method: %s\n", get_training_data_method.c_str());
         exit(1);
+    }
+
+    if (pooled_panel) {
+        // Leakage guard: verify the end-row availability invariant on the sampled batch.
+        // max training row used = w_max*s + L - 1 must be < validation start row = cw*s.
+        int32_t max_window = -1;
+        for (int32_t episode_id : training_index) {
+            int32_t w = episode_id % num_windows;
+            if (w > max_window) max_window = w;
+        }
+        int32_t max_training_row = max_window * window_step + sequence_length - 1;
+        int32_t validation_start_row = current_index * window_step;
+        Log::info(
+            "Pooled panel training-pool invariant: max sampled window %d (last row %d) vs validation start row %d "
+            "(current window %d, step %d, length %d)\n",
+            max_window, max_training_row, validation_start_row, current_index, window_step, sequence_length
+        );
+        if (max_training_row >= validation_start_row) {
+            Log::fatal(
+                "Pooled panel training-pool invariant VIOLATED: max training row %d >= validation start row %d\n",
+                max_training_row, validation_start_row
+            );
+            exit(1);
+        }
     }
 
     return training_index;
@@ -578,8 +662,12 @@ void OnlineSeries::print_episode_stats() {
 
 int32_t OnlineSeries::get_max_generation() {
     if (pooled_panel) {
-        // time advances by WINDOW: last usable generation must leave room for
-        // num_validation_sets validation windows and one test window
+        // Time advances by WINDOW (step units): the last usable generation must leave room for
+        // num_validation_sets validation windows and one test window, i.e. the test window index
+        // cw + V = generation + num_training_windows + num_validation_sets must be a valid window.
+        // Because slicing only emits windows whose end row fits in the data
+        // (num_windows = floor((total_rows - L)/s) + 1), any window index < num_windows already
+        // satisfies the end-row condition (cw+V)*s + L <= total_rows, regardless of the step s.
         return num_windows - num_training_windows - num_validation_sets - num_test_sets;
     }
     int32_t max_generation = total_num_sets - num_training_sets - num_validation_sets - num_test_sets;
