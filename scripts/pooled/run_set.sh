@@ -15,7 +15,7 @@ exec mpirun -np "$NP" "$BUILD_DIR/mpi/onenas_mpi" \
   --time_series_length 40 --window_step 5 \
   --num_training_windows "$NTW" --num_validation_sets 5 --num_training_sets 200 \
   --get_train_data_by PER --per_alpha 0.6 --per_lambda 0.007 --per_epsilon 1e-8 \
-  --online_series_seed "$SEED" --rounds_per_generation 2 \
+  --online_series_seed "$SEED" --rounds_per_generation ${ROUNDS:-1} \
   --speciation_method onenas --repopulation_frequency 50 \
   --generated_population_size 5 --elite_population_size 8 \
   --total_generation "$TOTGEN" \
