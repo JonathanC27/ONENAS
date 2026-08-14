@@ -10,7 +10,7 @@ computes:
   2. Multi-horizon rank IC h=1..10 vs forward cumulative real returns.
   3. A daily long-short book per the ICAIF Algorithm 1 (top-10 long / bottom-10
      short, rebalanced only when all top-10 preds > 0 and all bottom-10 < 0),
-     with per-trade costs of TC/PRC on traded notional.
+     with per-trade costs of TC/PRC on *netted* traded notional.
   4. Naive-persistence baselines of 1 and 3.
 
 Row mapping (VERIFIED EMPIRICALLY, see verify_mapping()):
@@ -29,11 +29,15 @@ Each generation contributes its newest `step` file rows, indices
 (L-1-step)..(L-2); coverage across generations is asserted contiguous.
 
 Book accounting: $100 base capital, $100 long + $100 short notional
-(equal-weight, $100/top_k per name).  On a rebalance day the old book is fully
-liquidated and the new one built (both legs charged: cost fraction TC/PRC per
-name, on traded notional, priced at the previous panel row = trade at prior
-close).  Positions accrue that same day's realized return.  Daily net return
-is (P&L - costs) / initial $100 capital, so cumulative net % is additive.
+(equal-weight, $100/top_k per name).  A rebalance moves the book to the new
+target weights and costs are charged on the NETTED change in each name's
+notional, not on a full liquidate-and-rebuild: a name that stays on the same
+side at the same target weight only pays for its drift, a name that flips
+long->short pays the full round trip, a name that leaves the book pays to be
+closed.  Cost fraction per unit traded notional is TC/PRC priced at the
+previous panel row (= trade at prior close), or a flat one-way --cost-bps.
+Positions accrue that same day's realized return.  Daily net return is
+(P&L - costs) / initial $100 capital, so cumulative net % is additive.
 
 Outputs (to --out-dir, default <run-dir>):
   stitched_predictions.csv   date,stock,pred,real,naive  (tidy, full stream)
@@ -269,45 +273,65 @@ def stitch(run_dir, gens, offset, dates, n_stocks, args):
 
 # ----------------------------------------------------------------- the book
 
-def run_book(days, signal_idx, prc, tc, top_k):
-    """ICAIF Algorithm 1 long-short book.
+CAPITAL = 100.0            # base capital; daily net returns are P&L / CAPITAL
+GROSS_NOTIONAL = 200.0     # $100 long + $100 short when fully invested
+
+
+def run_book(days, signal_idx, prc, tc, top_k, cost_bps=None):
+    """ICAIF Algorithm 1 long-short book with netted rebalancing.
 
     days: list of (panel_row, date, pred, real, naive); signal_idx selects
     which tuple slot (2=model pred, 4=naive) drives the sort.
+
+    Positions are signed notionals that drift with realized returns.  The
+    rebalance trigger is unchanged (all top_k signals > 0 and all bottom_k
+    < 0, otherwise hold), but a rebalance moves the book to the target
+    weights and charges cost only on |target - current| per name, so a name
+    that stays on the same side pays only for its drift while a name that
+    flips sides pays the full round trip.
+
+    cost_bps: flat one-way cost in basis points on traded notional; when
+    None the per-name TC/|PRC| of the previous panel row is used instead.
+
     Returns dict with daily series and stats.
     """
     positions = {}  # stock -> signed notional
-    daily_ret, rebal_flags, cost_series = [], [], []
+    daily_ret, rebal_flags, cost_series, traded_series = [], [], [], []
     rebal_idx = []
-    per_name = 100.0 / top_k
+    per_name = CAPITAL / top_k
     for di, day in enumerate(days):
         row, _, _, real, _ = day[0], day[1], day[2], day[3], day[4]
         sig = day[signal_idx]
         order = sorted(range(len(sig)), key=lambda k: sig[k], reverse=True)
         top, bot = order[:top_k], order[-top_k:]
         cost = 0.0
+        traded = 0.0
         rebal = all(sig[k] > 0 for k in top) and all(sig[k] < 0 for k in bot)
         if rebal:
             price_row = max(row - 1, 0)  # trade at prior close
-            frac = lambda k: tc[price_row][k] / abs(prc[price_row][k])
-            for k, notional in positions.items():  # liquidate everything
-                cost += abs(notional) * frac(k)
-            positions = {}
-            for k in top:
-                positions[k] = per_name
-                cost += per_name * frac(k)
-            for k in bot:
-                positions[k] = -per_name
-                cost += per_name * frac(k)
+            if cost_bps is None:
+                frac = lambda k: tc[price_row][k] / abs(prc[price_row][k])
+            else:
+                frac = lambda k: cost_bps / 1e4
+            target = {k: per_name for k in top}
+            target.update({k: -per_name for k in bot})
+            for k in set(positions) | set(target):
+                delta = target.get(k, 0.0) - positions.get(k, 0.0)
+                if delta == 0.0:
+                    continue
+                traded += abs(delta)
+                cost += abs(delta) * frac(k)
+            positions = dict(target)
             rebal_idx.append(di)
         pnl = 0.0
         for k in list(positions):
             r = real[k]
             pnl += positions[k] * r
             positions[k] *= 1.0 + r
-        daily_ret.append((pnl - cost) / 100.0)
+        daily_ret.append((pnl - cost) / CAPITAL)
         rebal_flags.append(1 if rebal else 0)
         cost_series.append(cost)
+        traded_series.append(traded)
     # holding periods: days between consecutive rebalances (+ tail segment)
     holds = [b - a for a, b in zip(rebal_idx, rebal_idx[1:])]
     if rebal_idx:
@@ -316,6 +340,7 @@ def run_book(days, signal_idx, prc, tc, top_k):
         "daily_ret": daily_ret,
         "rebalanced": rebal_flags,
         "cost": cost_series,
+        "traded": traded_series,
         "n_rebalances": len(rebal_idx),
         "avg_holding_days": mean(holds) if holds else NAN,
     }
@@ -393,6 +418,10 @@ def main():
     ap.add_argument("--score-from", default="2020-01-01",
                     help="first date (inclusive) to score; ISO yyyy-mm-dd")
     ap.add_argument("--top-k", type=int, default=10)
+    ap.add_argument("--cost-bps", type=float, default=None,
+                    help="flat one-way transaction cost in basis points of "
+                         "traded notional, overriding the panel's TC/PRC "
+                         "columns (for cost-sensitivity runs)")
     ap.add_argument("--rolling-window", type=int, default=63)
     ap.add_argument("--max-horizon", type=int, default=10)
     ap.add_argument("--out-dir", default=None,
@@ -447,24 +476,31 @@ def main():
     }
     spear = {name: hics[name][1] for name in hics}
 
-    books = {"model": run_book(days, PRED, prc, tc, args.top_k),
-             "naive": run_book(days, NAIVE, prc, tc, args.top_k)}
+    books = {"model": run_book(days, PRED, prc, tc, args.top_k, args.cost_bps),
+             "naive": run_book(days, NAIVE, prc, tc, args.top_k, args.cost_bps)}
+    print("# book costs: " + ("TC/PRC from the panel"
+                              if args.cost_bps is None
+                              else f"flat {args.cost_bps:g} bps one-way")
+          + ", charged on netted traded notional")
 
     # (b) daily book returns
     book_path = os.path.join(out_dir, "book_daily.csv")
     with open(book_path, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["date",
-                    "model_ret", "model_equity", "model_rebalanced", "model_cost",
-                    "naive_ret", "naive_equity", "naive_rebalanced", "naive_cost"])
-        eq = {"model": 100.0, "naive": 100.0}
+                    "model_ret", "model_equity", "model_rebalanced",
+                    "model_cost", "model_traded",
+                    "naive_ret", "naive_equity", "naive_rebalanced",
+                    "naive_cost", "naive_traded"])
+        eq = {"model": CAPITAL, "naive": CAPITAL}
         for i, day in enumerate(days):
             rec = [day[1]]
             for name in ("model", "naive"):
                 b = books[name]
-                eq[name] += 100.0 * b["daily_ret"][i]
+                eq[name] += CAPITAL * b["daily_ret"][i]
                 rec += [f"{b['daily_ret'][i]:.8f}", f"{eq[name]:.4f}",
-                        b["rebalanced"][i], f"{b['cost'][i]:.6f}"]
+                        b["rebalanced"][i], f"{b['cost'][i]:.6f}",
+                        f"{b['traded'][i]:.6f}"]
             w.writerow(rec)
 
     # (c) rolling mean rank IC
@@ -498,6 +534,10 @@ def main():
                 row[f"rank_ic_{h}"] = mean(finite([hics[name][h][i] for i in ix]))
         net, sharpe, mdd = book_stats([books[name]["daily_ret"][i] for i in ix])
         row.update(net_pct=net, sharpe=sharpe, mdd_pct=mdd)
+        # cost drag: total transaction cost as % of initial capital, and mean
+        # daily traded notional as a fraction of the book's gross notional
+        row["cost_pct"] = 100.0 * sum(books[name]["cost"][i] for i in ix) / CAPITAL
+        row["turnover"] = mean([books[name]["traded"][i] for i in ix]) / GROSS_NOTIONAL
         if p == "overall":
             row["n_rebalances"] = books[name]["n_rebalances"]
             row["avg_holding_days"] = books[name]["avg_holding_days"]
@@ -508,7 +548,7 @@ def main():
 
     print()
     print("period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10"
-          "      net%   sharpe     MDD%")
+          "      net%   sharpe     MDD% turnover    cost%")
     for p in periods:
         for name in ("model", "naive"):
             r = summary[p][name]
@@ -516,7 +556,8 @@ def main():
                   f"{fmt(r['pearson_ic'])}   {fmt(r['rank_ic_1'])}   "
                   f"{fmt(r.get('rank_ic_5', NAN))}   {fmt(r.get('rank_ic_10', NAN))}  "
                   f"{fmt(r['net_pct'], '{:+8.2f}')} {fmt(r['sharpe'], '{:+8.2f}')} "
-                  f"{fmt(r['mdd_pct'], '{:8.2f}')}")
+                  f"{fmt(r['mdd_pct'], '{:8.2f}')} {fmt(r['turnover'], '{:8.4f}')} "
+                  f"{fmt(r['cost_pct'], '{:8.2f}')}")
     print()
     for name in ("model", "naive"):
         r = summary["overall"][name]
@@ -554,6 +595,8 @@ def main():
                 "first_scored_date": days[0][1],
                 "last_scored_date": days[-1][1],
                 "score_from": args.score_from,
+                "top_k": args.top_k,
+                "cost_bps": args.cost_bps,
             },
             "summary": summary,
             "horizon_rank_ic": hz,
