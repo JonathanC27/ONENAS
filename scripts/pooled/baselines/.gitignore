@@ -1,0 +1,7 @@
+# Large per-run artifacts: regenerate with run_all.py (the whole suite is a
+# ~15 minute laptop job).  meta.json / metrics.json / summary_*.csv are small
+# and ARE tracked, so the reported numbers stay auditable without the blobs.
+results/**/predictions.csv
+results/**/book_daily.csv
+__pycache__/
+*.pyc
