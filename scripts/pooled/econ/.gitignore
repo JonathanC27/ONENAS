@@ -1,0 +1,8 @@
+# bulky per-run artifacts; the committed CSVs (sleeves_econ.csv,
+# econ_table.csv, econ_per_panel.csv) and each run's meta.json/metrics.json
+# are what the paper table is built from
+results_econ/*/*/predictions.csv
+results_econ/*/*/book_daily.csv
+results_econ/*/*/run.log
+onenas_c7e/
+suite_stdout.log
