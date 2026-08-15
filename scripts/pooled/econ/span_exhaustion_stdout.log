@@ -1,0 +1,93 @@
+# set1_core7: features ['RET', 'RET_CS_IN', 'BA_SPREAD', 'ILLIQUIDITY', 'REV21_1', 'TURN_RATIO', 'VOL21']
+#   tune L ridge a=0.01                           IC +0.0239
+#   tune L ridge a=0.1                            IC +0.0239
+#   tune L ridge a=1                              IC +0.0239
+#   tune L ridge a=10                             IC +0.0239
+#   tune L ridge a=100                            IC +0.0239
+#   tune L ridge a=1000                           IC +0.0239
+#   tune Q quad-ridge a=0.01                      IC +0.0226
+#   tune Q quad-ridge a=0.1                       IC +0.0226
+#   tune Q quad-ridge a=1                         IC +0.0226
+#   tune Q quad-ridge a=10                        IC +0.0226
+#   tune Q quad-ridge a=100                       IC +0.0226
+#   tune Q quad-ridge a=1000                      IC +0.0222
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0186
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0185
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0157
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0157
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0194
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0174
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0174
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0151
+# set1_core7: IC L +0.0110  Q +0.0081  G +0.0066 | resid Q -0.0011 (t -0.23)  G +0.0023 (t +0.53)
+# set2_core7: features ['RET', 'RET_CS_IN', 'BA_SPREAD', 'ILLIQUIDITY', 'REV21_1', 'TURN_RATIO', 'VOL21']
+#   tune L ridge a=0.01                           IC +0.0348
+#   tune L ridge a=0.1                            IC +0.0348
+#   tune L ridge a=1                              IC +0.0348
+#   tune L ridge a=10                             IC +0.0348
+#   tune L ridge a=100                            IC +0.0349
+#   tune L ridge a=1000                           IC +0.0350
+#   tune Q quad-ridge a=0.01                      IC +0.0250
+#   tune Q quad-ridge a=0.1                       IC +0.0250
+#   tune Q quad-ridge a=1                         IC +0.0250
+#   tune Q quad-ridge a=10                        IC +0.0250
+#   tune Q quad-ridge a=100                       IC +0.0250
+#   tune Q quad-ridge a=1000                      IC +0.0251
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0202
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0182
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0179
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0160
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0203
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0171
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0160
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0123
+# set2_core7: IC L +0.0258  Q +0.0203  G +0.0219 | resid Q -0.0083 (t -1.78)  G +0.0079 (t +1.87)
+# set3_core7: features ['RET', 'RET_CS_IN', 'BA_SPREAD', 'ILLIQUIDITY', 'REV21_1', 'TURN_RATIO', 'VOL21']
+#   tune L ridge a=0.01                           IC +0.0124
+#   tune L ridge a=0.1                            IC +0.0124
+#   tune L ridge a=1                              IC +0.0124
+#   tune L ridge a=10                             IC +0.0124
+#   tune L ridge a=100                            IC +0.0124
+#   tune L ridge a=1000                           IC +0.0124
+#   tune Q quad-ridge a=0.01                      IC +0.0089
+#   tune Q quad-ridge a=0.1                       IC +0.0089
+#   tune Q quad-ridge a=1                         IC +0.0089
+#   tune Q quad-ridge a=10                        IC +0.0089
+#   tune Q quad-ridge a=100                       IC +0.0089
+#   tune Q quad-ridge a=1000                      IC +0.0088
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0109
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0093
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0099
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0085
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0110
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0088
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0086
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0071
+# set3_core7: IC L +0.0174  Q +0.0144  G +0.0110 | resid Q +0.0005 (t +0.09)  G +0.0004 (t +0.08)
+# set4_core7: features ['RET', 'RET_CS_IN', 'BA_SPREAD', 'ILLIQUIDITY', 'REV21_1', 'TURN_RATIO', 'VOL21']
+#   tune L ridge a=0.01                           IC +0.0241
+#   tune L ridge a=0.1                            IC +0.0241
+#   tune L ridge a=1                              IC +0.0241
+#   tune L ridge a=10                             IC +0.0241
+#   tune L ridge a=100                            IC +0.0241
+#   tune L ridge a=1000                           IC +0.0242
+#   tune Q quad-ridge a=0.01                      IC +0.0256
+#   tune Q quad-ridge a=0.1                       IC +0.0256
+#   tune Q quad-ridge a=1                         IC +0.0256
+#   tune Q quad-ridge a=10                        IC +0.0256
+#   tune Q quad-ridge a=100                       IC +0.0256
+#   tune Q quad-ridge a=1000                      IC +0.0253
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0231
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0199
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0189
+#   tune G gbt {'max_depth': 2, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0167
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 200} IC +0.0206
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.05, 'max_iter': 400} IC +0.0190
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 200} IC +0.0176
+#   tune G gbt {'max_depth': 3, 'learning_rate': 0.1, 'max_iter': 400} IC +0.0144
+# set4_core7: IC L +0.0245  Q +0.0146  G +0.0160 | resid Q -0.0109 (t -2.62)  G -0.0016 (t -0.35)
+# wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/econ/results_econ/span_exhaustion.csv
+
+GATE Q (quadratic-interaction ridge): residual t>=2 in 0/4 panels -> not established
+GATE G (gradient-boosted trees): residual t>=2 in 0/4 panels -> not established
+VERDICT: core7 is LINEARLY EXHAUSTED under this protocol -- no tested nonlinear learner adds alpha orthogonal to the plain linear model.
