@@ -16,7 +16,8 @@
 module load gcc/11.2.0 openmpi/4.0.6 libtiff/4.1.0
 
 ONENAS="$HOME/ONENAS"
-DATA="/anvil/scratch/x-jchang5/panels_v2"
+PANELS="${PANELS:-v2}"   # v2 | core7 — selects panels_<PANELS>/set<N>_<PANELS>
+DATA="/anvil/scratch/x-jchang5/panels_${PANELS}"
 SEED="${SEED:-42}"
 TARGET="${TARGET:-RET_CS}"
 SELECT="${SELECT:-ic_gated}"
