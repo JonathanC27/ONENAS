@@ -1,0 +1,448 @@
+{
+ "model": "online-lstm",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_core7",
+ "panel_name": "set1_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 8,
+  "lr": 0.003,
+  "seq_len": 10,
+  "steps_per_day": 8,
+  "replay_days": 1000,
+  "cs_demean_y": false
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.011489690404016147,
+   "seconds": 6.37
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.018448140961985906,
+   "seconds": 5.9
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.01678940755950704,
+   "seconds": 4.9
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.015251107259245835,
+   "seconds": 5.36
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.013393979994839954,
+   "seconds": 5.23
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.016457842269162224,
+   "seconds": 5.3
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.01587926643753215,
+   "seconds": 7.03
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.013049184961055399,
+   "seconds": 7.12
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.0067779141541571665,
+   "seconds": 7.15
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.012139718091206184,
+   "seconds": 1.82
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.013595482308811507,
+   "seconds": 2.04
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.019311730718372992,
+   "seconds": 2.55
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.0191563554382854,
+   "seconds": 5.2
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.018448140961985906,
+   "seconds": 4.79
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.021437305528523017,
+   "seconds": 4.77
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.018101732664022093,
+   "seconds": 12.63
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.016495120596544424,
+   "seconds": 11.42
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.023820068851547103,
+   "seconds": 11.6
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 5,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.022777292820273666,
+   "seconds": 7.68
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 5,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02278712586182048,
+   "seconds": 7.93
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023820068851547103,
+   "seconds": 11.25
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02381601137810753,
+   "seconds": 11.71
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 20,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021933309153001918,
+   "seconds": 19.88
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 20,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021978178453645466,
+   "seconds": 19.2
+  }
+ ],
+ "warmup_from": "2010-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 22.24,
+ "total_seconds": 211.09,
+ "cell": "lstm",
+ "batch_size": 128
+}

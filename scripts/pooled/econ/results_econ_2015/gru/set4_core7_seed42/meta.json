@@ -1,0 +1,448 @@
+{
+ "model": "online-gru",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set4_core7",
+ "panel_name": "set4_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 5,
+  "steps_per_day": 3,
+  "replay_days": 1000,
+  "cs_demean_y": true
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.01102340444679716,
+   "seconds": 5.21
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.010775261017185274,
+   "seconds": 4.59
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.006806929327867402,
+   "seconds": 4.66
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.006980483559167594,
+   "seconds": 5.39
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.008052577346311892,
+   "seconds": 5.93
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.007456202523101167,
+   "seconds": 5.35
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.00925436537608853,
+   "seconds": 6.57
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.009228516347720482,
+   "seconds": 6.59
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.01
+   },
+   "val_rank_ic": -7.161881188699975e-05,
+   "seconds": 6.54
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.008758385714209435,
+   "seconds": 1.85
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.014113787570669292,
+   "seconds": 1.82
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.013885852412811614,
+   "seconds": 1.84
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.008388368982262997,
+   "seconds": 4.51
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.01102340444679716,
+   "seconds": 4.55
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.019333566923075304,
+   "seconds": 4.57
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.0048430343270521505,
+   "seconds": 11.37
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.011873260231692497,
+   "seconds": 11.36
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.010897924930714557,
+   "seconds": 11.36
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020082935400997513,
+   "seconds": 2.99
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 5,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.020089426992208396,
+   "seconds": 3.04
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.019333566923075304,
+   "seconds": 4.59
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.019320635060711182,
+   "seconds": 4.62
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 20,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.019004968986041416,
+   "seconds": 7.7
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 20,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0190046826075139,
+   "seconds": 7.75
+  }
+ ],
+ "warmup_from": "2010-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 5.97,
+ "total_seconds": 140.72,
+ "cell": "gru",
+ "batch_size": 128
+}

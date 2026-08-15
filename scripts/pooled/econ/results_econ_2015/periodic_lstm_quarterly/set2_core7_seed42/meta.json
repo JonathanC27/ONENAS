@@ -1,0 +1,149 @@
+{
+ "model": "periodic-lstm-quarterly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set2_core7",
+ "panel_name": "set2_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 16,
+  "lr": 0.003,
+  "seq_len": 10,
+  "max_steps": 4000,
+  "lookback_days": 0,
+  "cs_demean_y": false
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 500,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.006441541224471088,
+   "seconds": 11.03
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 500,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.0006405212155727737,
+   "seconds": 10.68
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 1500,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.013160567475442126,
+   "seconds": 31.03
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 1500,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.006578548808535614,
+   "seconds": 29.99
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 4000,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.015203495986488545,
+   "seconds": 88.41
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "max_steps": 4000,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.00471799996605292,
+   "seconds": 82.19
+  }
+ ],
+ "warmup_from": "2020-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 105.48,
+ "total_seconds": 358.84,
+ "cadence": "quarterly",
+ "retrain_model": "lstm",
+ "inherited_architecture": {
+  "hidden": 16,
+  "lr": 0.003,
+  "seq_len": 10,
+  "cs_demean_y": false
+ },
+ "arch_from": "results_econ_2015/lstm/set2_core7_seed42/meta.json"
+}

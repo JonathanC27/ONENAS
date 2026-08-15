@@ -1,0 +1,448 @@
+{
+ "model": "online-gru",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_core7",
+ "panel_name": "set1_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 16,
+  "lr": 0.003,
+  "seq_len": 20,
+  "steps_per_day": 1,
+  "replay_days": 1000,
+  "cs_demean_y": true
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.01311335979002122,
+   "seconds": 4.87
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.010886907350598902,
+   "seconds": 4.23
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.012645588883614072,
+   "seconds": 4.24
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.014105747183867832,
+   "seconds": 4.94
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.015526414734590427,
+   "seconds": 5.07
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.01
+   },
+   "val_rank_ic": -0.0006220042882064237,
+   "seconds": 5.19
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.0104549459442851,
+   "seconds": 6.45
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.00735682025221788,
+   "seconds": 6.35
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.008826601648400129,
+   "seconds": 6.73
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.018047817673866286,
+   "seconds": 2.08
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.023281871086122872,
+   "seconds": 2.0
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.02478851511092726,
+   "seconds": 2.0
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.01903445384165615,
+   "seconds": 4.94
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.015526414734590427,
+   "seconds": 4.91
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.018339969479603993,
+   "seconds": 4.94
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.0095484000281642,
+   "seconds": 12.31
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.0041371984051604945,
+   "seconds": 12.07
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.022450818102248533,
+   "seconds": 12.09
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 5,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024771850790795604,
+   "seconds": 1.3
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 5,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024770132354593962,
+   "seconds": 1.31
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02478851511092726,
+   "seconds": 1.97
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024784600910415802,
+   "seconds": 1.99
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 20,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024852620131299758,
+   "seconds": 3.4
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 20,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02486025744979589,
+   "seconds": 3.7
+  }
+ ],
+ "warmup_from": "2010-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 6.77,
+ "total_seconds": 125.85,
+ "cell": "gru",
+ "batch_size": 128
+}

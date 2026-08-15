@@ -1,0 +1,2677 @@
+{
+ "model": "online-ridge-rls",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_core7",
+ "panel_name": "set1_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "lam": 0.999,
+  "delta": 0.001,
+  "lags": 3,
+  "cs_demean": false,
+  "cs_demean_y": true
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.025921296794506558,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.025915664322830018,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02492782465243941,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024916368784719575,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024637821543480334,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024637821543480334,
+   "seconds": 0.26
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024401458575644068,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024400312985892254,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02435595157612562,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024349364448232713,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02428054851477738,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02428054851477738,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024271323896392784,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024271132965149517,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024219896610829877,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024215600676211473,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.024106735246158126,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.024106735246158126,
+   "seconds": 0.26
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023988273321558038,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023981391986120655,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023981391986120655,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023978544535430857,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023978544535430857,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023975600825228458,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023972450459714457,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023970134564633174,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02382233569044188,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02382233569044188,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023214547520031804,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023214547520031804,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.023144675933210512,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.023144675933210512,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.022188243203829516,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02218747947885642,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.022182018646158503,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.022175526983887233,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.022022217387190634,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.022022217387190634,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021709271766852944,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021709271766852944,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02168359522895424,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02168359522895424,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021590001601263186,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02158771040112999,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021507413702180147,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021507413702180147,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02147564946582816,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02147564946582816,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02138206054909288,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021381821431035904,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021376265740776862,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021376265740776862,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021318770709308797,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02131590681859363,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02121685424952354,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021214372060842722,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02118946080898559,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021186214977849956,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.021006575577579508,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.021006575577579508,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02100258670554673,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02100258670554673,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020841937890108405,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.020832582144579326,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02057689708787026,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020573364832363623,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020408788982447894,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.020408788982447894,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.02030375643247334,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.02030270630605099,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020251968027340184,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.020251968027340184,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.020083479570648828,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.020083479570648828,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.019987303714663292,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.019987303714663292,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01989941977126725,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.019897224039047874,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01987231516382393,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01987078771387775,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01928744514644672,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01928744514644672,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.019206824256011813,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.019206824256011813,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.018810209158965297,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.018810209158965297,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.018763575345894255,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.018754410646217166,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.018645389728847016,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.018638134341602653,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01861001398731567,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.018605336171855492,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.018601952740375332,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01860071172396885,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01838103480717948,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.999,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01838103480717948,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017917443338927266,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017916345565662524,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017900542033563855,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017894623130639786,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017872287634593132,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01787152388440613,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01786379295251178,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01786379295251178,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017839907525889175,
+   "seconds": 0.2
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017839907525889175,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01769040650313507,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017686778809512888,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01752976339590015,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01752976339590015,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017457952277594353,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017457952277594353,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017352294199333568,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017352294199333568,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01734265988952294,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01733979592087385,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0173232052740791,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 1.0,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017322727945970923,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017167738420339616,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017167738420339616,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017162298811097543,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01716029403304318,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017144746028881528,
+   "seconds": 0.17
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017144268700773346,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017134195516258888,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017132190731328004,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016877727558906968,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016877727558906968,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016621176172758333,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016621176172758333,
+   "seconds": 0.26
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01661792295707132,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01661792295707132,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01655291826359593,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01654929056997375,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016429693213638887,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016426829194561964,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01632587825672027,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016322632409539416,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01628195112233389,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01627965994741462,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016266593148030355,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01626096067635381,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016171309860789868,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016171309860789868,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.016162667504893858,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016158419230864945,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.016145769218915633,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01614481456269927,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01613303155595508,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01613303155595508,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.0160990624696952,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0160990624696952,
+   "seconds": 0.27
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.015867008587361082,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.015867008587361082,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.015207826073055469,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.015207826073055469,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.015119664535053227,
+   "seconds": 0.26
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.015119664535053227,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01496081170676753,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.995,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01496081170676753,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.013481830105353882,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.013471806212789896,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.013377123457062639,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.013377123457062639,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.013140868473403391,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.013140868473403391,
+   "seconds": 0.23
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.013059080131786227,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.013057743613083319,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.013051791296265285,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.013051791296265285,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.012778143393776187,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.012771699410449639,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.012722667485768158,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.012721903815807251,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01258174916871123,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01258174916871123,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.012126280182370622,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.012126280182370622,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011966630339572983,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011963479974058984,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011946756880316916,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011946756880316916,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011845724793054723,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011845724793054723,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011732721489598506,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01172842553662487,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011713277889094374,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011713277889094374,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011706801046822975,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011706514649958064,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01169539654371497,
+   "seconds": 0.24
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01169539654371497,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011663888353314987,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011662647229176312,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011430473251765204,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011427644982583654,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011426368177314832,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011426117532637474,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011274726034368559,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011274726034368559,
+   "seconds": 0.25
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.011268040042141013,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011268040042141013,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01109329863681332,
+   "seconds": 0.22
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 3,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.011090530133785862,
+   "seconds": 0.21
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01048549892780158,
+   "seconds": 0.17
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01048549892780158,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.010337527802016105,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.99,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.010337527802016105,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.00896815619824581,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.00896815619824581,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.008720323838390723,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.008720323838390723,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.008600088719423244,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.008598465803855428,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.007871851835236763,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007871851835236763,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.007684674292464332,
+   "seconds": 0.18
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007684674292464332,
+   "seconds": 0.19
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.007663570819426105,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007663570819426105,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.00755760867747974,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.007557513211858104,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.0074054581794952504,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 2,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007404598988900522,
+   "seconds": 0.17
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.0073659690635164456,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007365873597894809,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.00727527495086509,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 1.0,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.00727527495086509,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.007121766931022474,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0071206213435628385,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.007049356334494208,
+   "seconds": 0.14
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.00704878354076439,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.0068903069981374005,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.1,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0068903069981374005,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.00686687247495665,
+   "seconds": 0.16
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": false,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.006860285347063743,
+   "seconds": 0.13
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.0062397558522867946,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.01,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.0062397558522867946,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.006141709448665551,
+   "seconds": 0.15
+  },
+  {
+   "config": {
+    "lam": 0.98,
+    "delta": 0.001,
+    "lags": 1,
+    "cs_demean": true,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.006141709448665551,
+   "seconds": 0.15
+  }
+ ],
+ "warmup_from": "2005-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 0.24,
+ "total_seconds": 44.29
+}

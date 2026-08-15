@@ -1,0 +1,448 @@
+{
+ "model": "online-lstm",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set4_core7",
+ "panel_name": "set4_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 16,
+  "lr": 0.001,
+  "seq_len": 5,
+  "steps_per_day": 1,
+  "replay_days": 250,
+  "cs_demean_y": true
+ },
+ "tuned_on": "2011-01-01..2014-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.008264022285802447,
+   "seconds": 6.09
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.012682441075422742,
+   "seconds": 5.09
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 8,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 8,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.0066491746926209275,
+   "seconds": 5.04
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.013296013771268185,
+   "seconds": 5.61
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.010105401695031931,
+   "seconds": 5.47
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 16,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 16,
+    "lr": 0.01
+   },
+   "val_rank_ic": -0.00026331773307259503,
+   "seconds": 5.48
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.011564248857931787,
+   "seconds": 7.3
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.00022009038284066506,
+   "seconds": 7.32
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.01,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "hidden": 32,
+    "lr": 0.01
+   },
+   "val_rank_ic": 0.0013849942560572488,
+   "seconds": 7.22
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.007890477963222089,
+   "seconds": 2.18
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.017320539821193134,
+   "seconds": 2.2
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 1,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.014248335525332152,
+   "seconds": 2.21
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.010496518234235796,
+   "seconds": 5.37
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.013296013771268185,
+   "seconds": 5.44
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 3,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 3,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.015595936092430413,
+   "seconds": 5.42
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 60,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 60
+   },
+   "val_rank_ic": 0.00937371371887733,
+   "seconds": 13.4
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 250
+   },
+   "val_rank_ic": 0.009026921169106706,
+   "seconds": 13.48
+  },
+  {
+   "stage": 1,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 8,
+    "replay_days": 1000,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "steps_per_day": 8,
+    "replay_days": 1000
+   },
+   "val_rank_ic": 0.01459112434630594,
+   "seconds": 13.66
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 5,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.01829720886386903,
+   "seconds": 1.4
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 5,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 5,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.018297686104874596,
+   "seconds": 1.43
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017320539821193134,
+   "seconds": 2.18
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 10,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 10,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.01733562331147774,
+   "seconds": 2.18
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 20,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": false
+   },
+   "val_rank_ic": 0.017395764872690452,
+   "seconds": 3.7
+  },
+  {
+   "stage": 2,
+   "config": {
+    "hidden": 16,
+    "lr": 0.001,
+    "seq_len": 20,
+    "steps_per_day": 1,
+    "replay_days": 250,
+    "cs_demean_y": true
+   },
+   "varied": {
+    "seq_len": 20,
+    "cs_demean_y": true
+   },
+   "val_rank_ic": 0.017404980174980596,
+   "seconds": 3.69
+  }
+ ],
+ "warmup_from": "2010-01-01",
+ "score_from": "2015-01-01",
+ "score_to": "2019-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 2.72,
+ "total_seconds": 135.27,
+ "cell": "lstm",
+ "batch_size": 128
+}
