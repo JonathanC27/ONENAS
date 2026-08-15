@@ -1,0 +1,3 @@
+# pooled 4-panel (200-stock) book, equal capital per panel book, from probe1 daily series (2020-2024)
+# champions-8: seed42 net+50.8/S1.02/MDD17.4 rho.372 | seed43 +35.4/0.81/17.3 rho.328 | seed44 +40.5/0.75/25.7 rho.475 | MEAN net+42.2 Sharpe 0.86 rho 0.392 -> GATE PASS
+# all-elites-64: MEAN net+52.1 Sharpe 0.84 rho 0.544 -> GATE FAIL (rho ok, Sharpe 0.84<0.85)
