@@ -50,7 +50,7 @@ fi
 
 OUT="/anvil/scratch/x-jchang5/results_v2/${ARM}/${SET}_seed${SEED}"
 mkdir -p "$OUT"
-FILES=$(ls "$DATA/${SET}_v2/"*.csv | grep -v panel_)
+FILES=$(ls "$DATA/${SET}_${PANELS}/"*.csv | grep -v panel_)
 
 echo "arm target=$TARGET selection=$SELECT $SET seed=$SEED -> $OUT"
 time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
