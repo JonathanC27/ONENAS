@@ -68,6 +68,50 @@ Ablation flags
 Default (no flags) = the fixed baseline:
     RET, VOL_CHANGE, BA_SPREAD, ILLIQUIDITY, sprtrn, TURNOVER, RET_CS, RET_CS_Z
 
+Feature-set presets (--feature-set)
+-----------------------------------
+legacy (default)  exactly the behavior documented above; byte-identical output
+                  when the flag is absent.
+core7             the measured deployment feature set.  Output columns become
+                  exactly
+                      RET, RET_CS_IN, BA_SPREAD, ILLIQUIDITY, REV21_1,
+                      TURN_RATIO, VOL21, RET_CS, RET_CS_Z, RET_CS5
+                  Features (first 7):
+                    RET        pooled robust z (burn-in stats), as in legacy.
+                    RET_CS_IN  byte-for-byte duplicate of RET_CS under a
+                               distinct name so a run can list it as an INPUT
+                               while RET_CS stays the output/target (safe
+                               default: the C++ may not accept one column in
+                               both --input_parameter_names and
+                               --output_parameter_names).
+                    BA_SPREAD, ILLIQUIDITY, REV21_1, TURN_RATIO, VOL21
+                               per-date cross-sectional rank mapped to [-1,1]
+                               (Gu-Kelly-Xiu, same machinery as
+                               --cs-rank-features).  ILLIQUIDITY keeps the
+                               fixed abs -> 21d trailing mean -> log pipeline
+                               before ranking.
+                  New per-stock trailing (causal) computations:
+                    REV21_1[i]    prod(1+r)-1 over rows max(0,i-20)..i-1
+                                  (EXCLUDES today); 0.0 while fewer than 2
+                                  prior rows exist.
+                    TURN_RATIO[i] mean(log1p(max(TURNOVER,0)), rows
+                                  max(0,i-4)..i) - mean(same, rows
+                                  max(0,i-62)..i).
+                    VOL21[i]      sample std of raw RET over rows
+                                  max(0,i-20)..i; 0.0 when <2 obs.
+                  Targets (last 3): RET_CS and RET_CS_Z as in legacy, plus
+                    RET_CS5    forward 5-day cumulative return over rows
+                               i+1..i+5, then per-date cross-sectional
+                               rank-normal (same Phi^-1 transform as RET_CS).
+                               THE ONLY FORWARD-LOOKING COLUMN - a TARGET,
+                               never a feature.  The last 5 rows of the panel
+                               are 0.0 placeholders (outside any scored
+                               window).
+                  Dropped vs legacy: sprtrn, VOL_CHANGE, TURNOVER (as direct
+                  features; TURNOVER survives inside TURN_RATIO).
+                  core7 is a complete recipe: the legacy ablation flags are
+                  rejected when combined with it.
+
 Usage:
     prep_panel.py <set_dir> <out_dir> [--stats-end 2019-12-31] [flags]
     prep_panel.py --selftest
@@ -87,6 +131,20 @@ AMIHUD_FLOOR = 1e-15  # min positive 21d mean in these sets is 7.1e-12
 REV_WINDOW = 5
 SQRT2 = math.sqrt(2.0)
 SQRT2PI = math.sqrt(2.0 * math.pi)
+
+# core7 preset ---------------------------------------------------------------
+REV21_PRIOR_ROWS = 20      # REV21_1 window: rows i-20..i-1 (excludes today)
+TURN_SHORT = 5             # TURN_RATIO short mean: rows i-4..i
+TURN_LONG = 63             # TURN_RATIO long mean: rows i-62..i
+VOL21_WINDOW = 21          # VOL21: sample std over rows i-20..i
+FWD_WINDOW = 5             # RET_CS5: forward returns over rows i+1..i+5
+CORE7_FEATURES = ["RET", "RET_CS_IN", "BA_SPREAD", "ILLIQUIDITY",
+                  "REV21_1", "TURN_RATIO", "VOL21"]
+CORE7_TARGETS = ["RET_CS", "RET_CS_Z", "RET_CS5"]
+CORE7_CS_RANK_FEATURES = ["BA_SPREAD", "ILLIQUIDITY", "REV21_1",
+                          "TURN_RATIO", "VOL21"]
+# RET_CS5 is forward-looking; it must never be listed as a feature.
+assert "RET_CS5" not in CORE7_FEATURES
 
 
 # --------------------------------------------------------- inverse normal CDF
@@ -176,6 +234,55 @@ def trailing_cumret(rets, w):
     for i in range(len(rets)):
         p = 1.0
         for j in range(max(0, i - w + 1), i + 1):
+            p *= 1.0 + rets[j]
+        out.append(p - 1.0)
+    return out
+
+
+def trailing_cumret_excl_today(rets, prior_rows):
+    """prod(1+r) - 1 over rows max(0, i-prior_rows)..i-1 -- EXCLUDES today.
+    0.0 while fewer than 2 prior rows exist (i < 2).  No lookahead."""
+    out = []
+    for i in range(len(rets)):
+        if i < 2:
+            out.append(0.0)
+            continue
+        p = 1.0
+        for j in range(max(0, i - prior_rows), i):
+            p *= 1.0 + rets[j]
+        out.append(p - 1.0)
+    return out
+
+
+def trailing_std(xs, w):
+    """Sample std (ddof=1) over rows max(0, i-w+1)..i; 0.0 when <2 obs.
+    Expanding at the start; trailing-only, no lookahead."""
+    out = []
+    for i in range(len(xs)):
+        lo = max(0, i - w + 1)
+        k = i - lo + 1
+        if k < 2:
+            out.append(0.0)
+            continue
+        window = xs[lo:i + 1]
+        m = sum(window) / k
+        var = sum((v - m) ** 2 for v in window) / (k - 1)
+        out.append(math.sqrt(max(var, 0.0)))
+    return out
+
+
+def forward_cumret(rets, w):
+    """FORWARD-LOOKING (target construction ONLY): prod(1+r) - 1 over rows
+    i+1..i+w.  The last w rows (where the window runs off the panel) are 0.0
+    placeholders."""
+    n = len(rets)
+    out = []
+    for i in range(n):
+        if i + w > n - 1:
+            out.append(0.0)
+            continue
+        p = 1.0
+        for j in range(i + 1, i + w + 1):
             p *= 1.0 + rets[j]
         out.append(p - 1.0)
     return out
@@ -296,6 +403,83 @@ def selftest():
     ok &= trailing_mean(pert, 3)[:3] == base[:3]
     print("trailing_mean is causal (future perturbation leaves the past): True")
 
+    # 6. core7: REV21_1 excludes today (huge return today leaves it unchanged)
+    rets = [0.01 * math.sin(i * 0.9) for i in range(80)]
+    rev = trailing_cumret_excl_today(rets, REV21_PRIOR_ROWS)
+    k = 40
+    pert = list(rets)
+    pert[k] = 99.0  # a 9900% return today
+    rev_p = trailing_cumret_excl_today(pert, REV21_PRIOR_ROWS)
+    excl_today = rev_p[k] == rev[k] and rev_p[:k + 1] == rev[:k + 1]
+    # exact window: rows k-20..k-1
+    exp = 1.0
+    for j in range(k - REV21_PRIOR_ROWS, k):
+        exp *= 1.0 + rets[j]
+    exp -= 1.0
+    win_ok = abs(rev[k] - exp) < 1e-14
+    minobs = rev[0] == 0.0 and rev[1] == 0.0 and rev[2] != 0.0
+    print("REV21_1 excludes today: %s ; window rows i-20..i-1 exact: %s ; "
+          "0.0 while <2 prior rows: %s" % (excl_today, win_ok, minobs))
+    ok &= excl_today and win_ok and minobs
+
+    # 7. core7: TURN_RATIO windows (short 5 minus long 63, expanding starts)
+    xs = [math.cos(i * 0.37) + 0.5 for i in range(120)]
+    tr = [a - b for a, b in zip(trailing_mean(xs, TURN_SHORT),
+                                trailing_mean(xs, TURN_LONG))]
+    tr_ok = True
+    for i in (0, 3, 4, 30, 62, 100, 119):
+        s = xs[max(0, i - TURN_SHORT + 1):i + 1]
+        l = xs[max(0, i - TURN_LONG + 1):i + 1]
+        tr_ok &= abs(tr[i] - (sum(s) / len(s) - sum(l) / len(l))) < 1e-12
+    tr_ok &= all(abs(v) < 1e-15 for v in tr[:TURN_SHORT - 1])  # windows coincide
+    print("TURN_RATIO = mean(rows i-4..i) - mean(rows i-62..i): %s" % tr_ok)
+    ok &= tr_ok
+
+    # 8. core7: VOL21 min-obs and exact sample std
+    vs = trailing_std([5.0, 7.0, 1.0, 3.0], VOL21_WINDOW)
+    v_ok = vs[0] == 0.0 and abs(vs[1] - math.sqrt(2.0)) < 1e-12
+    w3 = [5.0, 7.0, 1.0]
+    m3 = sum(w3) / 3
+    v_ok &= abs(vs[2] - math.sqrt(sum((v - m3) ** 2 for v in w3) / 2)) < 1e-12
+    long_v = trailing_std([float(i % 7) for i in range(60)], VOL21_WINDOW)
+    w21 = [float(i % 7) for i in range(59 - 20, 60)]
+    m21 = sum(w21) / 21
+    v_ok &= abs(long_v[59] - math.sqrt(sum((v - m21) ** 2 for v in w21) / 20)) < 1e-12
+    print("VOL21 sample std, 0.0 when <2 obs, window rows i-20..i: %s" % v_ok)
+    ok &= v_ok
+
+    # 9. core7: RET_CS5's raw input is forward over EXACTLY rows i+1..i+5
+    rets = [0.01 * math.sin(i * 1.3) for i in range(40)]
+    fwd = forward_cumret(rets, FWD_WINDOW)
+    i0 = 12
+    exp = 1.0
+    for j in range(i0 + 1, i0 + FWD_WINDOW + 1):
+        exp *= 1.0 + rets[j]
+    f_ok = abs(fwd[i0] - exp + 1.0) < 1e-14
+    pert = list(rets)
+    pert[i0] = 99.0        # perturb today -> fwd[i0] must NOT change
+    f_ok &= forward_cumret(pert, FWD_WINDOW)[i0] == fwd[i0]
+    pert = list(rets)
+    pert[i0 + FWD_WINDOW + 1] = 99.0  # perturb row i+6 -> must NOT change
+    f_ok &= forward_cumret(pert, FWD_WINDOW)[i0] == fwd[i0]
+    pert = list(rets)
+    pert[i0 + 1] = 99.0    # perturb row i+1 -> MUST change
+    f_ok &= forward_cumret(pert, FWD_WINDOW)[i0] != fwd[i0]
+    pert = list(rets)
+    pert[i0 + FWD_WINDOW] = 99.0  # perturb row i+5 -> MUST change
+    f_ok &= forward_cumret(pert, FWD_WINDOW)[i0] != fwd[i0]
+    f_ok &= all(v == 0.0 for v in fwd[-FWD_WINDOW:])
+    f_ok &= fwd[-FWD_WINDOW - 1] != 0.0
+    print("RET_CS5 raw input uses rows i+1..i+5 only; last 5 rows 0.0: %s" % f_ok)
+    ok &= f_ok
+
+    # 10. core7: the forward-looking target is never a feature
+    nf = ("RET_CS5" not in CORE7_FEATURES
+          and set(CORE7_CS_RANK_FEATURES) <= set(CORE7_FEATURES)
+          and "RET_CS5" in CORE7_TARGETS)
+    print("RET_CS5 absent from CORE7_FEATURES (targets only): %s" % nf)
+    ok &= nf
+
     print("SELFTEST %s" % ("PASS" if ok else "FAIL"))
     return 0 if ok else 1
 
@@ -319,9 +503,21 @@ def parse_args(argv):
     p.add_argument("--cs-rank-features", action="store_true",
                    help="cross-sectional [-1,1] ranks for features instead of "
                         "pooled robust z (targets unaffected)")
+    p.add_argument("--feature-set", choices=("legacy", "core7"),
+                   default="legacy",
+                   help="column preset: 'legacy' (default, byte-identical to "
+                        "pre-flag behavior) or 'core7' (RET, RET_CS_IN, "
+                        "BA_SPREAD, ILLIQUIDITY, REV21_1, TURN_RATIO, VOL21 + "
+                        "targets RET_CS, RET_CS_Z, RET_CS5)")
     p.add_argument("--selftest", action="store_true",
                    help="run unit checks on the transforms and exit")
-    return p.parse_args(argv)
+    args = p.parse_args(argv)
+    if args.feature_set == "core7" and (args.drop_sprtrn or args.add_exret
+                                        or args.add_rev5 or args.cs_rank_features):
+        p.error("--feature-set core7 is a complete recipe; it cannot be "
+                "combined with --drop-sprtrn/--add-exret/--add-rev5/"
+                "--cs-rank-features")
+    return args
 
 
 def load_set(set_dir, out_dir):
@@ -363,12 +559,18 @@ def main(argv):
     assert all(d <= stats_end for d in dates[:n_burn]), "burn-in prefix leaks"
     assert all(d > stats_end for d in dates[n_burn:]), "burn-in is not a prefix"
 
+    core7 = args.feature_set == "core7"
+
     # ---- per-stock series ---------------------------------------------------
     # series[col][stock_name] = list over rows; all transforms below that touch
-    # the time axis are trailing-only.
+    # the time axis are trailing-only, EXCEPT FWD5 (core7), which is the raw
+    # material for the RET_CS5 TARGET and is deliberately forward-looking.
     raw_ret, series = {}, {}
-    for col in ("RET", "sprtrn", "VOL_CHANGE", "BA_SPREAD", "TURNOVER",
-                "ILLIQUIDITY", "EXRET", "REV5"):
+    ser_cols = ("RET", "sprtrn", "VOL_CHANGE", "BA_SPREAD", "TURNOVER",
+                "ILLIQUIDITY", "EXRET", "REV5")
+    if core7:
+        ser_cols += ("REV21_1", "TURN_RATIO", "VOL21", "FWD5")
+    for col in ser_cols:
         series[col] = {}
     for name in names:
         rows = data[name]
@@ -387,6 +589,15 @@ def main(argv):
         series["EXRET"][name] = [rets[i] - series["sprtrn"][name][i]
                                  for i in range(n_rows)]
         series["REV5"][name] = trailing_cumret(rets, REV_WINDOW)
+        if core7:
+            logturn = series["TURNOVER"][name]  # already log1p(max(., 0))
+            series["REV21_1"][name] = trailing_cumret_excl_today(
+                rets, REV21_PRIOR_ROWS)
+            series["TURN_RATIO"][name] = [
+                a - b for a, b in zip(trailing_mean(logturn, TURN_SHORT),
+                                      trailing_mean(logturn, TURN_LONG))]
+            series["VOL21"][name] = trailing_std(rets, VOL21_WINDOW)
+            series["FWD5"][name] = forward_cumret(rets, FWD_WINDOW)
         for col in series:
             vals = series[col][name]
             assert len(vals) == n_rows, "%s/%s length mismatch" % (name, col)
@@ -394,28 +605,39 @@ def main(argv):
                 "non-finite value in %s/%s" % (name, col)
 
     # ---- column plan --------------------------------------------------------
-    feature_cols = ["VOL_CHANGE", "BA_SPREAD", "ILLIQUIDITY", "TURNOVER"]
-    if args.add_exret:
-        feature_cols.append("EXRET")
-    if args.add_rev5:
-        feature_cols.append("REV5")
-    # RET and sprtrn are always pooled-robust-z (see --cs-rank-features docs)
-    pooled_cols = ["RET"] + ([] if args.drop_sprtrn else ["sprtrn"])
-    if args.cs_rank_features:
-        cs_cols = list(feature_cols)
+    if core7:
+        # fixed recipe: RET pooled robust z; BA_SPREAD/ILLIQUIDITY/REV21_1/
+        # TURN_RATIO/VOL21 per-date cross-sectional [-1,1] ranks; RET_CS_IN,
+        # RET_CS, RET_CS_Z, RET_CS5 rank-normal/z (filled in the CS pass).
+        pooled_cols = ["RET"]
+        cs_cols = list(CORE7_CS_RANK_FEATURES)
+        cols_out = CORE7_FEATURES + CORE7_TARGETS
+        # RET_CS5 is the only forward-looking column; it is a TARGET.
+        assert "RET_CS5" not in CORE7_FEATURES, \
+            "forward-looking RET_CS5 leaked into the feature column list"
     else:
-        cs_cols = []
-        pooled_cols += feature_cols
+        feature_cols = ["VOL_CHANGE", "BA_SPREAD", "ILLIQUIDITY", "TURNOVER"]
+        if args.add_exret:
+            feature_cols.append("EXRET")
+        if args.add_rev5:
+            feature_cols.append("REV5")
+        # RET and sprtrn are always pooled-robust-z (see --cs-rank-features docs)
+        pooled_cols = ["RET"] + ([] if args.drop_sprtrn else ["sprtrn"])
+        if args.cs_rank_features:
+            cs_cols = list(feature_cols)
+        else:
+            cs_cols = []
+            pooled_cols += feature_cols
 
-    cols_out = ["RET", "VOL_CHANGE", "BA_SPREAD", "ILLIQUIDITY"]
-    if not args.drop_sprtrn:
-        cols_out.append("sprtrn")
-    cols_out.append("TURNOVER")
-    if args.add_exret:
-        cols_out.append("EXRET")
-    if args.add_rev5:
-        cols_out.append("REV5")
-    cols_out += ["RET_CS", "RET_CS_Z"]
+        cols_out = ["RET", "VOL_CHANGE", "BA_SPREAD", "ILLIQUIDITY"]
+        if not args.drop_sprtrn:
+            cols_out.append("sprtrn")
+        cols_out.append("TURNOVER")
+        if args.add_exret:
+            cols_out.append("EXRET")
+        if args.add_rev5:
+            cols_out.append("REV5")
+        cols_out += ["RET_CS", "RET_CS_Z"]
 
     # ---- pooled robust stats, burn-in rows only -----------------------------
     stats, used_max_date = {}, None
@@ -437,8 +659,8 @@ def main(argv):
     out = {name: [[0.0] * len(cols_out) for _ in range(n_rows)] for name in names}
     col_idx = {c: i for i, c in enumerate(cols_out)}
     for col in cols_out:
-        if col in ("RET_CS", "RET_CS_Z"):
-            continue
+        if col in ("RET_CS", "RET_CS_Z", "RET_CS_IN", "RET_CS5"):
+            continue  # filled by the cross-sectional pass below
         j = col_idx[col]
         if col in stats:
             med, iqr = stats[col]["median"], stats[col]["iqr"]
@@ -449,17 +671,28 @@ def main(argv):
                     o[i][j] = robust_z(s[i], med, iqr)
     # cross-sectional passes: strictly same-date, one row at a time
     j_cs, j_csz = col_idx["RET_CS"], col_idx["RET_CS_Z"]
+    j_csin = col_idx.get("RET_CS_IN")   # core7 only
+    j_cs5 = col_idx.get("RET_CS5")      # core7 only
     cs_feature_idx = [col_idx[c] for c in cs_cols]
     for i in range(n_rows):
         d = dates[i]
-        # every contributor to this row is dated exactly d (no other date is read)
+        # every contributor to this row is dated exactly d (no other date is
+        # read -- except RET_CS5, whose raw input FWD5 is by construction the
+        # forward i+1..i+5 return: it is a TARGET, never a feature)
         assert all(data[name][i]["date"] == d for name in names), \
             "cross-sectional row %d mixes dates" % i
         rv = [raw_ret[name][i] for name in names]
         for k, z in enumerate(cs_rank_normal(rv)):
             out[names[k]][i][j_cs] = z
+            if j_csin is not None:  # RET_CS_IN: exact duplicate of RET_CS
+                out[names[k]][i][j_csin] = z
         for k, z in enumerate(cs_zscore(rv)):
             out[names[k]][i][j_csz] = z
+        if j_cs5 is not None and i < n_rows - FWD_WINDOW:
+            # last FWD_WINDOW rows keep the 0.0 placeholder from init
+            fv5 = [series["FWD5"][name][i] for name in names]
+            for k, z in enumerate(cs_rank_normal(fv5)):
+                out[names[k]][i][j_cs5] = z
         for col, j in zip(cs_cols, cs_feature_idx):
             fv = [series[col][name][i] for name in names]
             for k, z in enumerate(cs_rank_pm1(fv)):
@@ -487,30 +720,48 @@ def main(argv):
                        + [data[n][i]["TRAN_COST"] for n in names]
                        + [data[n][i]["RET"] for n in names])
 
-    meta = {
-        "set_dir": os.path.abspath(set_dir),
-        "stats_end": stats_end,
-        "common_start": common_start,
-        "n_stocks": n_stocks,
-        "n_rows": n_rows,
-        "n_burn_in_rows": n_burn,
-        "first_date": dates[0],
-        "last_date": dates[-1],
-        "last_burn_in_date": dates[n_burn - 1],
-        "dates_index_anchor": {"0": dates[0], str(n_rows - 1): dates[-1]},
-        "columns": cols_out,
-        "target_columns": ["RET_CS", "RET_CS_Z", "RET"],
-        "feature_columns": [c for c in cols_out
-                            if c not in ("RET_CS", "RET_CS_Z", "RET")],
-        "pooled_robust_z_columns": sorted(stats),
-        "cs_rank_pm1_columns": cs_cols,
-        "clip": CLIP,
-        "stats": stats,
-        "flags": {"drop_sprtrn": args.drop_sprtrn, "add_exret": args.add_exret,
-                  "add_rev5": args.add_rev5,
-                  "cs_rank_features": args.cs_rank_features},
-        "raw_columns": [],
-        "recipes": {
+    if core7:
+        target_cols_meta = list(CORE7_TARGETS)
+        feature_cols_meta = list(CORE7_FEATURES)
+        recipes = {
+            "RET": "robust z of raw simple return (burn-in median/IQR, clip +/-8)",
+            "RET_CS_IN": ("exact duplicate of RET_CS under a distinct name so a "
+                          "run can list it in --input_parameter_names while "
+                          "RET_CS stays in --output_parameter_names (safe "
+                          "default: one column in both lists is unverified in "
+                          "the C++)"),
+            "BA_SPREAD": "per-date cross-sectional rank in [-1,1] (Gu-Kelly-Xiu)",
+            "ILLIQUIDITY": ("abs(raw signed Amihud) -> trailing %d-day mean "
+                            "(expanding first %d rows) -> log (floor %g) -> "
+                            "per-date cross-sectional rank in [-1,1]"
+                            % (AMIHUD_WINDOW, AMIHUD_WINDOW - 1, AMIHUD_FLOOR)),
+            "REV21_1": ("prod(1+r)-1 over rows i-%d..i-1, EXCLUDES today "
+                        "(0.0 while <2 prior rows) -> per-date cross-sectional "
+                        "rank in [-1,1]" % REV21_PRIOR_ROWS),
+            "TURN_RATIO": ("mean(log1p(max(TURNOVER,0)), rows i-%d..i) - "
+                           "mean(same, rows i-%d..i), expanding starts -> "
+                           "per-date cross-sectional rank in [-1,1]"
+                           % (TURN_SHORT - 1, TURN_LONG - 1)),
+            "VOL21": ("sample std of raw RET over rows i-%d..i (0.0 when <2 "
+                      "obs) -> per-date cross-sectional rank in [-1,1]"
+                      % (VOL21_WINDOW - 1)),
+            "RET_CS": ("per-date cross-sectional rank-normal of raw RET: "
+                       "Phi^-1((avg_rank - 0.5)/N), N = n_stocks; "
+                       "contemporaneous, leak-free"),
+            "RET_CS_Z": ("per-date cross-sectional z-score of raw RET: "
+                         "(r - mean_t)/sd_t (population sd), clip +/-8"),
+            "RET_CS5": ("FORWARD-LOOKING TARGET: prod(1+r)-1 over rows "
+                        "i+1..i+%d -> per-date cross-sectional rank-normal "
+                        "Phi^-1((avg_rank - 0.5)/N); last %d rows of the "
+                        "panel are 0.0 placeholders (they fall outside any "
+                        "scored window); NEVER a feature/input"
+                        % (FWD_WINDOW, FWD_WINDOW)),
+        }
+    else:
+        target_cols_meta = ["RET_CS", "RET_CS_Z", "RET"]
+        feature_cols_meta = [c for c in cols_out
+                             if c not in ("RET_CS", "RET_CS_Z", "RET")]
+        recipes = {
             "RET": "robust z of raw simple return (burn-in median/IQR, clip +/-8)",
             "sprtrn": "robust z of raw index return",
             "VOL_CHANGE": "robust z",
@@ -528,7 +779,34 @@ def main(argv):
                        "contemporaneous, leak-free"),
             "RET_CS_Z": ("per-date cross-sectional z-score of raw RET: "
                          "(r - mean_t)/sd_t (population sd), clip +/-8"),
-        },
+        }
+    assert "RET_CS5" not in feature_cols_meta, \
+        "forward-looking RET_CS5 leaked into meta feature_columns"
+
+    meta = {
+        "feature_set": args.feature_set,
+        "set_dir": os.path.abspath(set_dir),
+        "stats_end": stats_end,
+        "common_start": common_start,
+        "n_stocks": n_stocks,
+        "n_rows": n_rows,
+        "n_burn_in_rows": n_burn,
+        "first_date": dates[0],
+        "last_date": dates[-1],
+        "last_burn_in_date": dates[n_burn - 1],
+        "dates_index_anchor": {"0": dates[0], str(n_rows - 1): dates[-1]},
+        "columns": cols_out,
+        "target_columns": target_cols_meta,
+        "feature_columns": feature_cols_meta,
+        "pooled_robust_z_columns": sorted(stats),
+        "cs_rank_pm1_columns": cs_cols,
+        "clip": CLIP,
+        "stats": stats,
+        "flags": {"drop_sprtrn": args.drop_sprtrn, "add_exret": args.add_exret,
+                  "add_rev5": args.add_rev5,
+                  "cs_rank_features": args.cs_rank_features},
+        "raw_columns": [],
+        "recipes": recipes,
         "raw_returns": {
             "where": "panel_dates.csv",
             "columns": ["RET_raw_%s" % n[:-4] for n in names],
@@ -543,10 +821,27 @@ def main(argv):
         "no_lookahead": ("all pooled normalization statistics come from rows "
                          "dated <= %s (a strict prefix of the panel, %d of %d "
                          "rows); every cross-sectional transform reads only "
-                         "same-date values; every time-axis transform "
-                         "(Amihud mean, REV5) is trailing-only"
-                         % (stats_end, n_burn, n_rows)),
+                         "same-date values; every time-axis %stransform "
+                         "(%s) is trailing-only%s"
+                         % (stats_end, n_burn, n_rows,
+                            "FEATURE " if core7 else "",
+                            ("Amihud mean, REV21_1, TURN_RATIO, VOL21" if core7
+                             else "Amihud mean, REV5"),
+                            ("; the single exception is the RET_CS5 TARGET, "
+                             "which is forward-looking by construction" if core7
+                             else ""))),
     }
+    if core7:
+        meta["forward_looking_warning"] = (
+            "RET_CS5 is the ONLY forward-looking column in this panel: it is "
+            "built from returns at rows i+1..i+%d and is a TARGET for "
+            "--output_parameter_names ONLY. It must NEVER appear in "
+            "--input_parameter_names or any feature list. The last %d rows of "
+            "the panel carry 0.0 placeholders for RET_CS5 (their forward "
+            "window runs off the panel; they fall outside any scored window). "
+            "RET_CS_IN is a safe input-side duplicate of RET_CS."
+            % (FWD_WINDOW, FWD_WINDOW))
+        meta["ret_cs5_last_rows_zero"] = FWD_WINDOW
     with open(os.path.join(out_dir, "panel_meta.json"), "w") as fh:
         json.dump(meta, fh, indent=1)
     print("%d stocks, %d rows, %s..%s, stats<= %s (%d burn-in rows)"
