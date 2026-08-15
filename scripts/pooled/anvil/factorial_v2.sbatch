@@ -22,6 +22,8 @@ TARGET="${TARGET:-RET_CS}"
 SELECT="${SELECT:-ic_gated}"
 INPUTS="${INPUTS:-RET VOL_CHANGE BA_SPREAD ILLIQUIDITY sprtrn TURNOVER}"
 ARM="${ARM:-${TARGET}_${SELECT}}"
+EXTRA_FLAGS="${EXTRA_FLAGS:-}"
+NTS="${NTS:-200}"
 SET="set${SLURM_ARRAY_TASK_ID:-1}"
 
 case "$SET" in
@@ -44,7 +46,7 @@ time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
   --output_parameter_names "$TARGET" \
   --number_islands 8 --bp_iterations 10 --num_mutations 1 \
   --time_series_length 40 --window_step 5 \
-  --num_training_windows "$NTW" --num_validation_sets 5 --num_training_sets 200 \
+  --num_training_windows "$NTW" --num_validation_sets 5 --num_training_sets $NTS \
   --get_train_data_by PER --per_alpha 0.6 --per_lambda 0.007 --per_epsilon 1e-8 \
   --online_series_seed "$SEED" --rounds_per_generation 1 \
   --speciation_method onenas --repopulation_frequency 50 \
@@ -55,4 +57,5 @@ time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
   --possible_node_types simple UGRNN MGU GRU delta LSTM \
   --normalize none --compare_with_naive --control_size_method none \
   --std_message_level ERROR --file_message_level ERROR \
+  $EXTRA_FLAGS \
   --output_directory "$OUT"
