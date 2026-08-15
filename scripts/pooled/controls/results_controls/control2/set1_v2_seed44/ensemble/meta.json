@@ -1,0 +1,120 @@
+{
+ "control": "control2_fixed_ensemble",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set1_v2",
+ "panel_name": "set1_v2",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "input_features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER",
+  "RET_CS",
+  "RET_CS_Z"
+ ],
+ "excluded_features": [],
+ "k_members": 8,
+ "members": [
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44000,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44001,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44002,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44003,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44004,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44005,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44006,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 44007,
+   "n_params": 153
+  }
+ ],
+ "protocol": {
+  "step_days": 5,
+  "window_len": 40,
+  "epochs_per_wake": 10,
+  "windows_per_wake": 512,
+  "minibatch": 256,
+  "recency_half_life_days": 504.0,
+  "select_days": 60,
+  "loss": "seq-to-seq MSE on the standardised target over all 40 window steps",
+  "optimizer": "Adam, grad-norm clip 1.0, state persists across wakes",
+  "combiner": "rank_mean (score_ensemble.py's definition)"
+ },
+ "warmup_from": "2004-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 44,
+ "torch_version": "2.8.0",
+ "hyperparameters": {
+  "cell": "rnn",
+  "hidden": 8,
+  "lr": 0.003
+ },
+ "tuned_on": null,
+ "tuning_objective": "mean daily rank IC",
+ "tuning_seed": null,
+ "tuning_table": null,
+ "no_search": "one architecture, tuned pre-2020, instantiated 8 times with different seeds; never changed",
+ "tune_seconds": 1.91,
+ "fit_seconds": 800.17,
+ "model": "control2_fixed_ensemble/ensemble",
+ "variant": "ensemble",
+ "variant_doc": "rank-mean of all 8 members' cross-sections, score_ensemble.py's combiner"
+}

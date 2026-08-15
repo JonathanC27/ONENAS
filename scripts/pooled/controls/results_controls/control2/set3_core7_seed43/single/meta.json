@@ -1,0 +1,123 @@
+{
+ "control": "control2_fixed_ensemble",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set3_core7",
+ "panel_name": "set3_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "input_features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "excluded_features": [
+  "RET_CS",
+  "RET_CS5",
+  "RET_CS_Z"
+ ],
+ "k_members": 8,
+ "members": [
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43000,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43001,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43002,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43003,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43004,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43005,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43006,
+   "n_params": 417
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "lr": 0.001,
+   "rec_density": 1.0,
+   "seed": 43007,
+   "n_params": 417
+  }
+ ],
+ "protocol": {
+  "step_days": 5,
+  "window_len": 40,
+  "epochs_per_wake": 10,
+  "windows_per_wake": 512,
+  "minibatch": 256,
+  "recency_half_life_days": 504.0,
+  "select_days": 60,
+  "loss": "seq-to-seq MSE on the standardised target over all 40 window steps",
+  "optimizer": "Adam, grad-norm clip 1.0, state persists across wakes",
+  "combiner": "rank_mean (score_ensemble.py's definition)"
+ },
+ "warmup_from": "2004-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 43,
+ "torch_version": "2.8.0",
+ "hyperparameters": {
+  "cell": "rnn",
+  "hidden": 16,
+  "lr": 0.001
+ },
+ "tuned_on": null,
+ "tuning_objective": "mean daily rank IC",
+ "tuning_seed": null,
+ "tuning_table": null,
+ "no_search": "one architecture, tuned pre-2020, instantiated 8 times with different seeds; never changed",
+ "tune_seconds": 1.22,
+ "fit_seconds": -2758.3,
+ "model": "control2_fixed_ensemble/single",
+ "variant": "single",
+ "variant_doc": "weekly champion (lowest trailing-60-day MSE) predicts the week"
+}

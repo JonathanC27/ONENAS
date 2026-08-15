@@ -55,6 +55,26 @@ def run_one(control, panel, seed, results_dir, extra, frozen_cfg=None):
     return out, secs, True
 
 
+def find_frozen_cfg(results_dir, panel_name):
+    """Control2 config already tuned for this panel in an earlier run, if any.
+
+    The tuning pass uses a fixed internal seed, so any completed run of the
+    same panel carries the identical config; reusing it keeps 'tune once per
+    panel, frozen across seeds' true across separate invocations.
+    """
+    base = os.path.join(results_dir, "control2")
+    if not os.path.isdir(base):
+        return None
+    for run in sorted(os.listdir(base)):
+        if run.rsplit("_seed", 1)[0] != panel_name:
+            continue
+        path = os.path.join(base, run, "ensemble", "meta.json")
+        if os.path.exists(path):
+            with open(path) as fh:
+                return json.load(fh)["hyperparameters"]
+    return None
+
+
 def read_metrics(out, variant):
     path = os.path.join(out, variant, "metrics.json")
     if not os.path.exists(path):
@@ -116,6 +136,9 @@ def main():
                     help="extra args passed through to both control scripts, "
                          "e.g. \"--param RET_CS --cost-bps 5\"")
     ap.add_argument("--table-only", action="store_true")
+    ap.add_argument("--skip-existing", action="store_true",
+                    help="skip runs whose single/ and ensemble/ metrics.json "
+                         "already exist (resume an interrupted grid)")
     args = ap.parse_args()
 
     if args.table_only:
@@ -125,9 +148,22 @@ def main():
     extra = args.extra.split() if args.extra else []
     t0 = time.time()
     for panel in args.panels:
-        frozen_cfg = None
+        frozen_cfg = find_frozen_cfg(args.results_dir,
+                                     os.path.basename(panel.rstrip("/")))
+        if frozen_cfg:
+            print("reusing control2 config already tuned for this panel: %s"
+                  % json.dumps(frozen_cfg, sort_keys=True))
         for seed in args.seeds:
             for control in args.controls:
+                name = os.path.basename(panel.rstrip("/"))
+                out0 = os.path.join(args.results_dir, control,
+                                    "%s_seed%d" % (name, seed))
+                if args.skip_existing and all(
+                        os.path.exists(os.path.join(out0, v, "metrics.json"))
+                        for v in ("single", "ensemble")):
+                    print("== %s %s seed %d: already complete, skipped"
+                          % (control, name, seed), flush=True)
+                    continue
                 out, _, ok = run_one(control, panel, seed, args.results_dir,
                                      extra, frozen_cfg)
                 if ok and control == "control2" and frozen_cfg is None:

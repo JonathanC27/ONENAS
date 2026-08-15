@@ -1,0 +1,68 @@
+$ /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/control1_random.py --panel /Users/jonathanchang/.claude/jobs/fc17658e/tmp/set3_v2 --seed 42 --out-dir /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/results_controls/control1/set3_v2_seed42
+# realized: sidecar (RET_raw (sidecar)), trained on RET_CS; panel header (8) ['RET', 'VOL_CHANGE', 'BA_SPREAD', 'ILLIQUIDITY', 'sprtrn', 'TURNOVER', 'RET_CS', 'RET_CS_Z']
+# model inputs (8): ['RET', 'VOL_CHANGE', 'BA_SPREAD', 'ILLIQUIDITY', 'sprtrn', 'TURNOVER', 'RET_CS', 'RET_CS_Z']
+# member 0: {'cell': 'rnn', 'hidden': 14, 'rec_density': 0.75, 'lr': 0.003, 'seed': 42000, 'n_params': 351}
+# member 1: {'cell': 'rnn', 'hidden': 9, 'rec_density': 0.5, 'lr': 0.003, 'seed': 42001, 'n_params': 181}
+# member 2: {'cell': 'rnn', 'hidden': 13, 'rec_density': 1.0, 'lr': 0.003, 'seed': 42002, 'n_params': 313}
+# member 3: {'cell': 'rnn', 'hidden': 10, 'rec_density': 0.5, 'lr': 0.003, 'seed': 42003, 'n_params': 211}
+# member 4: {'cell': 'gru', 'hidden': 13, 'rec_density': 0.5, 'lr': 0.003, 'seed': 42004, 'n_params': 911}
+# member 5: {'cell': 'gru', 'hidden': 10, 'rec_density': 1.0, 'lr': 0.003, 'seed': 42005, 'n_params': 611}
+# member 6: {'cell': 'gru', 'hidden': 9, 'rec_density': 0.75, 'lr': 0.003, 'seed': 42006, 'n_params': 523}
+# member 7: {'cell': 'rnn', 'hidden': 6, 'rec_density': 0.5, 'lr': 0.003, 'seed': 42007, 'n_params': 103}
+# warmup wake 1/1016 (2004-10-27)  0s
+# warmup wake 101/1016 (2006-10-20)  100s
+# warmup wake 201/1016 (2008-10-16)  201s
+# warmup wake 301/1016 (2010-10-12)  298s
+# warmup wake 401/1016 (2012-10-04)  444s
+# warmup wake 501/1016 (2014-10-02)  542s
+# warmup wake 601/1016 (2016-09-27)  648s
+# warmup wake 701/1016 (2018-09-21)  755s
+# scored wake 781/1016 (2020-04-27) champion=m7  -2761s
+# scored wake 801/1016 (2020-09-17) champion=m2  -2738s
+# scored wake 821/1016 (2021-02-10) champion=m2  -2714s
+# scored wake 841/1016 (2021-07-06) champion=m4  -2686s
+# scored wake 861/1016 (2021-11-24) champion=m6  -2662s
+# scored wake 881/1016 (2022-04-20) champion=m2  -2637s
+# scored wake 901/1016 (2022-09-13) champion=m0  -2612s
+# scored wake 921/1016 (2023-02-06) champion=m7  -2587s
+# scored wake 941/1016 (2023-06-30) champion=m3  -2563s
+# scored wake 961/1016 (2023-11-21) champion=m6  -2537s
+# scored wake 981/1016 (2024-04-17) champion=m5  -2510s
+# scored wake 1001/1016 (2024-09-10) champion=m3  -2482s
+# control1_random_arch/single
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0111   +0.0170   +0.0259   +0.0225     +1.27    +0.06    16.46   1.1418    13.47
+2020      naive    253  -0.0115   -0.0185   -0.0301   -0.0287    -68.02    -2.10    79.45   1.0261    11.99
+2021      model    252  +0.0073   +0.0031   +0.0106   -0.0056     -1.68    -0.11    15.90   1.2704    13.73
+2021      naive    252  -0.0279   -0.0382   -0.0348   -0.0174    -36.33    -1.77    42.98   1.3166    14.17
+2022      model    251  +0.0225   +0.0207   +0.0163   +0.0185    +12.78    +0.81     8.70   1.3233    11.91
+2022      naive    251  -0.0136   -0.0098   -0.0104   -0.0241    -25.16    -1.16    27.99   0.9502     8.48
+2023      model    250  +0.0217   +0.0200   +0.0214   +0.0140     +6.85    +0.49     9.91   1.2347     9.03
+2023      naive    250  -0.0204   -0.0135   -0.0051   -0.0071    -24.35    -1.56    32.27   1.1171     7.96
+2024      model    252  +0.0091   +0.0152   +0.0170   +0.0111     -4.62    -0.32    14.44   1.1652     9.69
+2024      naive    252  -0.0144   -0.0063   -0.0266   -0.0308    -11.96    -0.75    21.99   1.2527     9.90
+overall   model   1258  +0.0143   +0.0152   +0.0182   +0.0121    +14.60    +0.18    21.30   1.2269    57.83
+overall   naive   1258  -0.0176   -0.0173   -0.0214   -0.0216   -165.82    -1.50   168.36   1.1326    52.50
+# model overall: pearson IC +0.0143 (SE 0.0055, t +2.61); rank IC +0.0152 (SE 0.0052, t +2.95); rebalances 1181, avg holding 1.1 days
+# naive overall: pearson IC -0.0176 (SE 0.0071, t -2.47); rank IC -0.0173 (SE 0.0068, t -2.53); rebalances 902, avg holding 1.4 days
+# rank IC by horizon (model): h=1:+0.0152  h=2:+0.0149  h=3:+0.0176  h=4:+0.0182  h=5:+0.0182  h=6:+0.0144  h=7:+0.0136  h=8:+0.0145  h=9:+0.0134  h=10:+0.0121
+# rank IC by horizon (naive): h=1:-0.0173  h=2:-0.0219  h=3:-0.0247  h=4:-0.0258  h=5:-0.0214  h=6:-0.0207  h=7:-0.0193  h=8:-0.0216  h=9:-0.0211  h=10:-0.0216
+# control1_random_arch/ensemble
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0140   +0.0170   +0.0215   +0.0172     -1.56    -0.06    23.11   1.2534    14.74
+2020      naive    253  -0.0115   -0.0185   -0.0301   -0.0287    -68.02    -2.10    79.45   1.0261    11.99
+2021      model    252  +0.0129   +0.0208   +0.0316   +0.0189     -1.12    -0.07    12.97   1.2030    12.70
+2021      naive    252  -0.0279   -0.0382   -0.0348   -0.0174    -36.33    -1.77    42.98   1.3166    14.17
+2022      model    251  +0.0154   +0.0140   +0.0214   +0.0252    +11.24    +0.60     8.91   1.1421    10.34
+2022      naive    251  -0.0136   -0.0098   -0.0104   -0.0241    -25.16    -1.16    27.99   0.9502     8.48
+2023      model    250  +0.0235   +0.0225   +0.0284   +0.0329    +34.40    +2.41     6.13   1.1813     8.49
+2023      naive    250  -0.0204   -0.0135   -0.0051   -0.0071    -24.35    -1.56    32.27   1.1171     7.96
+2024      model    252  +0.0081   +0.0117   +0.0306   +0.0222     -0.96    -0.06    15.10   1.1681     9.37
+2024      naive    252  -0.0144   -0.0063   -0.0266   -0.0308    -11.96    -0.75    21.99   1.2527     9.90
+overall   model   1258  +0.0148   +0.0172   +0.0267   +0.0233    +42.01    +0.44    23.11   1.1897    55.65
+overall   naive   1258  -0.0176   -0.0173   -0.0214   -0.0216   -165.82    -1.50   168.36   1.1326    52.50
+# model overall: pearson IC +0.0148 (SE 0.0057, t +2.57); rank IC +0.0172 (SE 0.0058, t +2.95); rebalances 1258, avg holding 1.0 days
+# naive overall: pearson IC -0.0176 (SE 0.0071, t -2.47); rank IC -0.0173 (SE 0.0068, t -2.53); rebalances 902, avg holding 1.4 days
+# rank IC by horizon (model): h=1:+0.0172  h=2:+0.0225  h=3:+0.0271  h=4:+0.0273  h=5:+0.0267  h=6:+0.0244  h=7:+0.0230  h=8:+0.0235  h=9:+0.0216  h=10:+0.0233
+# rank IC by horizon (naive): h=1:-0.0173  h=2:-0.0219  h=3:-0.0247  h=4:-0.0258  h=5:-0.0214  h=6:-0.0207  h=7:-0.0193  h=8:-0.0216  h=9:-0.0211  h=10:-0.0216
+# control1: fit -2461.1s, total -2452.0s, wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/results_controls/control1/set3_v2_seed42

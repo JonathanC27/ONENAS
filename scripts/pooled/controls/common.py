@@ -418,17 +418,57 @@ def add_common_args(ap):
     ap.add_argument("--max-horizon", type=int, default=10)
     ap.add_argument("--threads", type=int, default=1,
                     help="torch intra-op threads (1 keeps runs reproducible)")
+    ap.add_argument("--exclude-features", default="",
+                    help="comma-separated columns to DROP from the model "
+                         "INPUTS (the target --param column is still read "
+                         "for training/scoring).  On the core7 panels this "
+                         "must be RET_CS,RET_CS_Z,RET_CS5: RET_CS5 is "
+                         "forward-looking and the other two are target "
+                         "columns whose causal previous-row information is "
+                         "already carried by RET_CS_IN")
     ap.add_argument("--quiet", action="store_true")
     return ap
+
+
+def apply_feature_selection(panel, exclude_csv, quiet=False):
+    """Drop columns from panel.X / panel.features (model INPUTS only).
+
+    Must run after Panel.__init__, which has already extracted Y (--param)
+    and Yscore, so excluding the target column from the inputs does not
+    affect what the model is trained on or scored against.  Returns
+    (input_features, excluded) for the meta record.
+    """
+    exclude = [c for c in exclude_csv.split(",") if c] if exclude_csv else []
+    missing = [c for c in exclude if c not in panel.features]
+    if missing:
+        print("# note: --exclude-features %s not in the panel header %s; "
+              "ignored" % (",".join(missing), panel.features))
+    drop = set(exclude) - set(missing)
+    if drop:
+        keep = [i for i, f in enumerate(panel.features) if f not in drop]
+        panel.X = np.ascontiguousarray(panel.X[:, :, keep])
+        panel.features = [panel.features[i] for i in keep]
+    if not quiet:
+        print("# model inputs (%d): %s%s"
+              % (panel.n_feats, panel.features,
+                 "  [excluded: %s]" % ", ".join(sorted(drop)) if drop else ""))
+    return list(panel.features), sorted(drop)
 
 
 def setup(args):
     torch.set_num_threads(max(1, args.threads))
     panel = Panel(args.panel, args.param, args.score_param, args.realized)
     if not args.quiet:
-        print("# realized: %s (%s), trained on %s; %d features %s"
+        print("# realized: %s (%s), trained on %s; panel header (%d) %s"
               % (panel.realized, panel.score_param, panel.param,
                  panel.n_feats, panel.features))
+    args._input_features, args._excluded_features = apply_feature_selection(
+        panel, getattr(args, "exclude_features", ""), quiet=args.quiet)
+    if "RET_CS5" in panel.features:
+        raise SystemExit(
+            "RET_CS5 is a FORWARD-LOOKING column and may never be a model "
+            "input; rerun with --exclude-features RET_CS,RET_CS_Z,RET_CS5"
+        )
     score_rows = panel.rows_between(args.score_from, args.score_to)
     if not score_rows:
         raise SystemExit("no panel rows in %s..%s"
@@ -443,7 +483,9 @@ def base_meta(args, panel, control, members, extra=None):
             "panel": panel.path, "panel_name": panel.name(),
             "param": panel.param, "score_param": panel.score_param,
             "realized_source": panel.realized,
-            "features": panel.features,
+            "input_features": getattr(args, "_input_features",
+                                      list(panel.features)),
+            "excluded_features": getattr(args, "_excluded_features", []),
             "k_members": len(members),
             "members": [m.describe() for m in members],
             "protocol": protocol_meta(args.epochs, args.windows, args.batch,

@@ -1,0 +1,61 @@
+$ /Applications/Xcode.app/Contents/Developer/usr/bin/python3 /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/control2_fixed_ensemble.py --panel /Users/jonathanchang/.claude/jobs/fc17658e/tmp/set3_v2 --seed 43 --out-dir /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/results_controls/control2/set3_v2_seed43 --config {"cell": "gru", "hidden": 8, "lr": 0.003}
+# realized: sidecar (RET_raw (sidecar)), trained on RET_CS; panel header (8) ['RET', 'VOL_CHANGE', 'BA_SPREAD', 'ILLIQUIDITY', 'sprtrn', 'TURNOVER', 'RET_CS', 'RET_CS_Z']
+# model inputs (8): ['RET', 'VOL_CHANGE', 'BA_SPREAD', 'ILLIQUIDITY', 'sprtrn', 'TURNOVER', 'RET_CS', 'RET_CS_Z']
+# 8 identical members, arch {"cell": "gru", "hidden": 8, "lr": 0.003, "rec_density": 1.0}, seeds [43000, 43001, 43002, 43003, 43004, 43005, 43006, 43007]
+# warmup wake 1/1016 (2004-10-27)  0s
+# warmup wake 101/1016 (2006-10-20)  89s
+# warmup wake 201/1016 (2008-10-16)  189s
+# warmup wake 301/1016 (2010-10-12)  298s
+# warmup wake 401/1016 (2012-10-04)  404s
+# warmup wake 501/1016 (2014-10-02)  514s
+# warmup wake 601/1016 (2016-09-27)  627s
+# warmup wake 701/1016 (2018-09-21)  737s
+# scored wake 781/1016 (2020-04-27) champion=m5  846s
+# scored wake 801/1016 (2020-09-17) champion=m4  878s
+# scored wake 821/1016 (2021-02-10) champion=m3  906s
+# scored wake 841/1016 (2021-07-06) champion=m0  934s
+# scored wake 861/1016 (2021-11-24) champion=m6  963s
+# scored wake 881/1016 (2022-04-20) champion=m4  993s
+# scored wake 901/1016 (2022-09-13) champion=m2  1016s
+# scored wake 921/1016 (2023-02-06) champion=m1  1039s
+# scored wake 941/1016 (2023-06-30) champion=m3  -2537s
+# scored wake 961/1016 (2023-11-21) champion=m6  -2514s
+# scored wake 981/1016 (2024-04-17) champion=m1  -2495s
+# scored wake 1001/1016 (2024-09-10) champion=m0  -2475s
+# control2_fixed_ensemble/single
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0174   +0.0253   +0.0191   +0.0175     -1.15    -0.04    33.28   1.1461    13.72
+2020      naive    253  -0.0115   -0.0185   -0.0301   -0.0287    -68.02    -2.10    79.45   1.0261    11.99
+2021      model    252  -0.0009   +0.0064   +0.0059   -0.0081    -12.92    -0.85    24.78   1.0823    11.93
+2021      naive    252  -0.0279   -0.0382   -0.0348   -0.0174    -36.33    -1.77    42.98   1.3166    14.17
+2022      model    251  +0.0158   +0.0147   +0.0046   +0.0030     +6.37    +0.37    14.97   1.1288    10.28
+2022      naive    251  -0.0136   -0.0098   -0.0104   -0.0241    -25.16    -1.16    27.99   0.9502     8.48
+2023      model    250  +0.0169   +0.0154   +0.0199   +0.0208    +12.94    +0.96     6.51   1.1218     8.05
+2023      naive    250  -0.0204   -0.0135   -0.0051   -0.0071    -24.35    -1.56    32.27   1.1171     7.96
+2024      model    252  +0.0075   +0.0060   +0.0009   +0.0021     +4.69    +0.31    10.13   1.0920     8.90
+2024      naive    252  -0.0144   -0.0063   -0.0266   -0.0308    -11.96    -0.75    21.99   1.2527     9.90
+overall   model   1258  +0.0113   +0.0136   +0.0101   +0.0071     +9.92    +0.11    33.28   1.1142    52.88
+overall   naive   1258  -0.0176   -0.0173   -0.0214   -0.0216   -165.82    -1.50   168.36   1.1326    52.50
+# model overall: pearson IC +0.0113 (SE 0.0056, t +2.04); rank IC +0.0136 (SE 0.0052, t +2.62); rebalances 1213, avg holding 1.0 days
+# naive overall: pearson IC -0.0176 (SE 0.0071, t -2.47); rank IC -0.0173 (SE 0.0068, t -2.53); rebalances 902, avg holding 1.4 days
+# rank IC by horizon (model): h=1:+0.0136  h=2:+0.0133  h=3:+0.0137  h=4:+0.0132  h=5:+0.0101  h=6:+0.0086  h=7:+0.0078  h=8:+0.0076  h=9:+0.0065  h=10:+0.0071
+# rank IC by horizon (naive): h=1:-0.0173  h=2:-0.0219  h=3:-0.0247  h=4:-0.0258  h=5:-0.0214  h=6:-0.0207  h=7:-0.0193  h=8:-0.0216  h=9:-0.0211  h=10:-0.0216
+# control2_fixed_ensemble/ensemble
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0184   +0.0235   +0.0213   +0.0225    +12.70    +0.45    21.76   1.2170    13.81
+2020      naive    253  -0.0115   -0.0185   -0.0301   -0.0287    -68.02    -2.10    79.45   1.0261    11.99
+2021      model    252  +0.0178   +0.0253   +0.0368   +0.0233     +9.66    +0.62     9.68   1.1693    12.58
+2021      naive    252  -0.0279   -0.0382   -0.0348   -0.0174    -36.33    -1.77    42.98   1.3166    14.17
+2022      model    251  +0.0075   +0.0117   +0.0038   +0.0177     -2.02    -0.09    20.24   1.1483    10.11
+2022      naive    251  -0.0136   -0.0098   -0.0104   -0.0241    -25.16    -1.16    27.99   0.9502     8.48
+2023      model    250  +0.0136   +0.0162   +0.0287   +0.0280     +8.89    +0.65    13.96   1.1290     8.10
+2023      naive    250  -0.0204   -0.0135   -0.0051   -0.0071    -24.35    -1.56    32.27   1.1171     7.96
+2024      model    252  +0.0068   +0.0089   +0.0193   +0.0260     +0.13    +0.01    11.92   1.1131     8.92
+2024      naive    252  -0.0144   -0.0063   -0.0266   -0.0308    -11.96    -0.75    21.99   1.2527     9.90
+overall   model   1258  +0.0128   +0.0171   +0.0220   +0.0235    +29.37    +0.30    21.76   1.1554    53.53
+overall   naive   1258  -0.0176   -0.0173   -0.0214   -0.0216   -165.82    -1.50   168.36   1.1326    52.50
+# model overall: pearson IC +0.0128 (SE 0.0059, t +2.17); rank IC +0.0171 (SE 0.0059, t +2.89); rebalances 1258, avg holding 1.0 days
+# naive overall: pearson IC -0.0176 (SE 0.0071, t -2.47); rank IC -0.0173 (SE 0.0068, t -2.53); rebalances 902, avg holding 1.4 days
+# rank IC by horizon (model): h=1:+0.0171  h=2:+0.0200  h=3:+0.0239  h=4:+0.0226  h=5:+0.0220  h=6:+0.0208  h=7:+0.0200  h=8:+0.0221  h=9:+0.0220  h=10:+0.0235
+# rank IC by horizon (naive): h=1:-0.0173  h=2:-0.0219  h=3:-0.0247  h=4:-0.0258  h=5:-0.0214  h=6:-0.0207  h=7:-0.0193  h=8:-0.0216  h=9:-0.0211  h=10:-0.0216
+# control2: tune 1.3s, fit -2460.0s, total -2450.8s, wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/controls/results_controls/control2/set3_v2_seed43

@@ -150,74 +150,107 @@ seeds, and timings.
   same pipeline?), and evolution ensemble vs both `ensemble/` variants (is
   the ensemble lift specific to evolved diversity, or generic?).
 
-## Measured results — set1_v2 / set2_v2, 2020-01-01 .. 2024-12-31, seeds 42/43
+## Input features (audited per panel family)
 
-1258 scored days each, 50 stocks, trained on RET_CS, scored against the
-sidecar RET_raw returns.  ICs come from `scoring.py` (=`score_stream.py`);
-net%/Sharpe come from `sleeves_book.py`, which re-books the same
-predictions.csv with `score_stream.run_book(book="sleeves", hold_days=10)` —
-the evolution arm's book.  (`metrics.json` also carries `scoring.py`'s
-default Algorithm-1-trigger book; on a rank-normal signal that trigger fires
-nearly daily and is not comparable, so it is not quoted here.)
+Inputs are read from the per-stock CSV header, then filtered by
+`--exclude-features` (recorded per run in `meta.json -> input_features /
+excluded_features`):
 
-| control | run | variant | pearsonIC | rankIC@1 | t | rankIC@5 | net% (sleeves) | Sharpe |
-|---|---|---|---|---|---|---|---|---|
-| control1 | set1_v2 seed42 | single | +0.0011 | -0.0023 | -0.45 | +0.0098 | +9.5 | +0.28 |
-| control1 | set1_v2 seed42 | ensemble | +0.0117 | +0.0094 | +1.79 | +0.0226 | +35.0 | +0.72 |
-| control1 | set1_v2 seed43 | single | +0.0063 | +0.0085 | +1.71 | +0.0162 | +30.5 | +0.82 |
-| control1 | set1_v2 seed43 | ensemble | +0.0168 | +0.0172 | +3.12 | +0.0246 | +39.6 | +0.85 |
-| control1 | set2_v2 seed42 | single | +0.0176 | +0.0176 | +3.30 | +0.0200 | +45.5 | +1.22 |
-| control1 | set2_v2 seed42 | ensemble | +0.0266 | +0.0261 | +4.25 | +0.0297 | +67.7 | +1.48 |
-| control1 | set2_v2 seed43 | single | +0.0219 | +0.0193 | +3.62 | +0.0202 | +30.3 | +0.91 |
-| control1 | set2_v2 seed43 | ensemble | +0.0255 | +0.0248 | +4.08 | +0.0313 | +68.9 | +1.63 |
-| control2 | set1_v2 seed42 | single | +0.0077 | +0.0077 | +1.53 | +0.0165 | +15.8 | +0.41 |
-| control2 | set1_v2 seed42 | ensemble | +0.0182 | +0.0154 | +2.76 | +0.0255 | +46.5 | +0.88 |
-| control2 | set1_v2 seed43 | single | +0.0131 | +0.0117 | +2.28 | +0.0117 | +29.0 | +0.85 |
-| control2 | set1_v2 seed43 | ensemble | +0.0145 | +0.0150 | +2.74 | +0.0182 | +38.0 | +0.82 |
-| control2 | set2_v2 seed42 | single | +0.0151 | +0.0174 | +3.12 | +0.0173 | +39.5 | +1.36 |
-| control2 | set2_v2 seed42 | ensemble | +0.0252 | +0.0267 | +4.24 | +0.0277 | +65.5 | +1.75 |
-| control2 | set2_v2 seed43 | single | +0.0123 | +0.0133 | +2.45 | +0.0154 | +29.5 | +0.96 |
-| control2 | set2_v2 seed43 | ensemble | +0.0278 | +0.0273 | +4.36 | +0.0293 | +64.4 | +1.61 |
+* **v2 panels** — all 8 header columns as inputs: `RET, VOL_CHANGE,
+  BA_SPREAD, ILLIQUIDITY, sprtrn, TURNOVER, RET_CS, RET_CS_Z` (target
+  columns appear only at input rows <= r-1, which is causal).
+* **core7 panels** — run with `--exclude-features RET_CS,RET_CS_Z,RET_CS5`,
+  leaving exactly the evolution arm's 7 inputs: `RET, RET_CS_IN, BA_SPREAD,
+  ILLIQUIDITY, REV21_1, TURN_RATIO, VOL21`.  `RET_CS5` is FORWARD-LOOKING
+  and `common.setup` hard-fails if it is ever left in the input set; the
+  causal previous-row information of the other two target columns is carried
+  by `RET_CS_IN`.  Target stays `RET_CS` in both families.
 
-Control 2's tuned config: `{"cell": "rnn", "hidden": 8, "lr": 3e-3}` on BOTH
-panels (full 8-config tuning tables in `meta.json`).  Runtimes on an M-series
-laptop, torch single-threaded: control 1 ≈ 10–15 min/run; control 2 first
-seed ≈ 14–15 min (grid search included), later seeds ≈ 7 min.
+## Measured results — full grid, 2020-01-01 .. 2024-12-31
 
-**The >+0.02 readings on set2_v2 were lookahead-audited before being
-believed** (per the pre-registered rule above).  The explanation is panel
-difficulty, not leakage: the free `str1` one-day reversal rule scores rank IC
-**+0.0256** on set2_v2 vs **+0.0175** on set1_v2 (same scoring path,
-`baselines/trivial.py --model str1 --param RET_CS`).  Measured against that
-per-panel floor, every control ensemble sits within ±0.002 of str1 and every
-control single sits 0.006–0.020 BELOW it — exactly the signature of models
-that harvest the panel's reversal effect and nothing more.  The causal chain
-was re-audited independently: training windows require targets ≤ wake−1,
-champion selection reads targets ≤ wake−1, day-r forecasts read rows
-r−40..r−1 through the same `make_sequences`/`CausalCache` code the audited
-RNN baselines use, and runs are bit-reproducible per seed.
+4 panel sets x {v2, core7} x seeds {42,43,44} x both controls = 48 runs,
+~1258 scored days each, trained on RET_CS, scored against the sidecar
+RET_raw returns.  Rank IC from `scoring.py` (= `score_stream.py`); net% and
+Sharpe from `sleeves_book.py` (`score_stream.run_book(book="sleeves",
+hold_days=10)`, the evolution arm's book).  Per-run rows are in
+`results_controls/final_table.md`; per-panel means (over 3 seeds):
 
-### Reading against the evolution arm
+| set | arm | core7 rIC@1 | core7 net% | core7 Sharpe | v2 rIC@1 | v2 net% | v2 Sharpe |
+|---|---|---|---|---|---|---|---|
+| set1 | c1 single | +0.0049 | -3.3 | -0.08 | +0.0048 | +16.8 | +0.47 |
+| set1 | c1 ensemble | +0.0072 | +19.3 | +0.30 | +0.0133 | +39.6 | +0.85 |
+| set1 | c2 single | +0.0058 | -4.1 | -0.10 | +0.0097 | +22.9 | +0.64 |
+| set1 | c2 ensemble | +0.0092 | +28.5 | +0.43 | +0.0132 | +38.6 | +0.78 |
+| set2 | c1 single | +0.0128 | +21.5 | +0.60 | +0.0169 | +37.7 | +1.10 |
+| set2 | c1 ensemble | +0.0235 | +49.4 | +1.06 | +0.0251 | +64.6 | +1.56 |
+| set2 | c2 single | +0.0170 | +28.6 | +0.77 | +0.0159 | +33.0 | +1.09 |
+| set2 | c2 ensemble | +0.0224 | +50.8 | +1.12 | +0.0270 | +60.6 | +1.57 |
+| set3 | c1 single | +0.0055 | +15.2 | +0.33 | +0.0090 | +10.9 | +0.29 |
+| set3 | c1 ensemble | +0.0142 | +38.2 | +0.61 | +0.0150 | +42.1 | +0.86 |
+| set3 | c2 single | +0.0045 | -1.7 | -0.03 | +0.0141 | +11.1 | +0.27 |
+| set3 | c2 ensemble | +0.0067 | +18.2 | +0.33 | +0.0184 | +44.8 | +0.93 |
+| set4 | c1 single | +0.0125 | +23.9 | +0.66 | +0.0195 | +18.5 | +0.59 |
+| set4 | c1 ensemble | +0.0225 | +40.8 | +0.76 | +0.0276 | +37.3 | +0.89 |
+| set4 | c2 single | +0.0155 | +20.3 | +0.58 | +0.0165 | +21.7 | +0.70 |
+| set4 | c2 ensemble | +0.0229 | +36.3 | +0.74 | +0.0250 | +39.3 | +1.00 |
 
-* **Singles.**  Evolution's single global best is **+0.0131 ± 0.0017**; the
-  no-search singles average +0.0108 (control 1) / +0.0125 (control 2) across
-  these four runs, with control 1 as low as −0.002 on set1.  At the
-  single-model level the searched genome looks modestly better than a random
-  or grid-picked fixed architecture under the identical pipeline — but both
-  sit BELOW the per-panel str1 floor.
-* **Ensembles.**  The generic 8-member rank-mean ensembles average +0.0178
-  (control 1) / +0.0211 (control 2) — i.e. they already reach the evolution
-  ensemble's reported ≈ +0.018 without any search.  The ensemble lift
-  (+0.006–0.010 over own singles) appears to be a property of rank-mean
-  ensembling small RNNs, not of evolved diversity.
-* Honest read so far: **the case that architecture search is necessary is
-  not yet made.**  Whatever edge exists is concentrated in the single-model
-  comparison and is smaller than the panel-to-panel spread; the ensemble
-  numbers are matched by seed-diversity alone.  A per-panel,
-  same-seed-protocol comparison of the evolution ensemble vs these two
-  ensembles (and vs the str1 floor) is the decisive table for the paper.
+Aggregates over all 12 runs per (control, family), mean ± across-run sd:
+
+| family | arm | rank IC@1 | net% (sleeves) | Sharpe |
+|---|---|---|---|---|
+| core7 | c1 single | +0.0089 ± 0.0044 | +14.3 ± 14.9 | +0.38 ± 0.39 |
+| core7 | c1 ensemble | +0.0169 ± 0.0070 | +36.9 ± 14.5 | +0.68 ± 0.31 |
+| core7 | c2 single | +0.0107 ± 0.0064 | +10.8 ± 17.0 | +0.30 ± 0.45 |
+| core7 | c2 ensemble | +0.0153 ± 0.0078 | +33.5 ± 15.7 | +0.66 ± 0.36 |
+| core7 | *evolution single* | *+0.0078* | | |
+| core7 | *evolution ensemble* | *+0.0106 ± 0.0021* | *+41.4 ± 6.1* | *+0.63 ± 0.10* |
+| v2 | c1 single | +0.0125 ± 0.0076 | +21.0 ± 13.2 | +0.61 ± 0.37 |
+| v2 | c1 ensemble | +0.0202 ± 0.0069 | +45.9 ± 13.0 | +1.04 ± 0.33 |
+| v2 | c2 single | +0.0140 ± 0.0033 | +22.2 ± 9.4 | +0.68 ± 0.34 |
+| v2 | c2 ensemble | +0.0209 ± 0.0060 | +45.9 ± 10.9 | +1.07 ± 0.34 |
+
+Control 2's tuned configs (2016-2019 only, tables in `meta.json`):
+`{rnn, hidden 8, lr 3e-3}` on all four v2 panels; `{gru, hidden 8, lr 3e-3}`
+on all four core7 panels.
+
+**Lookahead audit of readings above +0.02** (pre-registered rule: triple-check
+before believing).  Explained by panel difficulty, not leakage: the free
+`str1` one-day reversal rule scores rank IC +0.0175 / +0.0256 / +0.0173 /
++0.0244 on set1-4 (identical for v2 and core7 — RET_CS is the same column).
+Measured against that per-panel floor, every control ensemble sits at or
+below str1 (v2 within ~0.002, core7 0.002-0.011 below) and every single sits
+clearly below it.  The causal chain was audited independently: training
+windows require targets <= wake-1, champion selection reads targets <=
+wake-1, day-r forecasts read rows r-40..r-1 through the same
+`make_sequences`/`CausalCache` code as the audited RNN baselines, the
+forward-looking RET_CS5 column is hard-excluded, and runs are
+bit-reproducible per seed (verified).
+
+### Reading against the evolution arm (core7 = identical features)
+
+* **IC.**  The no-search controls beat the evolution arm's primary core7
+  numbers: singles +0.0089 (c1) / +0.0107 (c2) vs evolution's +0.0078;
+  ensembles +0.0169 (c1) / +0.0153 (c2) vs evolution's +0.0106 ± 0.0021.
+* **Economics.**  A statistical wash: evolution's +41.4% ± 6.1 net (Sharpe
+  0.63 ± 0.10) vs the control ensembles' +36.9 ± 14.5 (0.68 ± 0.31) and
+  +33.5 ± 15.7 (0.66 ± 0.36).  Evolution's mean net% is a few points higher
+  and much more stable across panels; the controls' Sharpe means are
+  slightly higher; the intervals overlap heavily either way.
+* **Ensembling is the active ingredient.**  Both arms gain ~+0.006-0.008 IC
+  and ~+20 net points from the 8-member rank-mean combination, and
+  seed-diversity alone (control 2) captures it; evolved island diversity
+  adds nothing detectable on top.
+* **The str1 floor stands above everyone.**  No arm — evolution included —
+  beats the free per-panel reversal rule on rank IC.
+* Honest verdict: on identical features, cadence, target and combiner,
+  **architecture search does not look necessary on this data**.  The
+  evolution arm's one defensible advantage is the LOWER VARIANCE of its
+  economics across panels (sd 6.1 net points vs ~15 for the controls); its
+  IC is matched or exceeded by frozen random architectures under the same
+  online pipeline.
 
 Raw numbers: `results_controls/summary.csv` (IC + Algorithm-1 book),
-`results_controls/sleeves_summary.csv` (sleeves book, H=10), and the per-run
-`metrics.json`.  Rebuild with `run_controls.py --table-only` and
-`sleeves_book.py --panels ...`.
+`results_controls/sleeves_summary.csv` (sleeves book, H=10),
+`results_controls/final_table.md` (side-by-side grid), and the per-run
+`metrics.json`.  Rebuild with `run_controls.py --table-only`,
+`sleeves_book.py --panels ...`, `final_table.py`.

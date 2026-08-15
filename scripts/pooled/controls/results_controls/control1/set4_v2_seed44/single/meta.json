@@ -1,0 +1,117 @@
+{
+ "control": "control1_random_arch",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set4_v2",
+ "panel_name": "set4_v2",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "input_features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER",
+  "RET_CS",
+  "RET_CS_Z"
+ ],
+ "excluded_features": [],
+ "k_members": 8,
+ "members": [
+  {
+   "cell": "gru",
+   "hidden": 5,
+   "rec_density": 0.5,
+   "lr": 0.003,
+   "seed": 44000,
+   "n_params": 231
+  },
+  {
+   "cell": "rnn",
+   "hidden": 12,
+   "rec_density": 0.75,
+   "lr": 0.003,
+   "seed": 44001,
+   "n_params": 277
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "rec_density": 0.75,
+   "lr": 0.003,
+   "seed": 44002,
+   "n_params": 433
+  },
+  {
+   "cell": "rnn",
+   "hidden": 16,
+   "rec_density": 0.5,
+   "lr": 0.003,
+   "seed": 44003,
+   "n_params": 433
+  },
+  {
+   "cell": "rnn",
+   "hidden": 6,
+   "rec_density": 1.0,
+   "lr": 0.003,
+   "seed": 44004,
+   "n_params": 103
+  },
+  {
+   "cell": "rnn",
+   "hidden": 9,
+   "rec_density": 0.5,
+   "lr": 0.003,
+   "seed": 44005,
+   "n_params": 181
+  },
+  {
+   "cell": "gru",
+   "hidden": 12,
+   "rec_density": 0.75,
+   "lr": 0.003,
+   "seed": 44006,
+   "n_params": 805
+  },
+  {
+   "cell": "gru",
+   "hidden": 8,
+   "rec_density": 0.75,
+   "lr": 0.003,
+   "seed": 44007,
+   "n_params": 441
+  }
+ ],
+ "protocol": {
+  "step_days": 5,
+  "window_len": 40,
+  "epochs_per_wake": 10,
+  "windows_per_wake": 512,
+  "minibatch": 256,
+  "recency_half_life_days": 504.0,
+  "select_days": 60,
+  "loss": "seq-to-seq MSE on the standardised target over all 40 window steps",
+  "optimizer": "Adam, grad-norm clip 1.0, state persists across wakes",
+  "combiner": "rank_mean (score_ensemble.py's definition)"
+ },
+ "warmup_from": "2004-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 44,
+ "torch_version": "2.8.0",
+ "architecture_sampling": {
+  "cell": "Uniform{rnn, gru}",
+  "hidden": "UniformInt[4, 16]",
+  "rec_density": "Uniform{1.0, 0.75, 0.5} (fixed binary mask on weight_hh)",
+  "lr": "fixed (shared, not sampled)"
+ },
+ "lr": 0.003,
+ "no_search": "architectures sampled once at t=0, never mutated, born or killed; only weights change",
+ "fit_seconds": -2746.64,
+ "model": "control1_random_arch/single",
+ "variant": "single",
+ "variant_doc": "weekly champion (lowest trailing-60-day MSE) predicts the week"
+}
