@@ -88,6 +88,11 @@ def main():
     ap.add_argument("--param", default="RET_CS")
     ap.add_argument("--score-from", default="2020-01-01")
     ap.add_argument("--score-to", default="2024-12-31")
+    ap.add_argument("--tune-from", default=None,
+                    help="override the protocol's tuning span start; use with "
+                         "--tune-to when the score span starts before 2020 so "
+                         "tuning stays strictly out-of-sample")
+    ap.add_argument("--tune-to", default=None)
     args = ap.parse_args()
 
     seeds = [int(s) for s in args.seeds.split(",")]
@@ -113,6 +118,10 @@ def main():
                        "--seed", str(seed), "--param", args.param,
                        "--score-from", args.score_from,
                        "--score-to", args.score_to] + list(extra)
+                if args.tune_from:
+                    cmd += ["--tune-from", args.tune_from]
+                if args.tune_to:
+                    cmd += ["--tune-to", args.tune_to]
 
                 # frozen-config reuse: (a) cadence variants inherit the tuned
                 # cadence's config; (b) non-tuning seeds inherit the seed-42
