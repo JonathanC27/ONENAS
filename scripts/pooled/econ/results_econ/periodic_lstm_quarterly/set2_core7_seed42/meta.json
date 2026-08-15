@@ -1,0 +1,149 @@
+{
+ "model": "periodic-lstm-quarterly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set2_core7",
+ "panel_name": "set2_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 32,
+  "lr": 0.003,
+  "seq_len": 20,
+  "max_steps": 1500,
+  "lookback_days": 0,
+  "cs_demean_y": false
+ },
+ "tuned_on": "2016-01-01..2019-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": [
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 500,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.017540814831654476,
+   "seconds": 35.49
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 500,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.012204497959578354,
+   "seconds": 31.76
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 1500,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.02643057821883348,
+   "seconds": 88.46
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 1500,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 1500,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.017567865379100375,
+   "seconds": 101.16
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 4000,
+    "lookback_days": 0,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 0
+   },
+   "val_rank_ic": 0.01213213979406003,
+   "seconds": 288.27
+  },
+  {
+   "stage": 0,
+   "config": {
+    "hidden": 32,
+    "lr": 0.003,
+    "seq_len": 20,
+    "max_steps": 4000,
+    "lookback_days": 1250,
+    "cs_demean_y": false
+   },
+   "varied": {
+    "max_steps": 4000,
+    "lookback_days": 1250
+   },
+   "val_rank_ic": 0.00914931220746815,
+   "seconds": 242.3
+  }
+ ],
+ "warmup_from": "2020-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "scored_days": 1258,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "fit_seconds": 114.49,
+ "total_seconds": 901.93,
+ "cadence": "quarterly",
+ "retrain_model": "lstm",
+ "inherited_architecture": {
+  "hidden": 32,
+  "lr": 0.003,
+  "seq_len": 20,
+  "cs_demean_y": false
+ },
+ "arch_from": "/Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/econ/results_econ/lstm/set2_core7_seed42/meta.json"
+}
