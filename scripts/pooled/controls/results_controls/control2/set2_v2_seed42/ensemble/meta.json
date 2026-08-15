@@ -1,0 +1,192 @@
+{
+ "control": "control2_fixed_ensemble",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set2_v2",
+ "panel_name": "set2_v2",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "VOL_CHANGE",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "sprtrn",
+  "TURNOVER",
+  "RET_CS",
+  "RET_CS_Z"
+ ],
+ "k_members": 8,
+ "members": [
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42000,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42001,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42002,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42003,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42004,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42005,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42006,
+   "n_params": 153
+  },
+  {
+   "cell": "rnn",
+   "hidden": 8,
+   "lr": 0.003,
+   "rec_density": 1.0,
+   "seed": 42007,
+   "n_params": 153
+  }
+ ],
+ "protocol": {
+  "step_days": 5,
+  "window_len": 40,
+  "epochs_per_wake": 10,
+  "windows_per_wake": 512,
+  "minibatch": 256,
+  "recency_half_life_days": 504.0,
+  "select_days": 60,
+  "loss": "seq-to-seq MSE on the standardised target over all 40 window steps",
+  "optimizer": "Adam, grad-norm clip 1.0, state persists across wakes",
+  "combiner": "rank_mean (score_ensemble.py's definition)"
+ },
+ "warmup_from": "2004-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 42,
+ "torch_version": "2.8.0",
+ "hyperparameters": {
+  "cell": "rnn",
+  "hidden": 8,
+  "lr": 0.003
+ },
+ "tuned_on": "2016-01-01..2019-12-31",
+ "tuning_objective": "mean daily rank IC",
+ "tuning_seed": 7,
+ "tuning_table": [
+  {
+   "config": {
+    "cell": "rnn",
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.025791285392184293,
+   "seconds": 31.75
+  },
+  {
+   "config": {
+    "cell": "gru",
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.017382282795766424,
+   "seconds": 77.51
+  },
+  {
+   "config": {
+    "cell": "rnn",
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.016130247207996926,
+   "seconds": 44.01
+  },
+  {
+   "config": {
+    "cell": "gru",
+    "hidden": 16,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.014937792140672417,
+   "seconds": 106.68
+  },
+  {
+   "config": {
+    "cell": "rnn",
+    "hidden": 8,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.012186076196922574,
+   "seconds": 35.68
+  },
+  {
+   "config": {
+    "cell": "rnn",
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.010956443842493307,
+   "seconds": 42.45
+  },
+  {
+   "config": {
+    "cell": "gru",
+    "hidden": 8,
+    "lr": 0.003
+   },
+   "val_rank_ic": 0.009205709811114796,
+   "seconds": 78.64
+  },
+  {
+   "config": {
+    "cell": "gru",
+    "hidden": 16,
+    "lr": 0.001
+   },
+   "val_rank_ic": 0.002847736805832137,
+   "seconds": 107.49
+  }
+ ],
+ "no_search": "one architecture, tuned pre-2020, instantiated 8 times with different seeds; never changed",
+ "tune_seconds": 525.03,
+ "fit_seconds": 353.85,
+ "model": "control2_fixed_ensemble/ensemble",
+ "variant": "ensemble",
+ "variant_doc": "rank-mean of all 8 members' cross-sections, score_ensemble.py's combiner"
+}

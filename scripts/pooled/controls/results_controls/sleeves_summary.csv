@@ -1,0 +1,17 @@
+control,run,variant,net_pct,sharpe,mdd_pct,turnover,cost_pct
+control1,set1_v2_seed42,single,9.5439,0.2803,8.6758,0.1547,7.3976
+control1,set1_v2_seed42,ensemble,35.0109,0.7205,27.0692,0.1461,6.8263
+control1,set1_v2_seed43,single,30.474,0.8221,8.7505,0.1543,7.3098
+control1,set1_v2_seed43,ensemble,39.5456,0.8483,15.959,0.1475,6.8909
+control1,set2_v2_seed42,single,45.4722,1.2174,14.1067,0.1555,8.2438
+control1,set2_v2_seed42,ensemble,67.6905,1.476,17.3239,0.1539,8.0508
+control1,set2_v2_seed43,single,30.2511,0.9132,6.1292,0.1555,8.301
+control1,set2_v2_seed43,ensemble,68.8653,1.6277,9.4078,0.1544,8.0015
+control2,set1_v2_seed42,single,15.8156,0.4146,14.721,0.1534,7.2415
+control2,set1_v2_seed42,ensemble,46.4794,0.8789,30.0553,0.1439,6.5591
+control2,set1_v2_seed43,single,29.0196,0.8451,7.1268,0.1543,7.2217
+control2,set1_v2_seed43,ensemble,37.9492,0.8215,19.276,0.1463,6.7188
+control2,set2_v2_seed42,single,39.4658,1.3649,7.3376,0.1563,8.3724
+control2,set2_v2_seed42,ensemble,65.5235,1.748,16.0582,0.1554,8.0504
+control2,set2_v2_seed43,single,29.5036,0.9598,11.5197,0.157,8.2198
+control2,set2_v2_seed43,ensemble,64.3757,1.6058,16.5238,0.1556,8.1098

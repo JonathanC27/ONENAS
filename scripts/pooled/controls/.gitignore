@@ -1,0 +1,8 @@
+# Large per-run artifacts: regenerate with run_controls.py (each run is a
+# <30 minute laptop job).  meta.json / metrics.json / run.log /
+# champion_trace.json / summary.csv are small and ARE tracked, so the
+# reported numbers stay auditable without the blobs.
+results_controls/**/predictions.csv
+results_controls/**/book_daily.csv
+__pycache__/
+*.pyc
