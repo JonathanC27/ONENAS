@@ -30,6 +30,20 @@ Member selection (--ensemble):
                     islands cannot be compared on merit; ascending island index
                     is a deterministic, arbitrary tie-break, which makes `topn`
                     a round-robin over islands rather than a true global top-N.
+  diverse           TARGET-FREE greedy max-diversity selection of --top-n
+                    members from the elites with elite_rank <= --diverse-gate
+                    (the within-island validation-MSE rank is the merit gate;
+                    the file carries no MSE value).  Each candidate's signature
+                    is its centred cross-sectional prediction ranks over the
+                    whole test window, unit-normalised; similarity is the dot
+                    product (pooled per-row rank correlation).  Selection seeds
+                    with the rank-0 elite least similar to the field on average
+                    and greedily adds the candidate whose MAXIMUM similarity to
+                    the chosen set is smallest.  The realised return is never
+                    consulted, so unlike an IC-greedy pick this cannot select
+                    on label noise; it tests the ambiguity-decomposition
+                    hypothesis (ensemble error = member error - disagreement)
+                    directly.
 
   Membership is re-derived every generation, because the elite populations are
   re-selected every generation: (island, elite_rank) is a SLOT, not a fixed
@@ -280,6 +294,62 @@ def load_generation_elites(path, n_stocks, lo, hi):
     return members, incomplete
 
 
+def select_diverse(members, n, gate):
+    """Greedy max-diversity selection of n member slots, target-free.
+
+    Candidates are the slots with elite_rank <= gate.  A candidate's signature
+    is the concatenation, over the window rows every candidate has finite
+    predictions for, of its centred cross-sectional prediction ranks,
+    normalised to unit norm; similarity between two candidates is the dot
+    product of their signatures.  The seed is the rank-0 elite with the lowest
+    mean similarity to the whole candidate field; each further pick minimises
+    the MAXIMUM similarity to the already-chosen set (deterministic ties by
+    slot order).  Realised returns are never consulted.
+    """
+    cands = sorted(s for s in members if s[1] <= gate)
+    common = None
+    for s in cands:
+        rs = set(r for r, v in members[s].items()
+                 if all(math.isfinite(x) for x in v))
+        common = rs if common is None else (common & rs)
+    if not common:
+        # every candidate row is broken somewhere; fall back to champions
+        return select_members(sorted(members), "island_champions", n)
+    rows = sorted(common)
+    sig = {}
+    for s in cands:
+        vec = []
+        for r in rows:
+            rk = ranks(members[s][r])
+            mu = sum(rk) / len(rk)
+            vec.extend(x - mu for x in rk)
+        nrm = math.sqrt(sum(x * x for x in vec))
+        if nrm > 0.0:
+            sig[s] = [x / nrm for x in vec]
+    cands = [s for s in cands if s in sig]
+    if len(cands) <= n:
+        return cands
+    gram = {}
+    for i, a in enumerate(cands):
+        va = sig[a]
+        for b in cands[i + 1:]:
+            vb = sig[b]
+            d = 0.0
+            for x, y in zip(va, vb):
+                d += x * y
+            gram[(a, b)] = gram[(b, a)] = d
+    seeds = [s for s in cands if s[1] == 0] or cands
+    seed = min(seeds, key=lambda s: (mean([gram[(s, o)] for o in cands
+                                           if o != s]), s))
+    chosen = [seed]
+    rest = [s for s in cands if s != seed]
+    while len(chosen) < n and rest:
+        nxt = min(rest, key=lambda s: (max(gram[(s, c)] for c in chosen), s))
+        chosen.append(nxt)
+        rest.remove(nxt)
+    return sorted(chosen)
+
+
 def select_members(available, mode, top_n):
     """Pick member slots from the (island, elite_rank) pairs of one generation."""
     if mode == "island_champions":
@@ -332,6 +402,10 @@ def build_ensemble(run_dir, gens, stream, args, n_stocks, offset):
     """
     step, L = args.step, args.length
     lo, hi = L - 1 - step, L - 1
+    # diverse selection estimates member similarity over the WHOLE test window
+    # (more rows -> better correlation estimates; target-free, so no leakage),
+    # while combination and booking still use only the newest `step` rows
+    sel_lo = 0 if args.ensemble == "diverse" else lo
     have = find_elite_generations(run_dir)
     missing = [g for g in gens if g not in have]
     if missing:
@@ -351,9 +425,12 @@ def build_ensemble(run_dir, gens, stream, args, n_stocks, offset):
     gb_matched = set()
     for gi, g in enumerate(gens):
         path = os.path.join(run_dir, "generation_%d_elites.csv" % g)
-        members, inc = load_generation_elites(path, n_stocks, lo, hi)
+        members, inc = load_generation_elites(path, n_stocks, sel_lo, hi)
         incomplete += inc
-        slots = select_members(sorted(members), args.ensemble, args.top_n)
+        if args.ensemble == "diverse":
+            slots = select_diverse(members, args.top_n, args.diverse_gate)
+        else:
+            slots = select_members(sorted(members), args.ensemble, args.top_n)
         if not slots:
             sys.exit("%s: --ensemble %s selected no members" % (path, args.ensemble))
         members_per_gen.append(len(slots))
@@ -560,6 +637,9 @@ def score(args):
         spec = args.ensemble
         if args.ensemble == "topn":
             spec += " (N=%d, ordered by (elite_rank, island))" % args.top_n
+        if args.ensemble == "diverse":
+            spec += (" (N=%d, elite_rank <= %d, greedy min-max-similarity, "
+                     "target-free)" % (args.top_n, args.diverse_gate))
         print("# ensemble: %s, combine=%s, over %d generations"
               % (spec, args.combine, len(gens)))
         if args.book == "algo1" and args.combine in ("rank_mean", "zscore_mean"):
@@ -763,7 +843,9 @@ def score(args):
             "beta_window": args.beta_window if args.beta_neutral else None,
             "ensemble": args.ensemble,
             "combine": args.combine if args.ensemble != "global_best" else None,
-            "top_n": args.top_n if args.ensemble == "topn" else None,
+            "top_n": args.top_n if args.ensemble in ("topn", "diverse") else None,
+            "diverse_gate": args.diverse_gate if args.ensemble == "diverse"
+            else None,
         },
         "summary": summary,
         "horizon_rank_ic": hz,
@@ -863,7 +945,7 @@ def _args_for(run, side, **over):
              hold_days=2, beta_neutral=False, beta_window=60, cost_bps=None,
              rolling_window=5, max_horizon=3, out_dir=None, emit_json=False,
              skip_verify=False, ensemble="island_champions", top_n=2,
-             combine="rank_mean", self_test=False)
+             diverse_gate=1, combine="rank_mean", self_test=False)
     d.update(over)
     return argparse.Namespace(**d)
 
@@ -1043,6 +1125,24 @@ def run_self_test():
               and t1["diagnostics"]["member_slots"]
               == ["island0_elite0", "island0_elite1", "island1_elite0"],
               "got %s" % (t1["diagnostics"]["member_slots"],))
+        dv = _quiet(score, _args_for(run, side, ensemble="diverse", top_n=2,
+                                     diverse_gate=1,
+                                     out_dir=os.path.join(root, "out_dv")))
+        # member (1,1) is pure noise: maximally dissimilar to everything, so a
+        # gate that admits it (gate=1) must see greedy diversity pick it up
+        check("diverse N=2 gate=1 runs end-to-end and picks exactly 2 members",
+              dv["diagnostics"]["members_per_day"]["mean"] == 2.0,
+              "got %s" % (dv["diagnostics"]["member_slots"],))
+        check("diverse selection picks up the dissimilar (noise) member",
+              "island1_elite1" in dv["diagnostics"]["member_slots"],
+              "got %s" % (dv["diagnostics"]["member_slots"],))
+        dv0 = _quiet(score, _args_for(run, side, ensemble="diverse", top_n=2,
+                                      diverse_gate=0,
+                                      out_dir=os.path.join(root, "out_dv0")))
+        check("diverse gate=0 restricts candidates to the island champions",
+              dv0["diagnostics"]["member_slots"]
+              == ["island0_elite0", "island1_elite0"],
+              "got %s" % (dv0["diagnostics"]["member_slots"],))
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -1089,9 +1189,14 @@ def parse_args(argv=None):
                     help="skip empirical row-mapping verification (assume +2)")
     ap.add_argument("--ensemble", default="island_champions",
                     choices=("global_best", "island_champions", "all_elites",
-                             "topn"),
+                             "topn", "diverse"),
                     help="which elite genomes are the ensemble members "
                          "(default island_champions)")
+    ap.add_argument("--diverse-gate", type=int, default=3, metavar="R",
+                    help="--ensemble diverse: only elites with elite_rank <= R "
+                         "are candidates (the within-island validation-MSE "
+                         "rank is the merit gate; default 3, i.e. the top half "
+                         "of an 8-elite island)")
     ap.add_argument("--top-n", type=int, default=8, metavar="N",
                     help="member count for --ensemble topn; members are taken "
                          "in (elite_rank, island) order, i.e. every island's "
