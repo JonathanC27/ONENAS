@@ -1,0 +1,376 @@
+# realized: sidecar RET_raw (param RET_CS)
+# row mapping verified on generations [0, 150, 299], all 50 stocks: file row i -> panel row tw*step + 2 + i (tw = g + num_training_windows + V)
+# stitched 1500 days from 300 generations (300*step = 1500); 2019-01-04 .. 2024-12-18 (panel rows 3571..5070, contiguous)
+# ensemble: island_champions, combine=rank_mean, over 300 generations
+# scoring 1250 days from 2020-01-02 to 2024-12-18 (--score-from 2020-01-01)
+# book: sleeves, H=10, top-k 10, beta-neutral off
+# book costs: TC/PRC from the panel, charged on netted traded notional
+
+period    who     days  pearsonIC  rankIC@1  rankIC@5  rankIC@10      net%   sharpe     MDD% turnover    cost%
+2020      model    253  +0.0114   +0.0087   +0.0264   +0.0120     -1.09    -0.06    27.70   0.1356     1.61
+2020      naive    253  -0.0109   -0.0185   -0.0301   -0.0287    -14.23    -1.24    25.99   0.1558     1.85
+2021      model    252  +0.0125   +0.0127   +0.0051   +0.0049     +7.11    +0.48    11.73   0.1266     1.31
+2021      naive    252  -0.0289   -0.0382   -0.0348   -0.0174     -6.73    -1.03    10.36   0.1581     1.71
+2022      model    251  +0.0035   +0.0026   +0.0057   +0.0075     +1.73    +0.10    12.26   0.1278     1.10
+2022      naive    251  -0.0118   -0.0098   -0.0104   -0.0241     -9.08    -1.36     9.95   0.1568     1.40
+2023      model    250  +0.0106   +0.0119   +0.0443   +0.0492    +20.00    +1.87     5.32   0.1291     0.89
+2023      naive    250  -0.0165   -0.0135   -0.0051   -0.0071     -3.61    -0.74     7.60   0.1607     1.16
+2024      model    244  +0.0053   +0.0022   +0.0127   -0.0046     -3.92    -0.31     8.91   0.1245     0.93
+2024      naive    244  -0.0090   -0.0064   -0.0313   -0.0313    -12.33    -2.54    12.78   0.1593     1.23
+overall   model   1250  +0.0087   +0.0077   +0.0189   +0.0140    +23.82    +0.31    27.70   0.1287     5.84
+overall   naive   1250  -0.0155   -0.0174   -0.0223   -0.0216    -45.98    -1.27    52.44   0.1582     7.36
+
+# model overall: pearson IC +0.0087 (SE 0.0065, t +1.34); rank IC +0.0077 (SE 0.0066, t +1.16); rebalances 1250, avg holding 10.0 days
+# naive overall: pearson IC -0.0155 (SE 0.0068, t -2.26); rank IC -0.0174 (SE 0.0069, t -2.53); rebalances 1250, avg holding 10.0 days
+# rank IC by horizon (overall): h=1:+0.0077  h=2:+0.0131  h=3:+0.0168  h=4:+0.0175  h=5:+0.0189  h=6:+0.0182  h=7:+0.0189  h=8:+0.0192  h=9:+0.0174  h=10:+0.0140
+#   naive                     : h=1:-0.0174  h=2:-0.0222  h=3:-0.0250  h=4:-0.0263  h=5:-0.0223  h=6:-0.0215  h=7:-0.0200  h=8:-0.0219  h=9:-0.0215  h=10:-0.0216
+
+# members/day: mean 8.00 (min 8, max 8); per generation mean 8.00 (min 8, max 8)
+# member dispersion (mean pairwise Spearman of member cross-sections, per day, n=1250):
+#     mean +0.1684   p10 +0.0463   p50 +0.1582   p90 +0.2991
+# per-member rank IC@1 over 8 member slots (each stitched over its own 1226 days):
+#     mean +0.0034   sd 0.0048   min -0.0019   max +0.0110
+# ensemble rank IC@1 +0.0077  vs  day-pooled mean member +0.0033  (ensemble - member = +0.0044)
+# row-alignment cross-check: the wide file's global_best column is reproduced by some elite on 1136/1250 scored days
+# wrote /anvil/scratch/x-jchang5/probe1/island_champions/set3_seed44/ensemble_diagnostics.csv
+# wrote /anvil/scratch/x-jchang5/probe1/island_champions/set3_seed44/ensemble_stitched_predictions.csv
+# wrote /anvil/scratch/x-jchang5/probe1/island_champions/set3_seed44/ensemble_book_daily.csv
+# wrote /anvil/scratch/x-jchang5/probe1/island_champions/set3_seed44/ensemble_rolling_rank_ic.csv
+{
+ "meta": {
+  "run_dir": "/anvil/scratch/x-jchang5/results_v2/C7_E/set3_seed44",
+  "param": "RET_CS",
+  "realized": "sidecar RET_raw",
+  "realized_mode": "auto",
+  "generations": 300,
+  "row_offset": 2,
+  "stitched_days": 1500,
+  "scored_days": 1250,
+  "first_scored_date": "2020-01-02",
+  "last_scored_date": "2024-12-18",
+  "score_from": "2020-01-01",
+  "top_k": 10,
+  "cost_bps": null,
+  "book": "sleeves",
+  "hold_days": 10,
+  "beta_neutral": false,
+  "beta_window": null,
+  "ensemble": "island_champions",
+  "combine": "rank_mean",
+  "top_n": null,
+  "diverse_gate": null
+ },
+ "summary": {
+  "2020": {
+   "model": {
+    "n_days": 253,
+    "pearson_ic": 0.011417208444418177,
+    "pearson_se": 0.015405954051062015,
+    "pearson_t": 0.7410906462901677,
+    "rank_ic_1": 0.00874894860859153,
+    "rank_ic_se": 0.015357651797647219,
+    "rank_ic_t": 0.5696800997879027,
+    "rank_ic_5": 0.026400843543308617,
+    "rank_ic_10": 0.01203275079298727,
+    "net_pct": -1.0915971992005198,
+    "sharpe": -0.05633064983382193,
+    "mdd_pct": 27.69801609139016,
+    "cost_pct": 1.6081498181091671,
+    "turnover": 0.13557214681125732
+   },
+   "naive": {
+    "n_days": 253,
+    "pearson_ic": -0.010943810219859252,
+    "pearson_se": 0.01767592636795267,
+    "pearson_t": -0.6191364453577337,
+    "rank_ic_1": -0.01852586935702776,
+    "rank_ic_se": 0.017904541221858677,
+    "rank_ic_t": -1.0347022650549982,
+    "rank_ic_5": -0.030072809823080894,
+    "rank_ic_10": -0.028723302784637715,
+    "net_pct": -14.230176510708597,
+    "sharpe": -1.2435638946071954,
+    "mdd_pct": 25.99372403535994,
+    "cost_pct": 1.8534276741104776,
+    "turnover": 0.15582544064146295
+   }
+  },
+  "2021": {
+   "model": {
+    "n_days": 252,
+    "pearson_ic": 0.012534249124475955,
+    "pearson_se": 0.015005140547518342,
+    "pearson_t": 0.8353303379453489,
+    "rank_ic_1": 0.012746819740732327,
+    "rank_ic_se": 0.015075869011671756,
+    "rank_ic_t": 0.8455114415536328,
+    "rank_ic_5": 0.005062634476470732,
+    "rank_ic_10": 0.004897523325165149,
+    "net_pct": 7.109300417893132,
+    "sharpe": 0.4786324379519292,
+    "mdd_pct": 11.72892437738782,
+    "cost_pct": 1.3131230272664391,
+    "turnover": 0.12655292524129041
+   },
+   "naive": {
+    "n_days": 252,
+    "pearson_ic": -0.028871269637794676,
+    "pearson_se": 0.015888336572490346,
+    "pearson_t": -1.817136080046508,
+    "rank_ic_1": -0.03821253284176137,
+    "rank_ic_se": 0.015884140451871333,
+    "rank_ic_t": -2.4057035353939784,
+    "rank_ic_5": -0.03480849431979277,
+    "rank_ic_10": -0.017428231986457002,
+    "net_pct": -6.729330719595642,
+    "sharpe": -1.0274566231032223,
+    "mdd_pct": 10.356015488129,
+    "cost_pct": 1.713191434624156,
+    "turnover": 0.15810736612398493
+   }
+  },
+  "2022": {
+   "model": {
+    "n_days": 251,
+    "pearson_ic": 0.0034984966226165835,
+    "pearson_se": 0.016451038620644343,
+    "pearson_t": 0.21266113971833572,
+    "rank_ic_1": 0.0025766200016149095,
+    "rank_ic_se": 0.016442909919255715,
+    "rank_ic_t": 0.15670097411392617,
+    "rank_ic_5": 0.005656112054834426,
+    "rank_ic_10": 0.0074897500046296065,
+    "net_pct": 1.7257516115490104,
+    "sharpe": 0.10105514974137347,
+    "mdd_pct": 12.25554712880939,
+    "cost_pct": 1.102315018581983,
+    "turnover": 0.12777698420704078
+   },
+   "naive": {
+    "n_days": 251,
+    "pearson_ic": -0.011762518245660629,
+    "pearson_se": 0.015742271447147196,
+    "pearson_t": -0.7471932043067536,
+    "rank_ic_1": -0.009806596974521298,
+    "rank_ic_se": 0.016237918395632673,
+    "rank_ic_t": -0.603931904052361,
+    "rank_ic_5": -0.010377403652271563,
+    "rank_ic_10": -0.024145823647370213,
+    "net_pct": -9.079650812588138,
+    "sharpe": -1.3587834350582135,
+    "mdd_pct": 9.947350656327686,
+    "cost_pct": 1.403595325959124,
+    "turnover": 0.1568471538188089
+   }
+  },
+  "2023": {
+   "model": {
+    "n_days": 250,
+    "pearson_ic": 0.01061314022723409,
+    "pearson_se": 0.012606218888989287,
+    "pearson_t": 0.8418971874670507,
+    "rank_ic_1": 0.01186564845756861,
+    "rank_ic_se": 0.013264358091346367,
+    "rank_ic_t": 0.8945512761231716,
+    "rank_ic_5": 0.04428206556524168,
+    "rank_ic_10": 0.04918003671740068,
+    "net_pct": 20.000390769996503,
+    "sharpe": 1.8657097103327667,
+    "mdd_pct": 5.318656551287359,
+    "cost_pct": 0.8863148851090317,
+    "turnover": 0.12906170175220247
+   },
+   "naive": {
+    "n_days": 250,
+    "pearson_ic": -0.016495936622839002,
+    "pearson_se": 0.01263252808961227,
+    "pearson_t": -1.305830195335454,
+    "rank_ic_1": -0.013540840443610928,
+    "rank_ic_se": 0.012370491482989123,
+    "rank_ic_t": -1.0946081214502408,
+    "rank_ic_5": -0.005128755157720672,
+    "rank_ic_10": -0.00708999856889018,
+    "net_pct": -3.6058666109338424,
+    "sharpe": -0.738973953615125,
+    "mdd_pct": 7.600418381024553,
+    "cost_pct": 1.1622597048611827,
+    "turnover": 0.16070725190854432
+   }
+  },
+  "2024": {
+   "model": {
+    "n_days": 244,
+    "pearson_ic": 0.005258546211100279,
+    "pearson_se": 0.012472438544891253,
+    "pearson_t": 0.421613319013241,
+    "rank_ic_1": 0.0021775173232479244,
+    "rank_ic_se": 0.013184783737110503,
+    "rank_ic_t": 0.16515381417436398,
+    "rank_ic_5": 0.012722156060203927,
+    "rank_ic_10": -0.004606512335879328,
+    "net_pct": -3.9210826544366526,
+    "sharpe": -0.3144767008587456,
+    "mdd_pct": 8.907947130671854,
+    "cost_pct": 0.9333885839148625,
+    "turnover": 0.124518831466329
+   },
+   "naive": {
+    "n_days": 244,
+    "pearson_ic": -0.009014432854756796,
+    "pearson_se": 0.013903231465444995,
+    "pearson_t": -0.6483696166003717,
+    "rank_ic_1": -0.0064445861164837935,
+    "rank_ic_se": 0.013751235859469583,
+    "rank_ic_t": -0.46865504906934063,
+    "rank_ic_5": -0.03125465738115839,
+    "rank_ic_10": -0.03125940168629774,
+    "net_pct": -12.331885608174536,
+    "sharpe": -2.539883504547272,
+    "mdd_pct": 12.782435598371473,
+    "cost_pct": 1.2283903435557173,
+    "turnover": 0.15933739362373647
+   }
+  },
+  "overall": {
+   "model": {
+    "n_days": 1250,
+    "pearson_ic": 0.008689342000319575,
+    "pearson_se": 0.006476577321875046,
+    "pearson_t": 1.341656490531006,
+    "rank_ic_1": 0.007656112427446555,
+    "rank_ic_se": 0.006583274136770179,
+    "rank_ic_t": 1.162964243686003,
+    "rank_ic_5": 0.018859322051404913,
+    "rank_ic_10": 0.013997476116154676,
+    "net_pct": 23.822762945801486,
+    "sharpe": 0.3138444671972703,
+    "mdd_pct": 27.69801609139016,
+    "cost_pct": 5.843291332981478,
+    "turnover": 0.1287289069246844,
+    "n_rebalances": 1250,
+    "avg_holding_days": 10.0
+   },
+   "naive": {
+    "n_days": 1250,
+    "pearson_ic": -0.015456193429023907,
+    "pearson_se": 0.006833118437895536,
+    "pearson_t": -2.2619530993793378,
+    "rank_ic_1": -0.017388598549905227,
+    "rank_ic_se": 0.006877051272590167,
+    "rank_ic_t": -2.5284962785156027,
+    "rank_ic_5": -0.02228587185510077,
+    "rank_ic_10": -0.021626084479526964,
+    "net_pct": -45.9769102620007,
+    "sharpe": -1.2658716318840146,
+    "mdd_pct": 52.43915823915658,
+    "cost_pct": 7.360864483110657,
+    "turnover": 0.15815253230030657,
+    "n_rebalances": 1250,
+    "avg_holding_days": 10.0
+   }
+  }
+ },
+ "horizon_rank_ic": {
+  "model": {
+   "1": 0.007656112427446555,
+   "2": 0.013127509900901018,
+   "3": 0.016805758042107533,
+   "4": 0.017451423881724458,
+   "5": 0.018859322051404913,
+   "6": 0.01820945421192256,
+   "7": 0.018902505656419332,
+   "8": 0.019208877387736273,
+   "9": 0.017433623240078893,
+   "10": 0.013997476116154676
+  },
+  "naive": {
+   "1": -0.017388598549905227,
+   "2": -0.022214097694374824,
+   "3": -0.0249708583543579,
+   "4": -0.026296083207611114,
+   "5": -0.02228587185510077,
+   "6": -0.021487893652586635,
+   "7": -0.019958318581188808,
+   "8": -0.021936249806890965,
+   "9": -0.021485113457294636,
+   "10": -0.021626084479526964
+  }
+ },
+ "diagnostics": {
+  "members_per_day": {
+   "mean": 8.0,
+   "min": 8,
+   "max": 8
+  },
+  "members_per_generation": {
+   "mean": 8.0,
+   "min": 8,
+   "max": 8
+  },
+  "dispersion": {
+   "n_days": 1250,
+   "mean": 0.16837539990978462,
+   "p10": 0.0463441803351604,
+   "p50": 0.1581615503344196,
+   "p90": 0.2990786353614866
+  },
+  "member_rank_ic_1": {
+   "n_slots": 8,
+   "mean": 0.003408966036603552,
+   "sd": 0.004803408643327981,
+   "min": -0.001940117915198207,
+   "max": 0.010978843180295619,
+   "mean_days_per_slot": 1225.75
+  },
+  "member_slots": [
+   "island0_elite0",
+   "island1_elite0",
+   "island2_elite0",
+   "island3_elite0",
+   "island4_elite0",
+   "island5_elite0",
+   "island6_elite0",
+   "island7_elite0"
+  ],
+  "member_rank_ic_1_by_slot": {
+   "island0_elite0": {
+    "rank_ic_1": 0.003915141298920697,
+    "n_days": 1240
+   },
+   "island1_elite0": {
+    "rank_ic_1": 0.0007486675784406548,
+    "n_days": 1223
+   },
+   "island2_elite0": {
+    "rank_ic_1": -0.001940117915198207,
+    "n_days": 1204
+   },
+   "island3_elite0": {
+    "rank_ic_1": 0.0023193169761701418,
+    "n_days": 1211
+   },
+   "island4_elite0": {
+    "rank_ic_1": 0.0019659181468454183,
+    "n_days": 1239
+   },
+   "island5_elite0": {
+    "rank_ic_1": 0.010978843180295619,
+    "n_days": 1234
+   },
+   "island6_elite0": {
+    "rank_ic_1": 0.01020748196316697,
+    "n_days": 1226
+   },
+   "island7_elite0": {
+    "rank_ic_1": -0.0009235229358128772,
+    "n_days": 1229
+   }
+  },
+  "day_pooled_mean_member_rank_ic_1": 0.0032960006910556566,
+  "ensemble_rank_ic_1": 0.007656112427446555,
+  "ensemble_minus_mean_member": 0.004360111736390899,
+  "dropped_member_days": 0,
+  "incomplete_member_rows": 0,
+  "global_best_matched_days": 1136
+ }
+}
