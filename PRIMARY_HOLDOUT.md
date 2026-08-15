@@ -1,5 +1,18 @@
 # PRIMARY_HOLDOUT.md — pre-registered one-shot confirmatory holdout (2015-2019)
 
+> **ADDENDUM (2026-08-15, same day, CANCELLATION).** The confirmatory ONE-NAS
+> holdout campaign is cancelled by author decision. At cancellation time no
+> ONE-NAS run had touched 2015-2019 and the full 2015-2019 baseline table had
+> not been read by anyone (only the declared set1 peek). The paper's evidence
+> base is the 2020-2024 development span, reported as such, plus the live
+> pilot. The already-computed 2015-2019 BASELINE table (baselines only, tuned
+> strictly OOS on 2011-2014) may now be read and used descriptively (e.g. a
+> regime-robustness appendix for the baselines); no ONE-NAS 2015-2019 result
+> will exist, so no confirmatory claim is made and none of the endpoints below
+> will be evaluated. The submit-ready campaign script
+> (scripts/pooled/anvil/holdout_b1.sbatch) is retained but must not be
+> submitted without a new dated amendment here.
+
 Committed 2026-08-15, BEFORE the 2015-2019 baseline table completed
 (`results_econ_2015/` suite in flight at commit time; only the set1 peek below
 had been seen). Companion to PRIMARY.md (commit ac58a56), which pre-registers
