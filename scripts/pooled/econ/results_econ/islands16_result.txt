@@ -1,0 +1,9 @@
+# AMENDMENT 3 RESULT: islands-axis scaling, seeds 42-44, 4 panels, all else frozen
+#  8 islands: IC +0.0106  net +42.2  Sharpe 0.86  MDD 20.1  members 8   member-corr 0.218
+# 16 islands: IC +0.0123  net +43.0  Sharpe 0.85  MDD 20.3  members 16  member-corr 0.188
+# PREDICTED before launch: IC +0.0120 -> HIT (+0.0123). Member correlation fell as required.
+# ECONOMICS DID NOT FOLLOW: +0.8 net points, -0.01 Sharpe, at 2x compute.
+# Cleanest instance of the accuracy-vs-economics dissociation: single variable, prediction
+# confirmed on IC, zero economic response, no cross-method or seed-draw confound.
+# Hypothesis (untested): the H=10 top/bottom-10 book depends on ranking TAILS while IC scores
+# the whole cross-section; added members sharpen the middle the book never trades.
