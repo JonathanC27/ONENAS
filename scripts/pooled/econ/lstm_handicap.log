@@ -1,0 +1,6 @@
+ rank  valIC(16-19)  net(20-24)   Sharpe   config
+    1       0.01566        31.5     0.66   h8 lr0.001 sq10 spd1 rp1000 dm1  <-- CHOSEN
+    2       0.01565        31.5     0.67   h8 lr0.001 sq10 spd1 rp1000 dm0
+    3       0.01563        31.9     0.68   h8 lr0.001 sq5 spd1 rp1000 dm1
+    4       0.01561        31.9     0.68   h8 lr0.001 sq5 spd1 rp1000 dm0
+    5       0.01556        32.1     0.67   h8 lr0.001 sq20 spd1 rp1000 dm0

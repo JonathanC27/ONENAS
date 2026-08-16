@@ -1,0 +1,13 @@
+# FAIRNESS CHECK: does frozen 2016-19 tuning handicap the LSTM baseline on 2020-2024?
+# Top-5 distinct configs by 2016-19 validation rank IC, each run forward on 2020-2024 (seed 42, 4 panels):
+# rank  valIC(16-19)  net(20-24)  Sharpe   config
+#    1     +0.01566        31.5     0.66   h8 lr.001 sq10 spd1 rp1000 dm1  <- CHOSEN
+#    2     +0.01565        31.5     0.67   h8 lr.001 sq10 spd1 rp1000 dm0
+#    3     +0.01563        31.9     0.68   h8 lr.001 sq5  spd1 rp1000 dm1
+#    4     +0.01561        31.9     0.68   h8 lr.001 sq5  spd1 rp1000 dm0
+#    5     +0.01556        32.1     0.67   h8 lr.001 sq20 spd1 rp1000 dm0
+# VERDICT: NO handicap. Spread across the top-5 is 0.6 net points and 0.02 Sharpe; the frozen
+# choice is within noise of the best alternative. Frozen 2016-19 tuning costs the LSTM nothing
+# on 2020-2024, so the paper's baseline is not disadvantaged by the protocol.
+# (Full grid spread was large: val IC +0.0157 to -0.0060, so the tuning DID discriminate -
+# it is only the top of the grid that is flat.)
