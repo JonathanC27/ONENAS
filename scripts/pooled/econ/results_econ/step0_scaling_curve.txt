@@ -1,12 +1,20 @@
-# STEP 0: cross-seed ensemble scaling curve (mean over subsets, 2020-2024, pooled 200-stock book)
-# members(seeds)  IC        net    Sharpe
-#    8 (1)      +0.0109   +36.7   0.78
-#   16 (2)      +0.0113   +49.9   0.98
-#   24 (3)      +0.0116   +48.1   0.91
-#   32 (4)      +0.0121   +48.3   0.92
-#   40 (5)      +0.0128   +47.9   0.91
-#   48 (6)      +0.0131   +48.7   0.91
-# Fit IC_M = IC_1*sqrt(M/(1+(M-1)rho)): IC_1=0.0056, rho=0.18, IC_inf=0.0132 -> 48 members captures ~99% of the asymptote.
-# Predicted IC(80)=+0.0128 (amendment 2B pre-registered +0.0132 under rho=0.35; both recorded, tested when seeds 48-51 land).
-# ECONOMICS SATURATE EARLIER THAN IC: net and Sharpe plateau at 16 members (2 seeds); 40->48 marginal IC +0.0002, Sharpe +0.004.
-# GATING VERDICT: the number_islands width ladder is NOT worth Anvil hours - ensemble width is exhausted.
+# STEP 0 (CORRECTED): cross-seed ensemble scaling, ALL subsets at each width (balanced).
+# An earlier version used the first 6 enumeration-order subsets, which over-
+# represented seed 42 (the strongest seed) at widths 16-40 and produced a
+# spurious "economics saturate at 16 members" reading. Superseded by this table.
+# members   IC        net (mean±sd)   Sharpe (mean±sd)   n_subsets
+#     8   +0.0109   +36.7 ± 9.4       0.78 ± 0.16        6
+#    16   +0.0119   +42.4 ± 8.4       0.86 ± 0.14       15
+#    24   +0.0123   +44.2 ± 5.6       0.86 ± 0.09       20
+#    32   +0.0126   +46.2 ± 4.8       0.89 ± 0.08       15
+#    40   +0.0128   +47.9 ± 3.5       0.91 ± 0.05        6
+#    48   +0.0131   +48.7             0.91               1
+# Monotone in IC, net, and Sharpe; no saturation within the measured range.
+# Dispersion collapses with width (net sd 9.4 -> 3.5, Sharpe sd 0.16 -> 0.05):
+# widening the ensemble buys reliability as much as level.
+# Fit IC_M = IC_1*sqrt(M/(1+(M-1)rho)): IC_1=0.0056, rho=0.17, IC_inf=+0.0136.
+# Fitted IC(80) = +0.0132, matching Amendment 2B's pre-registered prediction.
+# Marginal gains are shrinking (40->48 = +0.0003 IC, +0.00 Sharpe) but the
+# curve has not turned over: an islands-width ladder remains defensible,
+# though low-yield; the cheap width is more seeds, which the 10-seed
+# expansion supplies for free.
