@@ -1,0 +1,4 @@
+# Dynamic seed selection by trailing pooled IC (prequential, no lookahead) vs averaging, 2020-2024:
+# average of 6 seeds: net +36.4 Sharpe 0.86 (0 switches); best-by-21d +34.5/0.82 (252 sw); 63d +24.5/0.58 (165); 126d +28.5/0.67 (92)
+# oracle hindsight-best seed 42: +50.8/1.02; 48-champion super-ensemble: +48.7/0.91 (no hindsight, no switching)
+# Selection loses to aggregation at member, architecture, and seed levels.
