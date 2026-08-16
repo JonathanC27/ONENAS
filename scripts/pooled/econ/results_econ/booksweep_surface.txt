@@ -1,0 +1,13 @@
+# AMENDMENT 5 RESULT (partial): book-geometry surface, 8-island config, 10 seeds x 4 panels
+# top_k  H=5 net/Sharpe    H=10 net/Sharpe   H=20 net/Sharpe
+#     5  45.5/0.73        38.5/0.68        39.3/0.77
+#    10  38.1/0.75        32.8/0.71 <-REG  32.0/0.76
+#    15  33.9/0.80        27.6/0.71        26.7/0.75
+#    20  29.3/0.81        23.1/0.70        21.9/0.73
+#    25  24.5/0.81        19.7/0.72        18.0/0.72
+# SE: net 1.6-4.5, Sharpe 0.04-0.08. Turnover 0.044-0.282/day; all costs charged.
+# FINDINGS: (1) net wants concentration (top-5), Sharpe wants breadth (top-20/25) - opposite
+# objectives, so 'the best book' is undefined without naming one. (2) H=5 dominates H=10 on
+# Sharpe at every width, net of its ~2x turnover. (3) The registered cell is mid-pack: 9 of 15
+# cells have higher Sharpe; the max (0.81) is ~2 SE above it but is a max-of-15 on correlated
+# cells over the mined span. NO ADOPTION per Amendment 5; reported as a sensitivity surface.
