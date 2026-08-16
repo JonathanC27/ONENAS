@@ -181,3 +181,36 @@ dominates is reported as a sensitivity finding and would require its own
 registration, seeds, and confirmation before adoption. All 15 cells are
 reported in full, for both arms, in every outcome. No cell is selected on and
 no headline number changes as a result of this sweep.
+
+## AMENDMENT 6 (2026-08-16, committed before the runs are launched)
+
+**Protocol-symmetric island-count selection on the baselines' tuning span.**
+Correction of record: the validation-IC evidence reported for 8 vs 16 islands
+was measured on the 34 already-labeled days preceding each generation, and
+those generations lie INSIDE the 2020-2024 scored span. It is causally clean
+(labels precede trades) but it is NOT pre-2020 evidence, and it cannot make
+an island-count choice protocol-symmetric with the baselines.
+
+Every baseline was tuned by full or staged grid search scored ONLY on
+2016-01-01..2019-12-31, objective = mean daily cross-sectional rank IC,
+config then frozen and scored on 2020-2024 (scripts/pooled/baselines/
+protocol.py). ONE-NAS has never received an equivalent search.
+
+This amendment runs one: number_islands in {8, 16, 20, 40}, seeds 42-46
+(5 seeds), 4 panels, all other flags frozen at the PRIMARY.md default,
+generation clock set so the SCORED span is 2016-01-01..2019-12-31
+(NTW = 511/493/501/536 for sets 1-4, 201 generations; formula verified
+against the known 2020 values). Objective: mean daily rank IC on that span,
+pooled across panels and seeds, exactly the baselines' objective.
+
+**Selection rule, fixed now:** the island count with the highest pooled
+2016-2019 mean daily rank IC is selected. It is then scored once on
+2020-2024 and reported. No post-2019 quantity enters the choice. If the
+selected width differs from the registered 8, the paper reports both the
+registered configuration and the tuned one, states that ONE-NAS's width was
+selected under the baselines' protocol, and the tuned row becomes eligible
+for the headline table on equal footing. If 8 wins, the registered
+configuration stands with its selection now protocol-symmetric.
+
+All four widths are reported in full regardless of outcome, with their
+2016-2019 objective values and their 2020-2024 outcomes side by side.
