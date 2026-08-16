@@ -31,3 +31,12 @@ never promoted to primary.
 If the primary's scored IC on core-7 is < +0.005 (sanity floor) or a scorer defect
 is found, fall back to the single global-best genome (no ensemble), documented as
 a deviation.
+
+## AMENDMENT (2026-08-16): blind seed expansion 12 -> 24 runs
+Seeds 45-47 of the frozen ac58a56 primary were launched 2026-08-15 (identical
+config, no selection among seeds) and remain unscored at the time of this
+amendment. They are scored ONCE, blindly, immediately after this commit, and
+merged into every headline statistic (n=12 -> n=24 runs; 3 -> 6 seeds).
+Every claim currently phrased "in every seed" is restated at the expanded
+count even if a new seed breaks it. No further seeds will be added after
+results are seen.
