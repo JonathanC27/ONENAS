@@ -40,3 +40,63 @@ merged into every headline statistic (n=12 -> n=24 runs; 3 -> 6 seeds).
 Every claim currently phrased "in every seed" is restated at the expanded
 count even if a new seed breaks it. No further seeds will be added after
 results are seen.
+
+## AMENDMENT 2 (2026-08-16, committed before any run is launched or scored)
+
+**A. Seed expansion.** The seed set for ONE-NAS and every stochastic baseline
+is extended from {42-47} to {42-51}, superseding Amendment 1's "no further
+seeds" clause by author decision to increase replication; 10 is the terminal
+count. Seeds 48-51 are launched blind: no output is scored, inspected, or
+plotted until all 16 ONE-NAS runs complete. All headline quantities are
+restated at n=10 (40 runs) whether or not a claim survives. Baseline symmetry
+is binding: online LSTM, online GRU, periodic LSTM (all cadences), the
+LSTM/GRU seed ensembles, and the random-arch and fixed-arch controls use the
+identical seed set {42-51} with their frozen 2016-2019 hyperparameters (no
+re-tuning). Deterministic arms have no seed dimension. Every derived exhibit
+is recomputed at n=10 with no mixing of seed counts. We state in advance that
+the factor-alpha t-statistic is expected to move from 1.95 to approximately
+1.97: seed averaging removes only the idiosyncratic share of daily book
+variance and cannot buy significance on a date-common quantity. Runs 48-51
+use a resolved command line verified identical to runs 42-47 except SEED.
+
+**B. Aggregation-law out-of-sample prediction.** Seeds 48-51 extend the
+cross-seed super-ensemble from 48 to 80 island champions. Fitting
+IC_M = IC_1 * sqrt(M/(1+(M-1)*rho)) to the existing cross-seed points gives
+rho = 0.35, IC_inf = +0.0134. We predict IC(80) = +0.0132, recorded here
+before the runs are scored. Both outcomes are published; a miss falsifies the
+constant-rho form of the law and is reported as such.
+
+**C. Hyperparameter sensitivity campaign.** Seven configurations are launched
+simultaneously and never iterated: the frozen PRIMARY.md default;
+bp_iterations in {5, 20, 40}; PER lambda in {0.002, 0.020};
+num_validation_sets = 20. Each changes one factor from the default. Each runs
+5 seeds x 4 panels on seeds {100-104}, disjoint from the reporting seed set.
+- Span: 2016-01-01..2019-12-31, the exact span on which every baseline was
+  tuned. No configuration is tuned, selected, or tie-broken on any post-2019
+  quantity.
+- Statistic: mean daily cross-sectional rank IC, pooled by day across
+  4 panels x 5 seeds, one daily series per configuration.
+- Test: paired daily difference vs the frozen default, Newey-West lag 10,
+  two-sided, Bonferroni over K=6 (|t| >= 2.50).
+- Threshold: dIC >= T, where T is computed from daily-IC dispersion and
+  cross-config correlation measured on 2016-2019 (not 2020-2024) and
+  committed to this file before the first configuration is scored.
+  Provisional value T = 0.0038.
+- Adoption rule: adopted only if dIC >= T, |t| >= 2.50, and the ladder is
+  monotone in the hypothesized direction. If two or more clear, both are
+  reported and NEITHER is adopted; no joint configuration is constructed.
+  Any reported winner's dIC is shrunk by E[max of 6] * SE = 0.00145.
+- Headline rule: the paper's headline tables report the frozen PRIMARY.md
+  configuration at n=10 regardless of outcome. Any winner appears only as a
+  hyperparameter-sensitivity row; adoption into a headline would additionally
+  require a 10-seed 2020-2024 confirmatory arm and warm-up-invariance
+  evidence.
+- No-winner branch (pre-committed): if no configuration clears both criteria,
+  the incumbent stands, no headline changes, and we publish the full grid,
+  the minimum-detectable-effect table, and the finding that hyperparameter
+  search over the search's own knobs is not resolvable at this
+  signal-to-noise level.
+- Reporting: all seven configurations are reported in full, losers included,
+  in every outcome.
+- Pilot: the live pilot ships the frozen configuration ac58a56 on Aug 19-20
+  and is unaffected by this campaign in all branches.
