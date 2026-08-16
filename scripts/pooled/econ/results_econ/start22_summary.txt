@@ -1,0 +1,7 @@
+# 2022-start exploratory campaign (C7_E_start22): frozen primary, clock at 2022-01-03, 150 gens, PER, NTS=2000
+# Per-run net% (sleeves, per 50-stock panel, 2022-2024, ~500d):
+# set1: +27.1/+18.4/+14.3  set2: +10.6/+11.9/+25.5  set3: +8.2/-13.8/-10.8  set4: +15.5/+21.2/+20.1
+# Pooled per seed: +15.4/+9.4/+12.3 -> mean +12.3
+# vs the 2022-24 SLICE of 2020-started runs: +26.5 pooled; vs B&H window +28.4
+# FINDING: accumulated evolutionary state ~doubles P&L on the identical window vs a cold start.
+# Confound: fresh start also has 150 vs 300 generations (inherent to starting late). set3 cold starts went negative (variance).
