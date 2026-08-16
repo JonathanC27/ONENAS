@@ -3,3 +3,11 @@
 # DOMINATES ALL 5 METRICS (mean): 90%B&H+0.25x (+78.5/0.67/37.3/-12.3/1.50, marginal) and 80%B&H+0.50x (+81.5/0.71/37.2/-9.0/1.58)
 # Pure add-on overlays (100% beta + k*book) win net/Sharpe/2022/t at every k but ALWAYS deepen MDD (corr +0.28 stacks in the 2020 crash) - true under both additive and peak-equity conventions
 # Caveats: mean-over-seed dominance (per-seed MDD range must be disclosed); full (w,k) grid published, not a tuned point; 180% gross financing note applies
+# EXTENDED GRID (2026-08-15 late): w 0.3-1.0 x k 0.25-2.0, peak-equity DD convention.
+# The dominance region is INTERIOR to the extended grid; the original grid (w>=0.7, k<=1.0)
+# clipped its better half. Unconstrained dominating points: 50%+1.0x (+80.0/0.78/35.5, 2022 -1.0)
+# and 40%+1.25x (+83.0/0.78/37.2) at 2.5-2.9x gross. Under Reg-T (w+2k<=2) the dominating
+# segment runs along the constraint frontier: feasible max-net = 75%+0.625x
+# (+83.0/0.72/37.3, 2022 -7.4, t 1.61; per-seed MDD 35.8-39.3 vs B&H 37.6 -> one seed grazes).
+# The previously headlined 80%+0.5x (+81.5/0.71/37.2) remains dominating but is not the
+# feasible optimum. Optima sit on the Reg-T economic constraint, not on any search-box edge.
