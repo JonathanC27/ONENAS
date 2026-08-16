@@ -1,0 +1,15 @@
+# AMENDMENT 3/4 REVISION: the islands economic null was a strong-seed artifact.
+# Amendment 3 tested 8->16 islands on seeds 42-44 - the three STRONGEST of ten - and found
+# no economic gain (0.86 -> 0.85). With 6 seeds including weak ones, at the registered book:
+#  seed:      42     43     44     45     46     47   | mean   SD
+#  8 isl:   1.02   0.81   0.75   0.85   0.70   0.53   | 0.78  0.161
+# 16 isl:   1.00   0.82   0.72   0.95   0.98   1.10   | 0.93  0.138
+#  delta:  -0.02  +0.01  -0.03  +0.10  +0.28  +0.57
+# corr(8-isl Sharpe, gain) = -0.82: the gain accrues almost entirely to weak draws.
+# MECHANISM IS NOT ACCURACY: seed 47's IC was unchanged (+0.0115 -> +0.0113) while its Sharpe
+# went 0.53 -> 1.10. Ensemble width buys ECONOMIC RELIABILITY (rescues pathological runs),
+# not forecast accuracy - a different mechanism from the IC scaling law, and the one that
+# matters for deployment.
+# Width x geometry (6 seeds, paired): 16 islands >= 8 islands in ALL cells tested; strongest
+# at (top_k 10, H 5) dSharpe +0.207 t=2.24. Amendment 4's negative predictions at (25,10)
+# and (10,20) MISSED - both came out positive.
