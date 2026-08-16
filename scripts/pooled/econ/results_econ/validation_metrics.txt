@@ -1,0 +1,16 @@
+# VALIDATION METRICS, 8 vs 16 islands, same 34 held-back labeled days, 6 seeds x 4 panels
+#                    8 islands   16 islands   delta      paired t
+# validation MSE       1.02200     1.01793    -0.00407     -0.50   (blind)
+# validation IC       +0.0373     +0.0405     +0.0032     +3.23   (DETECTS IT)
+# validation spread   +0.1082     +0.1172     +0.0089     +3.18   (DETECTS IT)
+# test IC             +0.0106     +0.0123     +0.0017              (honest out-of-sample)
+# test Sharpe            0.78        0.93       +0.15
+#
+# TWO FINDINGS:
+# 1. Rank-based validation statistics detect a configuration difference that squared-error
+#    validation cannot (t=3.2 vs t=-0.5) - MSE is swamped by the ~99% irreducible variance
+#    while IC only scores ordering.
+# 2. The SAME statistic fails as an instance selector: corr(val-IC gain, test Sharpe gain)
+#    = -0.66; seed 47's val IC FELL while its Sharpe went 0.53 -> 1.10.
+#    => validation statistics support CONFIGURATION decisions, not INSTANCE selection.
+# 3. val IC (+0.037) is 3.4x test IC (+0.011): a direct measure of selection-induced optimism.
