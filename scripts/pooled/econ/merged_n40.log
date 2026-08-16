@@ -1,0 +1,39 @@
+== merged n=40 stats
+ONE-NAS ensemble           n=40: IC +0.0110 net +32.1±4.2  poolS 0.71±0.05  MDD 18.2
+lstm                       n=40: IC +0.0147 net +33.3±2.5  poolS 0.71±0.05  MDD 20.1
+gru                        n=40: IC +0.0119 net +25.9±3.4  poolS 0.6±0.08  MDD 18.9
+periodic_lstm_monthly      n=40: IC +0.0141 net +31.5±3.6  poolS 0.76±0.05  MDD 16.3
+== new seeds alone (per-run net / Sharpe / IC)
+  set1 s48: {'net': -17.3, 'sharpe': -0.24, 'ic': -0.0018}
+  set2 s48: {'net': 78.6, 'sharpe': 1.21, 'ic': 0.0172}
+  set3 s48: {'net': 26.2, 'sharpe': 0.36, 'ic': 0.0014}
+  set4 s48: {'net': 40.2, 'sharpe': 0.71, 'ic': 0.0216}
+  set1 s49: {'net': -35.3, 'sharpe': -0.43, 'ic': 0.0027}
+  set2 s49: {'net': 44.6, 'sharpe': 0.75, 'ic': 0.0234}
+  set3 s49: {'net': 31.1, 'sharpe': 0.43, 'ic': 0.0096}
+  set4 s49: {'net': 21.7, 'sharpe': 0.37, 'ic': 0.0122}
+  set1 s50: {'net': 1.1, 'sharpe': 0.01, 'ic': 0.0028}
+  set2 s50: {'net': 64.8, 'sharpe': 1.16, 'ic': 0.0228}
+  set3 s50: {'net': 3.3, 'sharpe': 0.05, 'ic': 0.0071}
+  set4 s50: {'net': 51.9, 'sharpe': 0.8, 'ic': 0.0164}
+  set1 s51: {'net': 31.5, 'sharpe': 0.46, 'ic': 0.0044}
+  set2 s51: {'net': 38.6, 'sharpe': 0.73, 'ic': 0.0183}
+  set3 s51: {'net': -3.2, 'sharpe': -0.04, 'ic': 0.0018}
+  set4 s51: {'net': 47.1, 'sharpe': 0.83, 'ic': 0.0181}
+== 10-seed factor alpha: {'ann_alpha': 5.5, 'nw_t': 1.76, 'beta_mkt': 0.1}
+== long-only per-seed pooled net (claim: every seed > +75.5)
+  seed 42: long-only pooled net +104.4
+  seed 43: long-only pooled net +94.6
+  seed 44: long-only pooled net +92.2
+  seed 45: long-only pooled net +94.2
+  seed 46: long-only pooled net +92.9
+  seed 47: long-only pooled net +85.9
+  seed 48: long-only pooled net +90.9
+  seed 49: long-only pooled net +87.2
+  seed 50: long-only pooled net +93.5
+  seed 51: long-only pooled net +89.7
+  mean 92.5 ± 1.6  every-seed: True
+WROTE results_econ/merged_n40.json
+== Amendment 2B: 80-champion super-ensemble
+  IC(80) measured +0.0136 vs predicted +0.0132  |  net +44.7  Sharpe 0.84
+WROTE results_econ/merged_n40.json (with 2B test)

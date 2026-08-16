@@ -1,0 +1,198 @@
+{
+ "onenas_ensemble": {
+  "n_runs": 40,
+  "n_seeds": 10,
+  "ic": 0.011,
+  "net": 32.1,
+  "net_se": 4.2,
+  "pooled_sharpe": 0.71,
+  "pooled_sharpe_se": 0.05,
+  "pooled_mdd": 18.2,
+  "per_seed_pooled_sharpe": [
+   1.02,
+   0.81,
+   0.75,
+   0.85,
+   0.7,
+   0.53,
+   0.74,
+   0.41,
+   0.67,
+   0.59
+  ]
+ },
+ "lstm": {
+  "n_runs": 40,
+  "n_seeds": 10,
+  "ic": 0.0147,
+  "net": 33.3,
+  "net_se": 2.5,
+  "pooled_sharpe": 0.71,
+  "pooled_sharpe_se": 0.05,
+  "pooled_mdd": 20.1,
+  "per_seed_pooled_sharpe": [
+   0.53,
+   0.56,
+   0.89,
+   0.74,
+   0.89,
+   0.51,
+   0.51,
+   0.67,
+   0.85,
+   0.93
+  ]
+ },
+ "gru": {
+  "n_runs": 40,
+  "n_seeds": 10,
+  "ic": 0.0119,
+  "net": 25.9,
+  "net_se": 3.4,
+  "pooled_sharpe": 0.6,
+  "pooled_sharpe_se": 0.08,
+  "pooled_mdd": 18.9,
+  "per_seed_pooled_sharpe": [
+   0.42,
+   0.73,
+   0.8,
+   0.62,
+   0.09,
+   0.28,
+   0.53,
+   0.78,
+   0.82,
+   0.92
+  ]
+ },
+ "periodic_lstm_monthly": {
+  "n_runs": 40,
+  "n_seeds": 10,
+  "ic": 0.0141,
+  "net": 31.5,
+  "net_se": 3.6,
+  "pooled_sharpe": 0.76,
+  "pooled_sharpe_se": 0.05,
+  "pooled_mdd": 16.3,
+  "per_seed_pooled_sharpe": [
+   0.6,
+   0.75,
+   1.07,
+   0.67,
+   0.76,
+   0.87,
+   0.82,
+   0.87,
+   0.47,
+   0.73
+  ]
+ },
+ "new_runs": {
+  "set1_s48": {
+   "net": -17.3,
+   "sharpe": -0.24,
+   "ic": -0.0018
+  },
+  "set2_s48": {
+   "net": 78.6,
+   "sharpe": 1.21,
+   "ic": 0.0172
+  },
+  "set3_s48": {
+   "net": 26.2,
+   "sharpe": 0.36,
+   "ic": 0.0014
+  },
+  "set4_s48": {
+   "net": 40.2,
+   "sharpe": 0.71,
+   "ic": 0.0216
+  },
+  "set1_s49": {
+   "net": -35.3,
+   "sharpe": -0.43,
+   "ic": 0.0027
+  },
+  "set2_s49": {
+   "net": 44.6,
+   "sharpe": 0.75,
+   "ic": 0.0234
+  },
+  "set3_s49": {
+   "net": 31.1,
+   "sharpe": 0.43,
+   "ic": 0.0096
+  },
+  "set4_s49": {
+   "net": 21.7,
+   "sharpe": 0.37,
+   "ic": 0.0122
+  },
+  "set1_s50": {
+   "net": 1.1,
+   "sharpe": 0.01,
+   "ic": 0.0028
+  },
+  "set2_s50": {
+   "net": 64.8,
+   "sharpe": 1.16,
+   "ic": 0.0228
+  },
+  "set3_s50": {
+   "net": 3.3,
+   "sharpe": 0.05,
+   "ic": 0.0071
+  },
+  "set4_s50": {
+   "net": 51.9,
+   "sharpe": 0.8,
+   "ic": 0.0164
+  },
+  "set1_s51": {
+   "net": 31.5,
+   "sharpe": 0.46,
+   "ic": 0.0044
+  },
+  "set2_s51": {
+   "net": 38.6,
+   "sharpe": 0.73,
+   "ic": 0.0183
+  },
+  "set3_s51": {
+   "net": -3.2,
+   "sharpe": -0.04,
+   "ic": 0.0018
+  },
+  "set4_s51": {
+   "net": 47.1,
+   "sharpe": 0.83,
+   "ic": 0.0181
+  }
+ },
+ "alpha_n10": {
+  "ann_alpha": 5.5,
+  "nw_t": 1.76,
+  "beta_mkt": 0.1
+ },
+ "long_only_per_seed": {
+  "42": 104.4,
+  "43": 94.6,
+  "44": 92.2,
+  "45": 94.2,
+  "46": 92.9,
+  "47": 85.9,
+  "48": 90.9,
+  "49": 87.2,
+  "50": 93.5,
+  "51": 89.7
+ },
+ "long_only_every_seed_beats_bh": true,
+ "long_only_mean": 92.5,
+ "long_only_se": 1.6,
+ "superensemble80": {
+  "ic": 0.0136,
+  "predicted_ic": 0.0132,
+  "net": 44.7,
+  "sharpe": 0.84
+ }
+}
