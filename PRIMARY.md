@@ -100,3 +100,27 @@ num_validation_sets = 20. Each changes one factor from the default. Each runs
   in every outcome.
 - Pilot: the live pilot ships the frozen configuration ac58a56 on Aug 19-20
   and is unaffected by this campaign in all branches.
+
+## AMENDMENT 3 (2026-08-16, committed before the runs are launched)
+
+**Islands-axis scaling measurement (exploratory, prediction recorded in
+advance).** Measured member-level correlations: island champions within a run
+0.216 (n=40 runs, direct); across seeds 0.18 (backed out from ensemble-level
+0.573 with M=8, consistent with the independent scaling fit rho=0.17).
+Because the two are nearly equal, widening by islands should diversify as
+efficiently as widening by seeds, at equal compute and in a single process.
+
+Under IC_M = IC_1*sqrt(M/(1+(M-1)rho)) with rho=0.216 and the n=40 measured
+IC(8 champions) = +0.0110, we PREDICT for number_islands=16 (16 champions,
+one run): **IC(16 islands) = +0.0120**, and for the 3-seed cross-seed
+comparison at the same 16 members: +0.0119. The arms are therefore predicted
+to be equivalent within noise.
+
+Runs: number_islands=16, all other flags frozen at the PRIMARY.md default,
+4 panels x 3 seeds (42-44), scored 2020-2024 through the identical pipeline.
+This is a scaling-law measurement, not a hyperparameter search: no adoption
+into any headline follows from the outcome, the prediction above is the test,
+and both outcomes are published. If IC lands materially above +0.0120 the
+constant-rho law is falsified upward (islands are better than seeds); if
+materially below, islands are more correlated than measured and the law's
+member-exchangeability assumption fails. Compute: ~14 node-hours.
