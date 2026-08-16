@@ -176,3 +176,44 @@ OPS learns the WEIGHTS online with no forecaster and historically "beat B&H"
 only before costs and on biased datasets; we learn the FORECASTER online and
 evaluate under the exact frictions (per-stock costs, survivorship
 disclosure, turnover-capped book) that unraveled those claims.
+
+## E. Deployment-flavored trading papers: what live results are benchmarked against (verified)
+1. FinRL-Meta — NeurIPS 2021 DCAI wksp / NeurIPS 2022 D&B. **2-week Alpaca
+   paper-trading window compared vs DJIA** (crypto vs BTC B&H), five-metric
+   panel (cum ret, ann ret, vol, Sharpe, MDD). THE citable template for a
+   short paper-trading pilot. https://arxiv.org/abs/2112.06753 ;
+   https://arxiv.org/abs/2211.03107
+2. FinRL-X — arXiv 2026. ~6-month Alpaca deployment; results vs SPY/QQQ in
+   repo; paper body frames deployment as operational consistency.
+   https://arxiv.org/abs/2603.21330
+3. Agent Market Arena — arXiv 2025. Live LLM-agent leaderboard; per-asset
+   B&H is the primary baseline. https://arxiv.org/abs/2510.11695
+4. StockBench — arXiv 2025. "Most LLM agents struggle to beat buy-and-hold"
+   as the headline finding. https://arxiv.org/abs/2510.02209
+5. Intelligent Systematic Investment Agent — arXiv 2022. Real-money
+   Robinhood deployment ~1yr; benchmark = INCUMBENT PROCESS (dollar-cost
+   averaging), not B&H. https://arxiv.org/abs/2203.13125
+6. Increase Alpha — arXiv 2025 (firm report). 4y production; vs S&P B&H but
+   SELLS the near-zero market correlation + Sharpe/MDD, not raw wealth.
+   https://arxiv.org/abs/2509.16707
+7. Numerai fund reporting — live market-neutral fund; benchmarks vs
+   STRATEGY-CLASS PEERS (quant equity market-neutral indices, AQR MN fund),
+   correlation ~0, crisis drawdown anecdotes vs S&P. The market-neutral
+   reporting norm. https://medium.com/numerai/numerai-outperforms-market-neutral-hedge-funds-by-29-raises-up-to-150m-9df9a0ce642
+8. AI-Trader — arXiv 2025. Live agent benchmark with NO traditional baseline
+   (cross-agent + risk behavior only). https://arxiv.org/abs/2512.10971
+9. NEGATIVE FINDING: no IAAI Deployed/Emerging paper on live trading found —
+   IAAI finance deployments cluster in fraud/credit/underwriting. A broker-
+   API pilot is novel positioning in-track; no convention forces the
+   benchmark choice.
+10. Industry (JPM LOXM etc.): operational metrics vs incumbent execution
+    algos; no peer-reviewed deployment papers.
+
+### Norms takeaway
+Academic live/paper-trading sections DO print an index/B&H row with the
+five-metric panel even for ~2-week windows (FinRL-Meta) — descriptively,
+never as significance claims. Market-neutral systems (Numerai, Increase
+Alpha) foreground risk-adjusted/correlation metrics and peer or incumbent
+comparisons instead of raw wealth races. Our pilot sheet = both norms:
+descriptive five-metric panel incl. EW B&H reference + fidelity/ops metrics,
+no alpha claims.
