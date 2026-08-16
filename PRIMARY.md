@@ -124,3 +124,33 @@ and both outcomes are published. If IC lands materially above +0.0120 the
 constant-rho law is falsified upward (islands are better than seeds); if
 materially below, islands are more correlated than measured and the law's
 member-exchangeability assumption fails. Compute: ~14 node-hours.
+
+## AMENDMENT 4 (2026-08-16, committed before the runs are launched)
+
+**Islands-axis scaling sweep to 40 islands, 10 seeds.** Arms: number_islands
+in {16, 20, 40}, seeds 42-51, 4 panels, all other flags frozen at the
+PRIMARY.md default, scored 2020-2024 through the identical pipeline.
+(number_islands=16 seeds 42-44 already exist from Amendment 3 and are reused.)
+
+Predictions recorded in advance, from IC_M = IC_1*sqrt(M/(1+(M-1)rho)) with
+IC_1 = 0.00618 calibrated on the n=40 8-island result (IC +0.0110,
+rho = 0.218 measured) and rho extrapolated from the measured decline
+(0.218 at M=8, 0.188 at M=16): rho(20) = 0.185, rho(40) = 0.175.
+
+  PREDICTED IC(16 islands, 10 seeds) = +0.0126
+  PREDICTED IC(20 islands, 10 seeds) = +0.0130
+  PREDICTED IC(40 islands, 10 seeds) = +0.0140
+
+**Economic prediction (the falsifiable claim).** Based on the Amendment 3
+result (8->16 islands: IC +0.0106 -> +0.0123 as predicted, net +42.2 ->
++43.0, Sharpe 0.86 -> 0.85), we predict that NONE of the three widths
+improves pooled net or pooled Sharpe over the 8-island baseline
+(net +32.1 +/- 4.2, Sharpe 0.71 +/- 0.05 at 10 seeds) by more than one
+standard error, despite IC rising monotonically as predicted above.
+
+If economics DO improve materially at some width, the dissociation claim is
+falsified and that width becomes a deployment candidate; that outcome is
+published as prominently as the null. If IC misses its predicted values, the
+constant-rho scaling law fails on the islands axis and is reported as such.
+No adoption into any headline follows from this sweep; the pilot ships the
+frozen 8-island configuration regardless.
