@@ -1,0 +1,8 @@
+# Factor-adjusted alphas, pooled 4-panel books, 2020-2024 (1257 days), FF3+Mom, Newey-West lag 10
+# arm, mean daily rank IC, ICIR, alpha bps/day, annualized alpha %, NW t, market beta
+onenas_ensemble, +0.0108, 0.075, 2.82, +7.1, 2.08, +0.124
+lstm, +0.0154, 0.102, 1.99, +5.0, 1.43, +0.119
+gru, +0.0133, 0.111, 1.78, +4.5, 1.47, +0.108
+periodic_lstm_yearly, +0.0171, 0.108, 2.60, +6.6, 1.83, +0.120
+ar, +0.0145, 0.085, -1.44, -3.6, -1.12, +0.007
+str1, +0.0212, 0.101, 1.69, +4.3, 1.47, +0.097
