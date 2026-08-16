@@ -1,0 +1,3 @@
+# 6-seed super-ensemble (48 champions, rank-mean across seeds 42-47, no selection): pooled net +48.7 Sharpe 0.91 MDD 20.5 2022 +5.6 IC +0.0131 (exploratory, dev span)
+# per-panel: set1 +28.1/0.38 set2 +77.3/1.16 set3 +28.6/0.40 set4 +58.0/0.90
+# seed persistence: early(20-21) vs late(22-24) Sharpe rank corr -0.03; early-best seed 46 finished last -> best-of-seeds is unlearnable
