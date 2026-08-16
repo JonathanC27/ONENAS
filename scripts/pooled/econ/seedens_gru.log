@@ -1,0 +1,6 @@
+gru_ens8 set1_core7: IC +0.0091 net +33.7 Sharpe +0.41
+gru_ens8 set2_core7: IC +0.0204 net +49.8 Sharpe +0.74
+gru_ens8 set3_core7: IC +0.0137 net +31.0 Sharpe +0.45
+gru_ens8 set4_core7: IC +0.0249 net +41.4 Sharpe +0.68
+
+gru_ens8 SUMMARY: IC +0.0170  net +39.0 ± 4.2 (4 panels)  pooled Sharpe +0.70  pooled MDD 25.4

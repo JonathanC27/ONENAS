@@ -1,0 +1,6 @@
+lstm_ens8 set1_core7: IC +0.0073 net +24.1 Sharpe +0.31
+lstm_ens8 set2_core7: IC +0.0229 net +48.7 Sharpe +0.96
+lstm_ens8 set3_core7: IC +0.0158 net +36.2 Sharpe +0.55
+lstm_ens8 set4_core7: IC +0.0222 net +43.5 Sharpe +0.71
+
+lstm_ens8 SUMMARY: IC +0.0171  net +38.1 ± 5.3 (4 panels)  pooled Sharpe +0.74  pooled MDD 24.3
