@@ -154,3 +154,30 @@ published as prominently as the null. If IC misses its predicted values, the
 constant-rho scaling law fails on the islands axis and is reported as such.
 No adoption into any headline follows from this sweep; the pilot ships the
 frozen 8-island configuration regardless.
+
+## AMENDMENT 5 (2026-08-16, committed before the sweep is scored)
+
+**Book-geometry sensitivity sweep (portfolio construction, not model).**
+Motivation: Amendment 3 showed a predicted IC gain (8->16 islands) produced
+no economic gain under the registered book, indicating the portfolio
+construction, not the forecaster, is the binding constraint. This sweep maps
+the construction surface.
+
+Grid: top_k in {5, 10, 15, 20, 25} x hold_days in {5, 10, 20} = 15 cells,
+applied by rescoring EXISTING predictions (no new model runs). Arms: the
+frozen 8-island configuration at seeds 42-51, and the 16-island arm at the
+same seeds as they complete. Statistic per cell: pooled 200-stock net and
+Sharpe, mean over seeds, all four panels.
+
+**Prediction (from a 3-seed pilot, tested here on 7 additional seeds; a
+within-span replication, not out-of-sample).** The 16-vs-8-island gain is
+concentrated in narrow, fast books: we predict dSharpe(16-8) > 0 at
+(top_k=10, H=5) and at (top_k=5, H=10), and dSharpe(16-8) < 0 at
+(top_k=25, H=10) and (top_k=10, H=20).
+
+**Adoption rule: none.** The pre-registered book (top_k=10, H=10) remains the
+paper's and the pilot's construction regardless of outcome. Any cell that
+dominates is reported as a sensitivity finding and would require its own
+registration, seeds, and confirmation before adoption. All 15 cells are
+reported in full, for both arms, in every outcome. No cell is selected on and
+no headline number changes as a result of this sweep.
