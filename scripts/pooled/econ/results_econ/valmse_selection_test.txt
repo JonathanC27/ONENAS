@@ -1,0 +1,3 @@
+# Best-seed-by-validation-MSE (weekly, causal): net +27.8 Sharpe 0.64, 163 switches, picks ~uniform across seeds
+# vs average of 6 seeds: +36.4 / 0.86. Smoking gun: rank-corr(val MSE, next-week book return) = +0.021 over 249 generations (zero information).
+# val-MSE per generation computed from wide global_best files, rows 0-33 (already-labeled days), all 24 runs; see valmse/.
