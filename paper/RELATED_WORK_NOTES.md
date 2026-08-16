@@ -129,3 +129,50 @@ FinRL-X (deployment, no learning claims).
 - Evolved-methods history: GP rules died on equity transaction costs (Allen &
   Karjalainen 1999) — we evolve forecasters, charge costs, and report what
   survives; the candor lineage is 25 years old.
+
+## D. Online Portfolio Selection — the field that races online algorithms vs daily B&H (all verified)
+Benchmark protocol of the whole field: cumulative wealth vs Market (uniform
+B&H), Best Stock, BCRP (defined in the Li & Hoi survey).
+1. Cover, Universal Portfolios — Mathematical Finance 1991.
+   https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-9965.1991.tb00002.x
+2. Helmbold, Schapire, Singer, Warmuth (EG) — Mathematical Finance 1998.
+   https://onlinelibrary.wiley.com/doi/abs/10.1111/1467-9965.00058
+3. Borodin, El-Yaniv, Gogan (Anticor) — NIPS 2003 / JAIR 2004.
+   https://jair.org/index.php/jair/article/view/10380
+4. Agarwal, Hazan, Kale, Schapire (Online Newton Step) — ICML 2006.
+   https://dl.acm.org/doi/10.1145/1143844.1143846
+5. Li, Zhao, Hoi, Gopalkrishnan (PAMR) — Machine Learning 2012.
+   https://smusg.elsevierpure.com/en/publications/pamr-passive-aggressive-mean-reversion-strategy-for-portfolio-sel
+6. Li & Hoi (OLMAR) — ICML 2012. Claims up to ~10^15x wealth on NYSE data.
+   https://icml.cc/2012/papers/168.pdf
+7. Li, Hoi, Gopalkrishnan (CORN) — ACM TIST 2011.
+   https://dl.acm.org/doi/10.1145/1961189.1961193
+8. Huang, Zhou, Li, Hoi, Zhou (RMR) — IJCAI 2013 / TKDE 2016.
+   https://ieeexplore.ieee.org/document/7465840/
+9. Li & Hoi survey — ACM CSUR 2014; OLPS toolbox — JMLR 2016.
+   https://dl.acm.org/doi/10.1145/2512962 ;
+   https://www.jmlr.org/papers/volume17/15-317/15-317.pdf
+
+### The two pathologies (our design answers both)
+- Costs: Blum & Kalai, Machine Learning 1999 (universality degrades with
+  commissions) https://link.springer.com/article/10.1023/A:1007530728748 ;
+  Li, Wang, Huang, Hoi (TCO), Quantitative Finance 2018 (the OLMAR/PAMR
+  authors' own cost-aware fix — tacit admission naive OPS deteriorates
+  sharply under costs) https://www.tandfonline.com/doi/full/10.1080/14697688.2017.1357831 ;
+  Uziel & El-Yaniv, AISTATS 2020 http://proceedings.mlr.press/v108/uziel20a/uziel20a.pdf
+- Data: Moon, Kim, Moon, arXiv 2019 — THE debunking: on NYSE(O) B&H makes
+  14x while PAMR/OLMAR make >10 trillion x; on modern S&P 500 data with
+  explicit+implicit costs the strategies "may fail even in favorable market
+  conditions." https://arxiv.org/abs/1909.04327 (survivorship of NYSE(O)
+  acknowledged in OLMAR's own arXiv limitations section.)
+- Recent cost-aware OPS still benchmarking vs B&H: Guo, Gu, Fok, Ching, EJOR
+  2023 https://www.sciencedirect.com/science/article/abs/pii/S0377221723003454 ;
+  Moon & Yoon, Mathematics 2022 https://www.mdpi.com/2227-7390/10/7/1073 ;
+  Zhang, Li, Yang, Lin (CAEGc), JORS 2023
+  https://www.tandfonline.com/doi/full/10.1080/01605682.2022.2122737
+
+### Positioning sentence
+OPS learns the WEIGHTS online with no forecaster and historically "beat B&H"
+only before costs and on biased datasets; we learn the FORECASTER online and
+evaluate under the exact frictions (per-stock costs, survivorship
+disclosure, turnover-capped book) that unraveled those claims.
