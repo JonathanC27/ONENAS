@@ -1,0 +1,15 @@
+# MATCHED-WIDTH COMPARISON at 20 networks (2020-2024, registered book, pooled 200-stock)
+# arm                          networks  IC        net      Sharpe   MDD   n
+# ONE-NAS 20 islands              20    +0.0117   +42.4±1.8  0.86    21.0  10 seeds
+# 20-seed online-LSTM ensemble    20    +0.0182   +42.3±5.9  0.78    25.7  n=4 panels
+# 20-seed online-GRU ensemble     20    +0.0183   +49.3±9.9  0.85    25.5  n=4 panels
+#
+# FINDING: at matched width the arms are statistically indistinguishable on economics.
+# ONE-NAS's advantage over the SINGLE-network baselines (dNet +8.8 to +16.2, t 2.2-4.4)
+# disappears when the baselines are given the same number of networks. Ensemble width, not
+# evolution, is the dominant factor - consistent with the width sweep (dispersion collapse)
+# and with the 8-network block measured earlier.
+# The IC inversion persists and widens: seed-ensembled baselines carry ~+0.018 IC against
+# ONE-NAS's +0.0117 while earning the same money.
+# CAVEAT: ONE-NAS n=10 seeds (SE 1.8); the seed-ensembles consume all 20 seeds internally so
+# their spread is across 4 panels only (SE 5.9-9.9) - not directly comparable error bars.
