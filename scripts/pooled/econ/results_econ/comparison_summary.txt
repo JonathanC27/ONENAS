@@ -65,11 +65,14 @@
 # =========================================================================
 # 1. ONE-NAS's individual networks are WEAKER than a tuned LSTM (C).
 # 2. An equally-wide ensemble of independently-seeded LSTMs BEATS an equally-wide
-#    ONE-NAS population (B) -- its members are more independent, which is exactly
-#    what the aggregation law rewards.
+#    ONE-NAS population (B). The reason is NOT established -- see the retraction
+#    in D: the obvious "their members are more independent" account is ruled out
+#    by the fixed-budget test, where more independence makes ONE-NAS worse.
 # 3. ONE-NAS nonetheless wins the deployment comparison (A) because ONE run yields
 #    `islands` networks while a fixed architecture yields one, and because its book
 #    carries materially less drawdown at every width.
+# 4. Within ONE-NAS, island width beats seed count at equal network budget (D), so
+#    the wide-run configuration is the right deployment shape on its own terms.
 # The contribution is AMORTISED ENSEMBLE DIVERSITY, not better architectures.
 #
 # STANDING CAVEATS
