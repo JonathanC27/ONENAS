@@ -1,0 +1,51 @@
+# DOES MORE SEARCH CAPACITY IMPROVE THE SEARCH? Single global-best genome, 8/20/40 islands
+# (top_k 10, H 10, sleeves, 2020-2024, 10 seeds x 4 panels)
+#
+# NOTE ON AVAILABILITY -- an earlier claim in this campaign was WRONG. The raw
+# generation_*_global_best.csv files were said to be purged for the 20/40-island arms.
+# They are not: they survive in /anvil/scratch/x-jchang5/results_v2/{C7_E,C7_ISL20,C7_ISL40}
+# for ALL 10 seeds x 4 panels. Only the probe_* scored-output dirs lack them. Scored on
+# Anvil with score_ensemble.py --ensemble global_best (job 19988088).
+#
+# width          seeds     net %    ±SE   Sharpe     SD    MDD
+#   8 islands       10     +12.0    2.1     0.32  0.179   15.5
+#  20 islands       10      -1.5    2.2    -0.02  0.169   21.4
+#  40 islands       10      +2.7    3.1     0.07  0.239   20.1
+#
+# PAIRED (same seeds):
+#   20 isl - 8 isl:  dSharpe -0.347  t=-3.83  dNet -13.5
+#   40 isl - 8 isl:  dSharpe -0.252  t=-2.69  dNet  -9.3
+#
+# per-seed champion Sharpe (robust across seeds, not an outlier effect):
+#    8 isl  42:+0.54 43:+0.31 44:+0.37 45:+0.08 46:+0.42 47:+0.32 48:+0.26 49:+0.48 50:-0.02 51:+0.49
+#   20 isl  42:-0.24 43:+0.08 44:-0.23 45:-0.11 46:+0.13 47:+0.07 48:+0.23 49:+0.00 50:+0.07 51:-0.23
+#   40 isl  42:+0.22 43:-0.16 44:+0.02 45:-0.20 46:-0.31 47:+0.21 48:+0.00 49:+0.30 50:+0.42 51:+0.21
+#
+# CONTRAST with the island-CHAMPION ENSEMBLE at the SAME widths and seeds:
+#   width      single champion        island ensemble
+#      8       +12.0 / 0.32           +32.1 / 0.71
+#     20        -1.5 / -0.02          +41.6 / 0.86
+#     40        +2.7 / 0.07           +45.6 / 0.91
+#
+# FINDING: adding search capacity makes the SEARCH WORSE and the ENSEMBLE BETTER.
+# The single champion DEGRADES significantly with island count (t=-3.83 at 20, t=-2.69
+# at 40) while the ensemble improves monotonically. Every economic gain this campaign
+# attributed to "more islands" is aggregation; none of it is a better search.
+#
+# MECHANISM -- winner's curse on an uninformative fitness signal. Selection picks the
+# max over a candidate pool using validation fitness. We measured rank-corr(val MSE,
+# next-week book return) = +0.021 over 249 generations: zero information. Selecting the
+# argmax from a LARGER pool on a noise-dominated criterion selects harder on noise, so
+# the expected true quality of the winner FALLS as the pool grows. That is exactly the
+# measured sign and it unifies the campaign's other results:
+#   * random architectures (never mutated) match evolved champions (t=0.41)
+#   * val-MSE selection 0.64 vs 0.86 for plain averaging
+#   * val-IC selection, best-seed selection, diversity selection all lost to averaging
+#   * the single global-best genome loses to averaging its own islands (+15.7 vs +45.6)
+# Six independent selection rules, all beaten by aggregation, now with a mechanism.
+#
+# CONSEQUENCE FOR HYPERPARAMETERS: bigger populations / more bp_iterations / more
+# exploration are NOT the lever. The binding constraint is that the fitness signal
+# carries no out-of-sample information, so MORE search makes selection worse, not
+# better. The only hyperparameter that could change this is one that makes fitness
+# INFORMATIVE (num_validation_sets, the selection metric) -- not one that adds capacity.
