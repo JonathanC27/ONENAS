@@ -83,3 +83,38 @@
 #   a footnote: a referee will ask whether the book, not the model, makes the money.
 # - Island count was selected on 2016-19 under the baselines' own protocol
 #   (Amendment 6, 40 islands); no post-2019 data entered that choice.
+
+# =========================================================================
+# D. FIXED NETWORK BUDGET (fixed_budget.py) -- islands vs seeds at equal M
+# =========================================================================
+# top_k 10, disjoint random partitions of the ten seeds (fixed RNG, balanced)
+# 40 networks:  40 isl x 1 seed  +45.6+-0.9  Sh 0.91+-0.012  MDD 20.4
+#               20 isl x 2 seeds +46.1+-1.1  Sh 0.93+-0.020  MDD 21.2
+#                8 isl x 5 seeds +41.6+-3.0  Sh 0.81+-0.048  MDD 20.9
+# 80 networks:  40 isl x 2 seeds +48.8+-1.0  Sh 0.96+-0.014
+#               20 isl x 4 seeds +48.5+-1.0  Sh 0.96+-0.015
+#                8 isl x 10 seeds +43.9      Sh 0.84
+#
+# PREDICTION MADE BEFORE THE RUN: seeds should beat islands at equal M, because
+# seed members are independent runs while island members share a data path, PER
+# buffer and generation clock, and the aggregation law rewards independence.
+# RESULT: FALSIFIED. Seeds are the WORST way to spend the budget. 40x1 and 20x2
+# tie within SE; 8-islands-many-seeds trails by 0.10-0.12 Sharpe at both budgets.
+#
+# Mechanism that fits: island width suppresses WITHIN-run variance more
+# efficiently than seed averaging suppresses BETWEEN-run variance. An 8-island
+# run has seed-Sharpe SD 0.171 and can be a dud; averaging five duds does not
+# recover what one 40-island run gets (SD 0.078) -- the weak-run rescue the
+# islands sweep already documented.
+#
+# HONEST LIMIT: island count also changes the SEARCH, so an 8-island member is
+# probably individually weaker as well as more correlated. Member quality and
+# member independence move together here; this design cannot separate them.
+#
+# RETRACTION: section B's win for the baselines was earlier explained as "their
+# members are more independent". Within ONE-NAS more independence HURTS, so that
+# explanation does not hold as stated. The section B measurements stand; the
+# mechanism behind them is currently unexplained.
+#
+# Total network count looks like the dominant driver, saturating near 200:
+#   40 nets Sh 0.91-0.93 | 80 nets 0.96 | 200 nets 1.03 | 400 nets 1.02
