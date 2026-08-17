@@ -82,17 +82,25 @@
 # =========================================================================
 # WHAT THE THREE TOGETHER SAY
 # =========================================================================
-# 1. ONE-NAS's individual networks are WEAKER than a tuned LSTM (C).
-# 2. An equally-wide ensemble of independently-seeded LSTMs BEATS an equally-wide
-#    ONE-NAS population (B). The reason is NOT established -- see the retraction
-#    in D: the obvious "their members are more independent" account is ruled out
-#    by the fixed-budget test, where more independence makes ONE-NAS worse.
-# 3. ONE-NAS nonetheless wins the deployment comparison (A) because ONE run yields
-#    `islands` networks while a fixed architecture yields one, and because its book
-#    carries materially less drawdown at every width.
-# 4. Within ONE-NAS, island width beats seed count at equal network budget (D), so
-#    the wide-run configuration is the right deployment shape on its own terms.
-# The contribution is AMORTISED ENSEMBLE DIVERSITY, not better architectures.
+# 1. ONE-NAS's individual networks are WEAKER than a tuned LSTM (C): scored by the
+#    original single-global-best rule it loses by more than 2x.
+# 2. At NARROW widths (8, 20 networks) an equally-wide ensemble of independently
+#    seeded LSTMs BEATS an equally-wide ONE-NAS population (B). At 40 networks --
+#    the protocol-selected width -- that reverses: ONE-NAS ties on net and wins
+#    Sharpe and MDD. Baseline seed-ensembles saturate; island width does not.
+# 3. ONE-NAS wins the deployment comparison (A) outright, because ONE run yields
+#    `islands` networks while a fixed architecture yields one, and its book carries
+#    materially less drawdown at every width in the entire study.
+# 4. Within ONE-NAS, island width beats seed count at equal network budget (D) --
+#    the same ordering as (2), measured a second, independent way.
+# The contribution is AMORTISED ENSEMBLE DIVERSITY that SCALES: one run yields many
+# members, and adding island width keeps paying after independent re-seeding of a
+# fixed architecture has stopped paying. It is NOT that evolution finds better
+# individual networks -- (C) rules that out directly.
+#
+# WHY the width scaling differs between the two methods is NOT established. The
+# obvious "island members are less independent" account is ruled out by D, where
+# MORE independence makes ONE-NAS worse. State the measurement, not a mechanism.
 #
 # STANDING CAVEATS
 # - ONE-NAS's non-island hyperparameters (bp_iterations, PER lambda, elite/generated
