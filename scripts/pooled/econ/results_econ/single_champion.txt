@@ -1,0 +1,49 @@
+# SINGLE GLOBAL-BEST GENOME vs ISLAND-CHAMPION ENSEMBLE (8 islands, seeds 42-44, 2020-2024)
+# Doubly-matched contrast: onenas_single vs lstm/gru is 3 networks from 3 independent runs
+# combined by the same rank-mean rule -- same width, same run count, same combiner. The only
+# remaining difference is evolved-vs-fixed architecture.
+#
+# top_k 5
+# arm              nets  1-run net  1-run Sh   3-seed net  3-seed Sh   MDD      IC
+# onenas_single       3      +18.0      0.39        +19.7       0.36  26.7  +0.0096
+# onenas_islands     24      +48.8      0.83        +53.9       0.82  28.1  +0.0121
+# lstm                3      +38.2      0.66        +45.6       0.74  30.1  +0.0166
+# gru                 3      +32.7      0.59        +46.3       0.74  27.3  +0.0171
+#
+# top_k 10
+# arm              nets  1-run net  1-run Sh   3-seed net  3-seed Sh   MDD      IC
+# onenas_single       3      +15.3      0.40        +20.8       0.47  19.8  +0.0096
+# onenas_islands     24      +41.4      0.86        +49.7       0.91  23.6  +0.0121
+# lstm                3      +31.1      0.66        +32.9       0.67  24.3  +0.0166
+# gru                 3      +28.2      0.65        +34.0       0.68  23.1  +0.0171
+#
+# FINDING 1: scored the way the ORIGINAL ONE-NAS paper scores it -- one global-best genome --
+# ONE-NAS is decisively WORSE than a tuned fixed LSTM/GRU at identical width and run count
+# (+19.7 vs +45.6/+46.3 net at top-5; 0.36 vs 0.74 Sharpe). The architecture search does not
+# find a better single network than a hand-tuned recurrent baseline.
+#
+# FINDING 2: the island-champion ensemble -- our extension -- more than doubles the single
+# champion (+19.7 -> +53.9 net, 0.36 -> 0.82 Sharpe at top-5) and is what carries ONE-NAS past
+# the baselines. The contribution is NOT "evolution finds better architectures"; it is
+# "evolution yields a POPULATION diverse enough to aggregate", which a fixed architecture can
+# only approximate by re-seeding.
+#
+# FINDING 3: the global-best genome IS a selection, and it loses to aggregation exactly like
+# every other selection rule tested this campaign (val-MSE pick, val-IC pick, best-seed,
+# diversity pick). This is the cleanest instance yet: same run, same generations, same data --
+# select one member and earn +19.7, average all eight and earn +53.9.
+#
+# FINDING 4: accuracy-vs-economics dissociation persists and widens. LSTM/GRU have the HIGHEST
+# IC of all four arms (+0.0166/+0.0171 vs the island ensemble's +0.0121) yet earn less. IC
+# ranks the whole cross-section; the book trades the tails.
+#
+# CAVEATS
+# (a) 8 islands only. Raw generation_*_global_best.csv files were purged after scoring for the
+#     16/20/40-island sweeps on Anvil and were never held locally, so the single-champion
+#     signal is unrecoverable at wider settings without re-running those 40 training jobs.
+#     A wider search may produce a better global best; that is untested.
+# (b) seeds 42-44 are the three STRONGEST ONE-NAS seeds (established in the Amendment 3
+#     revision). That biases the absolute levels here in ONE-NAS's favour, which makes
+#     FINDING 1 -- where ONE-NAS single still loses by >2x on net -- more robust, not less.
+# (c) onenas_islands at 24 networks is not width-matched to the 3-network baselines; that row
+#     is here to size the ensemble's contribution, not as a fair head-to-head.
