@@ -1,0 +1,16 @@
+# ISLANDS SWEEP COMPLETE (2020-2024 scored span, registered book, 10 seeds except 16-isl n=6)
+# islands seeds   net±SE     Sharpe±SE   SD(Sh)  worst   MDD   2022      IC
+#      8    10  32.8±3.0   0.71±0.05   0.171   0.41  18.2  +4.3  +0.0110
+#     16     6  44.3±2.4   0.93±0.06   0.138   0.72  18.2  +5.8  +0.0121
+#     20    10  42.4±1.8   0.86±0.03   0.108   0.68  21.0  +5.6  +0.0117
+#     40    10  46.5±1.9   0.91±0.02   0.078   0.78  20.4  +6.7  +0.0128
+#
+# PAIRED vs 8 islands: 20 isl dSharpe +0.155 t=3.02, dNet +9.7 t=3.71
+#                      40 isl dSharpe +0.201 t=3.44, dNet +13.7 t=3.55
+# 40 vs 20: dSharpe +0.046 t=1.12, dNet +4.1 t=1.73 -> gains CONTINUE but are no longer
+# individually significant; the curve is flattening between 20 and 40.
+# DISPERSION falls monotonically and steeply: SD(Sharpe) 0.171 -> 0.138 -> 0.108 -> 0.078;
+# worst run 0.41 -> 0.72 -> 0.68 -> 0.78. Reliability is what width buys.
+# IC rises far less than economics: +0.0110 -> +0.0128 (+16%) while net rises +42%.
+# NOTE: this width evidence comes from the SCORED span; the protocol-symmetric 2016-2019
+# selection (Amendment 6) is what determines headline eligibility.
