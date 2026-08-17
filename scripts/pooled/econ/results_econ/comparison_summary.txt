@@ -148,3 +148,49 @@
 #
 # Total network count looks like the dominant driver, saturating near 200:
 #   40 nets Sh 0.91-0.93 | 80 nets 0.96 | 200 nets 1.03 | 400 nets 1.02
+
+# =========================================================================
+# E. NO-SEARCH CONTROLS (controls_scored.py) -- the BP8 mandatory ablation
+# =========================================================================
+# Lindauer & Hutter (JMLR 2020) Best Practice 8 makes comparison against random
+# search the one genuinely mandatory fairness item. scripts/pooled/controls/ had
+# both controls and 12 core7 runs each since before this campaign, booked at H=1
+# in their own harness and NEVER entered into the evidence map. Rescored here
+# through the registered sleeves book at matched width (8 members) and matched
+# seeds (42-44).
+#
+# top_k 10 (registered book)      net    ±SE  Sharpe   ±SD    MDD       IC
+#   ONE-NAS 8 island champions  +41.4    4.5    0.86  0.141  20.1  +0.0106
+#   control1  8 RANDOM archs    +36.9    2.0    0.84  0.080  20.3  +0.0169
+#   control2  8 identical archs +33.5    3.8    0.78  0.153  20.8  +0.0153
+#   lstm single                 +31.1    7.1    0.66  0.202  21.8  +0.0153
+#   ONE-NAS single global best  +15.3    2.0    0.40  0.120  16.7  +0.0079
+#   control1 single (trail-MSE) +14.3    4.7    0.53  0.304  10.8  +0.0089
+#   control2 single             +10.8    4.2    0.43  0.278  11.5  +0.0107
+#   PAIRED: ONE-NAS - control1  dSharpe +0.020  t=+0.41  (n=3 seeds)
+#           ONE-NAS - control2  dSharpe +0.075  t=+0.46
+#
+# top_k 5: ONE-NAS +48.8/0.83 vs control1 +40.5/0.75 (dSharpe +0.075, t=+4.39),
+#   control2 +38.6/0.72. The top_k 5 contrast is significant but n=3 and it does
+#   NOT replicate at the registered concentration -- treat as non-robust.
+#
+# FINDING 1 (costly): at the REGISTERED book, 8 architectures sampled once at
+# t=0 and NEVER MUTATED match the evolved island champions (0.84 vs 0.86,
+# t=0.41) and are MORE accurate (IC +0.0169 vs +0.0106). The neuroevolution is
+# not load-bearing for the economics. This is the ablation a referee applies
+# first, and it must be reported.
+#
+# FINDING 2 (the paper): the ensemble-vs-single contrast is enormous and
+# UNIVERSAL across member-generation mechanisms --
+#   evolved   0.86 ensembled vs 0.40 selected
+#   random    0.84 ensembled vs 0.53 selected
+#   identical 0.78 ensembled vs 0.43 selected
+# Aggregation roughly DOUBLES Sharpe whether members are evolved, randomly
+# sampled, or copies of one tuned architecture. This dwarfs every cross-method
+# difference in the study (all |t| <= 1.3) and is the sixth independent
+# demonstration that selection loses to aggregation at this SNR.
+#
+# CONSEQUENCE FOR THE PAPER: the horse-race framing is not supportable. The
+# supported claim is about AGGREGATION UNDER LOW SNR, and it is now stronger
+# than the horse race ever was, because it rests on paired within-mechanism
+# contrasts that have power rather than cross-method gaps that do not.
