@@ -20,6 +20,7 @@ it is what ONE training run actually delivers, with a seed-dispersion SD.
 import json
 import math
 import os
+import random
 import sys
 
 import numpy as np
@@ -139,11 +140,20 @@ def onenas_one_run(width, top_k):
             "mdd": float(np.mean(mds)), "ic": float(np.mean(ics))}
 
 
-def baseline_ens(arm, n, top_k):
-    """N-network ensemble; returns None if this arm has fewer than N seeds."""
+def baseline_ens(arm, n, top_k, seeds=None):
+    """N-network ensemble; returns None if this arm has fewer than N seeds.
+
+    `seeds` must be supplied by the caller, which averages over several random
+    draws -- see baseline_ens_mean. Taking the FIRST n seeds (the original
+    implementation) is a single draw and is not comparable to the ONE-NAS cells,
+    which are means over 10 seeds; the first-8 LSTM draw happened to sit ~2.3 sd
+    below its own subset mean, which made the baseline look far weaker at narrow
+    widths than it is.
+    """
     if len(BASE_SEEDS[arm]) < n:
         return None
-    seeds = BASE_SEEDS[arm][:n]
+    if seeds is None:
+        seeds = BASE_SEEDS[arm][:n]
     pp, nets, ics = {}, [], []
     for s in SETS:
         by = {sd: BASE[arm][(s, sd)][0] for sd in seeds}
@@ -161,6 +171,41 @@ def baseline_ens(arm, n, top_k):
             "mdd": float(mdd(pl)), "ic": float(np.mean(ics))}
 
 
+NDRAW = 8
+DRAW_RNG = random.Random(20260817)
+
+
+def baseline_ens_mean(arm, n, top_k):
+    """Mean over NDRAW random n-seed draws -- the like-for-like counterpart of
+    the ONE-NAS cells, which average over 10 independent runs. When n equals the
+    full pool there is only one possible draw."""
+    pool = BASE_SEEDS[arm]
+    if len(pool) < n:
+        return None
+    if len(pool) == n:
+        r = baseline_ens(arm, n, top_k, seeds=pool)
+        r["n_draws"] = 1
+        r["net_sd_draw"] = 0.0
+        r["sharpe_sd_draw"] = 0.0
+        return r
+    draws = []
+    for _ in range(NDRAW):
+        p = pool[:]
+        DRAW_RNG.shuffle(p)
+        draws.append(baseline_ens(arm, n, top_k, seeds=sorted(p[:n])))
+    nets = np.array([d["net"] for d in draws])
+    shs = np.array([d["sharpe"] for d in draws])
+    return {"net": float(nets.mean()),
+            "net_se": float(nets.std(ddof=1) / math.sqrt(len(nets))),
+            "net_sd_draw": float(nets.std(ddof=1)),
+            "sharpe": float(shs.mean()),
+            "sharpe_sd_draw": float(shs.std(ddof=1)),
+            "sharpe_sd": None,
+            "mdd": float(np.mean([d["mdd"] for d in draws])),
+            "ic": float(np.mean([d["ic"] for d in draws])),
+            "n_draws": NDRAW}
+
+
 OUT = {}
 for top_k in TOPKS:
     print(f"\n===== NETWORK-MATCHED, top_k {top_k}, H {HOLD}, sleeves, "
@@ -176,16 +221,17 @@ for top_k in TOPKS:
               f"{r['net_se']:>6.1f} {r['sharpe']:>7.2f} {r['mdd']:>6.1f} "
               f"{r['ic']:>+8.4f}", flush=True)
         for arm in BASE_ARMS:
-            b = baseline_ens(arm, w, top_k)
+            b = baseline_ens_mean(arm, w, top_k)
             OUT[top_k][f"{arm}_ens{w}"] = b
             if b is None:
                 print(f"{f'{arm} {w}-seed ensemble':<34} {w:>4} "
                       f"{'--- only ' + str(len(BASE_SEEDS[arm])) + ' seeds on all 4 panels':>39}",
                       flush=True)
                 continue
+            tag = "" if b["n_draws"] > 1 else "  (single draw: full pool)"
             print(f"{f'{arm} {w}-seed ensemble':<34} {w:>4} {b['net']:>+8.1f} "
                   f"{b['net_se']:>6.1f} {b['sharpe']:>7.2f} {b['mdd']:>6.1f} "
-                  f"{b['ic']:>+8.4f}", flush=True)
+                  f"{b['ic']:>+8.4f}{tag}", flush=True)
 
 json.dump(OUT, open("results_econ/matched_width.json", "w"), indent=1)
 print("\nWROTE results_econ/matched_width.json")
