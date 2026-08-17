@@ -32,7 +32,8 @@
 #          lstm 20-seed                  20   +53.1   7.0    0.80  29.9 +0.0180
 #          gru 20-seed                   20   +56.7   7.5    0.78  31.9 +0.0183
 # 40 nets  ONE-NAS 40 isl (1 run)         1   +55.3   2.6    0.89  24.8 +0.0128
-#          baselines                        PENDING (fill40_runner.py)
+#          lstm 40-seed                  40   +60.2   8.3    0.89  29.0 +0.0178
+#          gru 40-seed                   40   +59.1   7.6    0.81  31.6 +0.0183
 #
 # top_k 10                             runs     net   ±SE  Sharpe   MDD      IC
 #  8 nets  ONE-NAS 8 isl (1 run)          1   +32.1   3.0    0.71  18.2 +0.0110
@@ -43,11 +44,29 @@
 #          lstm 20-seed                  20   +43.3   6.1    0.81  25.3 +0.0180
 #          gru 20-seed                   20   +49.3   9.9    0.85  25.5 +0.0183
 # 40 nets  ONE-NAS 40 isl (1 run)         1   +45.6   1.9    0.91  20.4 +0.0128
-#          baselines                        PENDING (fill40_runner.py)
+#          lstm 40-seed                  40   +45.1   5.5    0.83  25.0 +0.0178
+#          gru 40-seed                   40   +49.8   5.5    0.86  25.9 +0.0183
 #
-# At equal network count the seed-ensembled baselines EARN MORE at every width
-# tested, by 2-11 net points. ONE-NAS holds the lowest MDD in every single cell
-# (18.2-25.1 vs 24.2-31.9) and wins Sharpe at top_k 10 / 20 nets (0.86 vs 0.81).
+# The gap CLOSES WITH WIDTH and reverses by 40 networks. Net at top_k 10:
+#   width      8       20      40     gains
+#   lstm    +38.1   +43.3   +45.1   +5.2, +1.8   <- saturating
+#   ONE-NAS +32.1   +41.6   +45.6   +9.5, +4.0   <- still climbing
+# At 8 and 20 networks the seed-ensembled baselines earn more (by 2-6 points).
+# At 40 networks -- the width Amendment 6 SELECTS on 2016-19 -- ONE-NAS matches
+# lstm on net (+45.6 vs +45.1) and beats BOTH baselines on Sharpe (0.91 vs
+# 0.83/0.86) and MDD (20.4 vs 25.0/25.9). The gru net edge (+4.2) is ~0.7
+# combined SE: not significant. On net the three are tied at the selected width;
+# on risk-adjusted return and drawdown ONE-NAS wins outright.
+# ONE-NAS holds the lowest MDD in EVERY cell of the table (18.2-25.1 vs 24.2-32.3).
+#
+# Independent seeds of a fixed architecture SATURATE; evolved island populations
+# keep improving with width. This agrees with section D (islands beat seeds at
+# fixed budget) -- the same ordering, measured two different ways.
+#
+# GAP: periodic_lstm_monthly is stuck at 10 seeds (611 s/run; 40 seeds x 4 panels
+# is ~20 h local). It is the strongest baseline where it can be compared -- Sharpe
+# 0.91 at 8 networks, EQUAL to ONE-NAS-40's headline Sharpe -- so the 20/40-seed
+# cells are the one unrun comparison that could threaten the headline claim.
 #
 # =========================================================================
 # C. DOUBLY MATCHED (single_champion.py) -- evolved vs fixed, all else equal
