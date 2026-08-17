@@ -1,0 +1,16 @@
+# CORRECTED MATCHED-WIDTH COMPARISON AT 20 NETWORKS (2020-2024)
+# An earlier table wrongly compared ONE-NAS 20 islands against 16-seed baseline ensembles.
+# With correct 20-seed ensembles:
+# construction                  top_k    net    Sharpe   MDD
+# ONE-NAS 20 islands (10 seeds)     5   +47.9    0.79   25.0
+# 20-seed LSTM ensemble             5   +55.1    0.81   29.6
+# 20-seed GRU ensemble              5   +57.4    0.78   31.6
+# ONE-NAS 20 islands (10 seeds)    10   +42.4    0.86   21.0
+# 20-seed LSTM ensemble            10   +42.8    0.78   25.6
+# 20-seed GRU ensemble             10   +49.7    0.85   25.3
+#
+# FINDING: at matched width the seed-ensembled baselines BEAT ONE-NAS on net return
+# (decisively at top-5). ONE-NAS retains the lowest drawdown at both concentrations and
+# the best Sharpe at top-10, but the advantage is a RISK profile, not a return advantage.
+# Consequence: no plausible hyperparameter change closes a 7-point net gap; ONE-NAS sits
+# below the level simple seed-ensembling of a fixed architecture already reaches.
