@@ -201,3 +201,75 @@
 # supported claim is about AGGREGATION UNDER LOW SNR, and it is now stronger
 # than the horse race ever was, because it rests on paired within-mechanism
 # contrasts that have power rather than cross-method gaps that do not.
+
+# =========================================================================
+# F. STATISTICAL INFERENCE -- which claims actually survive testing
+# =========================================================================
+# Jobson-Korkie/Memmel, Ledoit-Wolf HAC + studentized circular block bootstrap,
+# Newey-West HAC, stationary bootstrap, seed-level permutation. Two estimands:
+#   E2 unconditional (unit = time; "would this repeat on another 5 years?")
+#   E1 conditional on this path (unit = training seed; "does a randomly seeded
+#      ONE-NAS run beat a randomly seeded baseline run on 2020-24?")
+# Panels are NOT a replication unit (contemporaneous, shared market factor,
+# pooled into one 200-name book) -- used descriptively only.
+#
+# THE ONE FRAMING THAT CLEARS THE BAR
+#   Run-matched, ONE run, 40 islands, E1: beats all three baselines on BOTH net
+#   and Sharpe. Intersection-union p = 0.0054 (top_k 5) / 0.0371 (top_k 10).
+#   Survives Holm over the searched family IF width 40 is treated as
+#   pre-registered (Amendment 6) -- 0.011 / 0.037. Does not at k=10 if width is
+#   treated as searched (0.186).
+#   Mechanism, one line: LSTM 1-seed +36.1 -> 8 +38.6 -> 20 +44.0 -> 40 +46.1,
+#   vs ONE ONE-NAS-40 run at +46.5. One run buys what ~40 LSTM runs buy. This is
+#   an AMORTISATION claim, not a per-network-quality claim.
+#
+# EVERYTHING ELSE
+#   Network-matched 40: net +0.45 (p 0.97 E2 / 0.87 E1) -- dead tie; Sharpe +0.06
+#     (p 0.76 / 0.17). ONE-NAS is BEHIND gru on net (-4.26). No win at all.
+#   Run-matched 10 runs: not significant anywhere (best IUT p 0.50).
+#   Under E2 (unconditional): NOTHING survives in ANY framing. 0 of 100
+#     comparisons reach raw p<0.05.
+#   Power: the ONE-NAS-40-minus-LSTM difference stream has IR 0.513 -> needs
+#     14.6 YEARS to reach p<0.05 at the day level. Network-matched: IR 0.016 ->
+#     15,400 years. The study is not powered for cross-method claims and no
+#     amount of re-analysis will change that.
+#
+# DRAWDOWN CLAIM RETRACTED -- it was the weakest claim, not the strongest
+#   (a) "Lowest MDD in every cell" holds ONLY in the network-matched table. In
+#       the RUN-matched framing ONE-NAS-40 (20.4) is WORSE than gru 1-run (18.9)
+#       and plm 1-run (16.3) and ties lstm (20.1). [An earlier note in this file
+#       compared ONE-NAS's 1-run MDD against the baselines' TEN-RUN MDD -- a
+#       column mix-up.]
+#   (b) The 5-year MDD IS the March-2020 crash for every arm; per-year MDD is
+#       <=10.2 in 2021-24. Effective n = 1 loss event. Paired-by-year p 0.39-0.85.
+#   (c) Mean underwater depth REVERSES the sign: ONE-NAS 2.85 vs lstm 1-run 2.01
+#       vs lstm-40ens 1.59. ONE-NAS is on average DEEPER underwater.
+#   (d) Excluding 2020, ONE-NAS is significantly WORSE: 2021-24 MDD 12.4 vs
+#       lstm 10.1 (p=0.011), gru 7.6 (p<0.0001), plm 9.5 (p=0.0079).
+#   Restate narrowly or drop.
+#
+# ACCURACY-vs-ECONOMICS: tails hypothesis FALSIFIED, horizon explains it
+#   ONE-NAS is worse at h=1 roughly UNIFORMLY (own-tail IC 0.0190 vs 0.0273,
+#   p=0.034; middle 0.0056 vs 0.0119, p=0.062) -- not a tails/middle split.
+#   The deficit is a NEXT-DAY artefact that closes monotonically with horizon:
+#     h=1  0.01380 vs 0.01834  D=-0.00454  p=0.049
+#     h=3  0.02200 vs 0.02513  D=-0.00313  p=0.336
+#     h=5  0.02486 vs 0.02645  D=-0.00159  p=0.697
+#     h=10 0.02728 vs 0.02703  D=+0.00025  p=0.962   <- the traded horizon
+#   The book HOLDS TEN DAYS. Reporting rank IC at h=1 measures the wrong thing.
+#   This is the paper's cleanest positive result: an equivalence, not a win.
+#   Second mechanism: ONE-NAS's traded set is more persistent -- turnover 0.1184
+#   vs 0.1308 (-9.5%), five-year cost 5.59% vs 6.14% = 0.55 net points returned.
+#
+# TWO REMAINING THREATS
+#   PLM is saturated and binding: at top_k 10 its 4/6/8/10-seed Sharpes are
+#     0.87/0.92/0.92/0.89 -- flat. Its EIGHT-network Sharpe (0.92) already equals
+#     ONE-NAS-40's FORTY-network 0.91 (LW p=0.90). "Beats both baselines on
+#     Sharpe" at 40 nets holds only by excluding PLM.
+#   Panel jackknife: the significant k=10 result is fragile. IUT p 0.037 (all
+#     four panels) -> 0.740 dropping set1 -> 0.168 dropping set2. set2 is a large
+#     positive outlier for every arm (ONE-NAS +74.2 vs +32.9/+34.9/+40.3).
+#
+# DATA ISSUE TO FIX: ONE-NAS streams end 2024-12-17/20, baselines 2024-12-31.
+#   Published cells compare 1248 vs 1257 days. Effect is small (<=0.9 net pts,
+#   <=0.02 Sharpe) but the paper must use a shared calendar.
