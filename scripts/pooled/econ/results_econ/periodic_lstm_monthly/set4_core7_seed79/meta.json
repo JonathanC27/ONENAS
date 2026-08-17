@@ -1,0 +1,41 @@
+{
+ "model": "periodic-lstm-monthly",
+ "panel": "/Users/jonathanchang/.claude/jobs/fc17658e/tmp/set4_core7",
+ "panel_name": "set4_core7",
+ "param": "RET_CS",
+ "score_param": "RET_raw (sidecar)",
+ "realized_source": "sidecar",
+ "features": [
+  "RET",
+  "RET_CS_IN",
+  "BA_SPREAD",
+  "ILLIQUIDITY",
+  "REV21_1",
+  "TURN_RATIO",
+  "VOL21"
+ ],
+ "hyperparameters": {
+  "hidden": 8,
+  "lr": 0.001,
+  "seq_len": 20,
+  "max_steps": 4000,
+  "lookback_days": 0,
+  "cs_demean_y": false
+ },
+ "tuned_on": null,
+ "tuning_objective": "mean daily rank IC",
+ "tuning_table": null,
+ "warmup_from": "2020-01-01",
+ "score_from": "2020-01-01",
+ "score_to": "2024-12-31",
+ "scored_days": 1257,
+ "top_k": 10,
+ "cost_bps": null,
+ "seed": 79,
+ "fit_seconds": 615.48,
+ "total_seconds": 615.49,
+ "cadence": "monthly",
+ "retrain_model": "lstm",
+ "inherited_architecture": null,
+ "arch_from": null
+}

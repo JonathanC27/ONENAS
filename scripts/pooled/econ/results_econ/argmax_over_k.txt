@@ -1,0 +1,45 @@
+# OVERSEARCHING, ISOLATED: post-hoc argmax over a FIXED pool (top_k 10, H 10)
+#
+# The island-count result (champion Sharpe FALLS as islands rise, t=-3.83) is open
+# to a confound: island count also changes migration topology, mutation pressure
+# and diversity maintenance. This control removes it. The pool is FIXED -- ten
+# independently seeded 40-island runs, nothing about the search varies. Only k,
+# the number of candidates the argmax is taken over, changes.
+#   selection window   2020-01-01..2021-12-31
+#   evaluation window  2022-01-01..2024-12-31  (disjoint, strictly later)
+#   200 random subsets per k
+#
+#   k   argmax-of-k   ±SE   mean-of-k   ±SE   random pick
+#   1        1.083  0.008       1.083  0.008        1.083
+#   2        1.089  0.007       1.133  0.005        1.093
+#   3        1.086  0.005       1.155  0.004        1.088
+#   5        1.089  0.003       1.188  0.003        1.097
+#   7        1.093  0.001       1.203  0.003        1.101
+#  10        1.105  0.000       1.227  0.000        1.185
+#
+# argmax k=1 -> k=10:  +1.083 -> +1.105   (+0.022)   FLAT
+# mean   k=1 -> k=10:  +1.083 -> +1.227   (+0.143)   6.5x larger
+# rank-corr(selection score, realised truth) across the pool: -0.261  NEGATIVE
+#
+# FINDING: with the pool held fixed and the search untouched, taking the argmax
+# over more candidates buys essentially NOTHING (+0.022 over a 10x pool), while
+# averaging the same candidates buys +0.143. At k=10 a RANDOM pick (1.185) beats
+# the argmax pick (1.105): selection is not merely uninformative, it is actively
+# harmful, and the selection-to-truth rank correlation is NEGATIVE (-0.261).
+#
+# This isolates SELECTION-ON-NOISE from search dynamics. The confound is dead:
+# nothing about the evolutionary process varies across k here.
+#
+# PRIOR ART -- must be cited, do not claim as new:
+#   Quinlan & Cameron-Jones, "Oversearching and Layered Search in Empirical
+#   Learning", IJCAI 1995, 1019-1024. They sweep beam width 1->512 and show the
+#   SELECTED rule's test error RISES while estimated error falls. They coined
+#   "oversearching". Beam width is our island count / our k.
+#   Bailey, Borwein, Lopez de Prado & Zhu -- Probability of Backtest Overfitting
+#   (2014-2016) owns the champion-vs-population comparison in finance vocabulary,
+#   and the Deflated Sharpe Ratio deflates a champion by the number of trials.
+#   NOTE: our Sharpe figures are UNDEFLATED; a finance-literate referee will say so.
+#
+# WHAT IS NEW HERE: both halves of the dissociation on ONE sweep -- the champion
+# falling while the population ensemble rises (0.71 -> 0.86 -> 0.91 over the same
+# island widths). Quinlan showed the first half in 1995; nobody has shown both.
