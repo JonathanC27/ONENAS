@@ -353,3 +353,49 @@
 # WHAT ONE-NAS DOES OWN IN PANEL 1, besides the level: RELIABILITY. Seed-Sharpe
 # SD 0.078 and worst seed 0.78, against GRU's SD 0.269 / worst 0.09 and LSTM's
 # 0.175 / 0.52. Train once and deploy -- the deployment case actually made here.
+
+
+# =========================================================================
+# H. PERIODIC-LSTM AT WIDTH -- the threat that materialised (2026-08-17)
+# =========================================================================
+# periodic_lstm_monthly was stuck at 10 seeds all campaign (611 s/run). The fill
+# to 40 seeds reached 32 seeds on all four panels, so its 8- and 20-network cells
+# are now measurable. Baseline cells are the mean of 8 RANDOM draws with a
+# per-(arm,width) RNG (a shared RNG made each cell depend on how many draws
+# earlier arms consumed -- fixed 2026-08-17).
+#
+# top_k 10, network-matched      runs     net   ±SE  Sharpe   MDD      IC
+#   8 nets  ONE-NAS 8 islands       1   +32.1   3.0    0.71  18.2 +0.0110
+#           lstm 8-seed             8   +44.5   2.0    0.85  23.3 +0.0169
+#           gru 8-seed              8   +42.7   2.1    0.78  25.8 +0.0169
+#           PLM 8-seed              8   +42.5   0.5    0.94  18.4 +0.0171
+#  20 nets  ONE-NAS 20 islands      1   +41.6   1.8    0.86  21.0 +0.0117
+#           lstm 20-seed           20   +44.7   0.7    0.84  24.1 +0.0177
+#           gru 20-seed            20   +44.0   1.0    0.78  25.9 +0.0178
+#           PLM 20-seed            20   +44.4   0.4    0.96  19.4 +0.0176
+#  40 nets  ONE-NAS 40 islands      1   +45.6   1.9    0.91  20.4 +0.0128
+#           lstm 40-seed           40   +45.1   5.5    0.83  25.0 +0.0178
+#           gru 40-seed            40   +49.8   5.5    0.86  25.9 +0.0183
+#           PLM 40-seed                 --- 32/40 seeds, fill in progress
+#
+# FINDING: periodic-LSTM-monthly at EIGHT networks (Sharpe 0.94, MDD 18.4) beats
+# ONE-NAS-40 at FORTY networks (0.91, 20.4) on BOTH risk-adjusted return and
+# drawdown, using a fifth as many networks. At 20 networks it reaches 0.96. It is
+# saturated (0.94 -> 0.96 across 8 -> 20), so the pending 40-network cell will not
+# change this.
+#
+# CONSEQUENCE: the network-matched disclosure is no longer "a dead tie". It is
+# "ONE-NAS loses on Sharpe to the strongest baseline at every width, including
+# when that baseline uses 1/5 the networks". ONE-NAS-40 still edges net (+45.6 vs
+# +42.5/+44.4), so levels are a split decision -- but the matched-width Sharpe
+# claim is DEAD and must not appear in the paper.
+#
+# WHAT SURVIVES: the run-for-run headline is untouched. There PLM from ONE run is
+# +31.5 / 0.77 vs ONE-NAS-40's +45.6 / 0.91. PLM's strength comes ENTIRELY from
+# seed-ensembling, which costs it 8-20 training runs. That is the amortisation
+# claim, and this result sharpens it: it quantifies exactly what the baseline must
+# spend to overtake a single ONE-NAS run.
+#
+# NOTE FOR THE PAPER: PLM inherits its tuned config from periodic_lstm_quarterly
+# (tuned on 2016-2019); it was not separately tuned for the monthly cadence. That
+# makes these figures a LOWER bound on the strongest baseline, not an upper one.

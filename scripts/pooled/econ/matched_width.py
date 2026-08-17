@@ -172,7 +172,14 @@ def baseline_ens(arm, n, top_k, seeds=None):
 
 
 NDRAW = 8
-DRAW_RNG = random.Random(20260817)
+
+
+def _draw_rng(arm, n):
+    """Per-(arm, width) RNG. A single shared generator makes each cell's draws
+    depend on how many draws EARLIER arms consumed, so adding seeds to one arm
+    silently changes another arm's published cells. Seeding per cell makes every
+    cell reproducible on its own."""
+    return random.Random(f"{arm}|{n}|20260817")
 
 
 def baseline_ens_mean(arm, n, top_k):
@@ -188,10 +195,11 @@ def baseline_ens_mean(arm, n, top_k):
         r["net_sd_draw"] = 0.0
         r["sharpe_sd_draw"] = 0.0
         return r
+    rng = _draw_rng(arm, n)
     draws = []
     for _ in range(NDRAW):
         p = pool[:]
-        DRAW_RNG.shuffle(p)
+        rng.shuffle(p)
         draws.append(baseline_ens(arm, n, top_k, seeds=sorted(p[:n])))
     nets = np.array([d["net"] for d in draws])
     shs = np.array([d["sharpe"] for d in draws])
