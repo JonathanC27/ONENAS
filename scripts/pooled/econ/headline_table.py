@@ -126,14 +126,13 @@ def book_of(panel, preds, rows, top_k):
 
 OUT = {}
 for top_k in TOPKS:
-    print(f"\n{'='*96}")
-    print(f"RUN-FOR-RUN, top_k {top_k}, H {HOLD}, sleeves book, shared calendar, "
-          f"{len(SEEDS)} seeds")
-    print(f"{'='*96}")
-    print(f"{'method':<22} {'nets':>5} {'search':>9} {'net %':>9} {'±SE':>6} "
+    print(f"\n{'='*72}")
+    print(f"PANEL 1 -- ONE RUN (mean over {len(SEEDS)} seeds, +- seed spread), "
+          f"top_k {top_k}, H {HOLD}, shared calendar")
+    print(f"{'='*72}")
+    print(f"{'method':<22} {'net %':>9} {'±SE':>6} "
           f"{'Sharpe':>7} {'SD':>6} {'worst':>6} {'MDD':>6} {'IC':>8}")
-    print(f"{'':22} {'/run':>5} {'core-h':>9}")
-    print("-" * 96)
+    print("-" * 72)
     OUT[top_k] = {}
     for label, nper, cost, cmin, pathfn in ARMS:
         nets, shs, mds, ics = [], [], [], []
@@ -161,8 +160,7 @@ for top_k in TOPKS:
              "per_seed_sharpe": [round(x, 3) for x in shs],
              "per_seed_net": [round(x, 1) for x in nets]}
         OUT[top_k][label] = r
-        cs = f"{cost:,.0f}" if cost >= 1 else f"{cost:.3f}"
-        print(f"{label:<22} {nper:>5} {cs:>9} {r['net']:>+9.1f} {r['net_se']:>6.1f} "
+        print(f"{label:<22} {r['net']:>+9.1f} {r['net_se']:>6.1f} "
               f"{r['sharpe']:>7.2f} {r['sharpe_sd']:>6.3f} {r['worst_sharpe']:>6.2f} "
               f"{r['mdd']:>6.1f} {r['ic']:>+8.4f}", flush=True)
 
@@ -186,6 +184,53 @@ for top_k in TOPKS:
               f"(t={welch(a_net, b_net):>+5.2f})   "
               f"dSharpe {a_sh.mean()-b_sh.mean():>+5.2f} "
               f"(t={welch(a_sh, b_sh):>+5.2f})", flush=True)
+
+
+# ---------------------------------------------------------------- PANEL 2
+# The 10-SEED ENSEMBLE: combine all ten runs of an arm into one book (rank-mean
+# across seeds), the same rule seed_ensemble.py applies to the baselines. Every
+# arm now gets ten training runs, so run count is equal here too -- but each arm
+# collapses to a SINGLE return series, which removes the replication unit that
+# made Panel 1 testable. Reported for completeness; see the note below.
+def rank01(v):
+    n = len(v)
+    r = np.empty(n)
+    r[np.argsort(v, kind="stable")] = np.arange(n, dtype=float)
+    return r / (n - 1.0)
+
+
+for top_k in TOPKS:
+    print(f"\n{'='*72}")
+    print(f"PANEL 2 -- TEN-SEED ENSEMBLE (all 10 runs combined into one book), "
+          f"top_k {top_k}")
+    print(f"{'='*72}")
+    print(f"{'method':<22} {'net %':>9} {'±SE':>6} {'Sharpe':>7} {'MDD':>6} "
+          f"{'IC':>8}")
+    print("-" * 62)
+    for label, nper, cost, cmin, pathfn in ARMS:
+        pp, nets, ics = {}, [], []
+        for s in SETS:
+            by = {sd: RAW[(label, s, sd)][0] for sd in SEEDS}
+            rows = SHARED[s]
+            ens = {r: np.mean([rank01(by[sd][r]) for sd in SEEDS], axis=0)
+                   for r in rows}
+            ret, ic = book_of(PAN[s], ens, rows, top_k)
+            pp[s] = ret
+            nets.append(100 * sum(ret.values()))
+            ics.append(ic)
+        dates = sorted(set.intersection(*[set(v) for v in pp.values()]))
+        pool = np.array([[pp[s][d] for s in SETS] for d in dates]).mean(1)
+        OUT[top_k][label]["ens10"] = {
+            "net": float(np.mean(nets)),
+            "net_se": float(np.std(nets, ddof=1) / math.sqrt(len(nets))),
+            "sharpe": float(sharpe(pool)), "mdd": float(mdd(pool)),
+            "ic": float(np.mean(ics))}
+        e = OUT[top_k][label]["ens10"]
+        print(f"{label:<22} {e['net']:>+9.1f} {e['net_se']:>6.1f} "
+              f"{e['sharpe']:>7.2f} {e['mdd']:>6.1f} {e['ic']:>+8.4f}", flush=True)
+    print("  NOTE: each cell here is ONE series, so the +-SE is across the 4")
+    print("  panels (not a replication unit) and no seed-level test is possible.")
+    print("  Panel 1 is the testable construction.")
 
 json.dump(OUT, open("results_econ/headline_table.json", "w"), indent=1)
 print("\nWROTE results_econ/headline_table.json")

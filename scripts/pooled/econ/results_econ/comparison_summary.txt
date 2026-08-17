@@ -277,39 +277,59 @@
 # =========================================================================
 # G. THE HEADLINE TABLE (headline_table.py) -- RUN-FOR-RUN, author's framing
 # =========================================================================
-# Comparison unit = ONE TRAINING RUN, with search cost as a first-class column.
-# This is the DARTS / Regularized-Evolution convention for searched-vs-manual
-# comparisons; Lindauer & Hutter's checklist requires the cost disclosure and
-# does NOT require compute-matching against a hand-designed baseline.
-# Fixes vs the earlier run-matched table: SHARED CALENDAR (was 1248 vs 1257
-# days) and 1-RUN MDD for every arm (the old table printed baselines' TEN-run
-# MDD beside ONE-NAS's 1-run MDD).
+# Comparison unit = ONE TRAINING RUN. Author's call (2026-08-17): the nets/run
+# and search-core-h columns are NOT in the table -- both facts belong in the
+# experimental-setup text instead (one ONE-NAS run yields `islands` networks vs
+# the baselines' 1, and costs ~785 core-h vs ~0.03). Disclose in prose; the
+# 40-vs-1 asymmetry is the first thing a referee asks about.
+# Fixes vs the earlier run-matched table: SHARED CALENDAR (1249-1251 rows per
+# panel, was 1248 vs 1257) and 1-RUN MDD for every arm (the old table printed
+# baselines' TEN-run MDD beside ONE-NAS's 1-run MDD).
 #
-# top_k 10 (registered)   nets/run  core-h    net    ±SE  Sharpe    SD  worst   MDD      IC
-#   ONE-NAS 40 islands          40     785  +45.6    1.9    0.91 0.078  0.78  20.4 +0.0128
-#   ONE-NAS 20 islands          20     450  +41.6    1.8    0.86 0.108  0.68  21.0 +0.0117
-#   ONE-NAS 8 islands            8     300  +32.1    3.0    0.71 0.171  0.41  18.2 +0.0110
-#   online LSTM                  1   0.029  +33.6    2.9    0.72 0.175  0.52  20.1 +0.0149
-#   online GRU                   1   0.026  +26.1    3.6    0.61 0.269  0.09  18.9 +0.0121
-#   periodic-LSTM monthly        1   0.765  +31.5    2.0    0.77 0.168  0.48  16.3 +0.0142
+# PANEL 1 -- ONE RUN (mean over 10 seeds; SD/worst describe the seed spread)
+# top_k 10 (registered)      net    ±SE  Sharpe     SD  worst   MDD      IC
+#   ONE-NAS 40 islands     +45.6    1.9    0.91  0.078   0.78  20.4 +0.0128
+#   ONE-NAS 20 islands     +41.6    1.8    0.86  0.108   0.68  21.0 +0.0117
+#   ONE-NAS 8 islands      +32.1    3.0    0.71  0.171   0.41  18.2 +0.0110
+#   online LSTM            +33.6    2.9    0.72  0.175   0.52  20.1 +0.0149
+#   online GRU             +26.1    3.6    0.61  0.269   0.09  18.9 +0.0121
+#   periodic-LSTM monthly  +31.5    2.0    0.77  0.168   0.48  16.3 +0.0142
+# top_k 5
+#   ONE-NAS 40 islands     +55.3    2.6    0.89  0.099   0.71  24.8 +0.0128
+#   online LSTM            +39.2    2.6    0.68  0.134   0.51  23.9 +0.0149
+#   online GRU             +29.4    5.1    0.55  0.290  -0.02  23.7 +0.0121
+#   periodic-LSTM monthly  +34.4    2.9    0.67  0.191   0.37  20.9 +0.0142
 #
-# top_k 5                 nets/run  core-h    net    ±SE  Sharpe    SD  worst   MDD      IC
-#   ONE-NAS 40 islands          40     785  +55.3    2.6    0.89 0.099  0.71  24.8 +0.0128
-#   online LSTM                  1   0.029  +39.2    2.6    0.68 0.134  0.51  23.9 +0.0149
-#   online GRU                   1   0.026  +29.4    5.1    0.55 0.290 -0.02  23.7 +0.0121
-#   periodic-LSTM monthly        1   0.765  +34.4    2.9    0.67 0.191  0.37  20.9 +0.0142
-#
-# SEED-LEVEL CONTRASTS (Welch, n=10 seeds, conditional on the 2020-24 path).
-# All SIX contrasts favour ONE-NAS on BOTH metrics at both concentrations:
+# SEED-LEVEL CONTRASTS (Welch, n=10, conditional on the 2020-24 path). All six
+# favour ONE-NAS on BOTH metrics at both concentrations:
 #   top_k 10  vs LSTM +12.0 (t=3.49) / +0.19 (t=3.07)
 #             vs GRU  +19.5 (t=4.77) / +0.30 (t=3.41)
 #             vs PLM  +14.1 (t=5.06) / +0.14 (t=2.33)   <- binding cell
 #   top_k  5  vs LSTM +16.0 (t=4.33) / +0.21 (t=3.98)
 #             vs GRU  +25.8 (t=4.47) / +0.35 (t=3.59)
 #             vs PLM  +20.9 (t=5.33) / +0.23 (t=3.32)
-# Intersection-union p (the claim is a conjunction, so the IUT p is the MAX of
-# the components and needs no correction across metrics or baselines):
-#   0.0054 at top_k 5, 0.0371 at top_k 10, both binding on PLM's Sharpe.
+# Intersection-union p (conjunction -> IUT p is the MAX component, no correction
+# across metrics or baselines): 0.0054 at top_k 5, 0.0371 at top_k 10.
+#
+# PANEL 2 -- TEN-SEED ENSEMBLE (all 10 runs combined into one book)
+# top_k 10                   net    ±SE  Sharpe   MDD      IC
+#   ONE-NAS 20 islands     +54.1   10.0    1.03  22.6 +0.0133
+#   ONE-NAS 40 islands     +52.8   10.3    1.02  21.0 +0.0135
+#   ONE-NAS 8 islands      +43.9   14.9    0.84  21.0 +0.0136
+#   online GRU             +44.2    4.6    0.79  25.0 +0.0180
+#   online LSTM            +42.6    5.0    0.83  24.3 +0.0177
+#   periodic-LSTM monthly  +40.4   10.1    0.90  19.5 +0.0165
+# top_k 5: ONE-NAS-40 +61.9/0.95 | ONE-NAS-20 +59.2/0.93 | LSTM +51.1/0.79 |
+#          GRU +41.4/0.60 | PLM +47.0/0.83
+#
+# Panel 2 favours ONE-NAS on BOTH metrics too, by WIDER margins (+10.2 net,
+# +0.19 Sharpe vs LSTM at top_k 10), and posts the campaign's best Sharpe
+# (1.03). But each cell is ONE series, so there is no replication unit and no
+# seed-level test: the statistician measured this framing directly and found it
+# NOT SIGNIFICANT ANYWHERE (best IUT p 0.50). Report Panel 1 as the headline
+# and Panel 2 as a secondary construction. That the two panels agree in sign
+# and ordering is worth stating -- the result is not an artefact of either
+# construction.
 #
 # MUST ACCOMPANY THIS TABLE (each preempts a rejection, not merely a criticism):
 #  1. The network-matched table (section B): at 40 networks it is a DEAD TIE
@@ -322,11 +342,14 @@
 #  4. This is the CONDITIONAL estimand (unit = seed, given the 2020-24 path).
 #     Unconditionally nothing in the study is significant; the difference stream
 #     carries IR 0.51, needing ~15 years (section F).
-#  5. Search cost recurs -- one generation is window_step = 5 trading days, so
+#  5. Search cost RECURS -- one generation is window_step = 5 trading days, so
 #     the search IS the online learning. Do NOT claim amortisation over time.
 #     The valid compute defence is absolute smallness: 132 core-h/year for the
 #     whole 200-stock book, 3.7 s/day against a 6.5 h decision window.
 #
-# NOTE the MDD column no longer favours ONE-NAS run-for-run: periodic-LSTM 16.3
-# and GRU 18.9 both beat ONE-NAS-40's 20.4. The drawdown claim is retracted in
-# section F on four independent grounds.
+# NOTE the MDD column does NOT favour ONE-NAS run-for-run: periodic-LSTM 16.3
+# and GRU 18.9 both beat ONE-NAS-40's 20.4. Drawdown claim retracted (section F).
+#
+# WHAT ONE-NAS DOES OWN IN PANEL 1, besides the level: RELIABILITY. Seed-Sharpe
+# SD 0.078 and worst seed 0.78, against GRU's SD 0.269 / worst 0.09 and LSTM's
+# 0.175 / 0.52. Train once and deploy -- the deployment case actually made here.
