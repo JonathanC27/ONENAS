@@ -134,3 +134,39 @@ Recurrent edges strictly backward. `--normalize none` genuinely skips. Every sco
 target AND its persistence anchor is valid — 87,230/87,230 on both endpoints; the
 v1 "7,147 live-origin/dead-target" problem is gone. Numerator and denominator share
 one row set; sd is ddof=0 on both arms.
+
+## RESOLVED: the validity mask is NON-CAUSAL (prep.py, flatline detector)
+
+The reviewer flagged mask provenance as unverifiable. It is now closed, and the
+answer is bad:
+
+    win = int(pd.Timedelta(DEAD_WINDOW) / pd.Timedelta(GRID))
+    roll_std = n2o.rolling(win, center=True, min_periods=win // 4).std()
+    flatline = roll_std < DEAD_STD
+    valid = target_real & (~rail_bin) & (~flatline.fillna(False))
+
+`center=True` on a 24-hour window means the flatline flag at time t depends on
+data up to **t + 12 hours**. So `n2o_valid` — which decides which rows enter
+training, which rows are scored, and where every segment boundary falls — is
+computed with hindsight. In deployment you would not know a row was invalid until
+half a day later.
+
+This explains the reviewer's observation that 609 of 13,444 distinct N2O values
+appear as BOTH valid and invalid: the rule is not pointwise, it is a property of
+a forward-looking window.
+
+The rail component (`rail_bin`) IS causal — it is a pointwise test on the raw
+samples in the bin. Only the flatline component looks forward.
+
+**Consequence.** This is a selection effect on the scored population, not a target
+leak: no future value reaches the model's inputs. But the claim "this is what the
+system would have delivered in production" is not supportable while segment
+boundaries are drawn with 12 hours of hindsight, and it is inherited by every v1
+and v2 number computed so far, including the baselines.
+
+**Fix**: `center=False` (trailing window only), then re-prep. This changes which
+rows are valid, hence the segments, hence every baseline — so it is a re-prep, not
+a scoring change. Prep is cheap; the correction is not optional for a deployment
+claim. An honest alternative, if the trailing detector proves too lossy, is to keep
+the centred mask for *analysis* and state explicitly that the scored population is
+selected non-causally.
