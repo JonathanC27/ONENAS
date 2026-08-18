@@ -93,3 +93,68 @@ base medians 1.3378 here vs 1.3797 prior are consistent). Whether deadlock/colla
 RATES differ by arm (n=1 and n=2). Whether a different `scale_D` rescues arm C (its
 5.3x over-dispersion suggests calibration, but no sweep was run). Rank-mean
 (deliberately skipped). simple1's 0.4473 and the gate itself (taken as given).
+
+
+# VERIFIED FINAL NUMBERS (independent pass + agent agreement)
+
+I recomputed the table from the 26 score JSONs myself. Protocol integrity: all 26
+aligned 632/632, **refused 0**, all n=87,110, a single gate value 0.4901085022 across
+every variant. The comparison is exact.
+
+| arm / variant | n | median | ratio | per-seed |
+|---|---|---|---|---|
+| base, single best | 4 | 1.3378 | 2.73 | 1.11 1.30 1.38 2.74 |
+| base, ensemble | 4 | 1.1389 | 2.32 | 0.62 0.90 1.38 1.92 |
+| **B, single best** | 4 | **3.3413** | 6.82 | 2.12 2.67 4.01 4.53 |
+| **B, ensemble** | 4 | **0.8814** | 1.80 | 0.57 0.79 0.97 1.02 |
+| C, level | 5 | 6.6227 | 13.51 | 2.14 4.58 6.62 6.76 7.72 |
+| C, ensemble | 5 | 1.3552 | 2.77 | 1.11 1.35 1.36 2.16 2.81 |
+
+**0 of 26 variants score below the gate.** Best anywhere: **B/s43 ensemble = 0.5690**,
+ratio 1.161 — 16% above persistence and 27% above simple1.
+
+CORRECTION: an earlier note in this file said the best number anywhere was 0.6176
+(base s42). It is 0.5690 (B s43 ensemble). Independently confirmed on two passes.
+
+## Ensembling is the only lever that did anything
+
+Arm B: single best 3.3413 -> ensembled 0.8814, a **3.8x improvement** — the largest
+ensembling gain in either campaign. Consistent with the equity finding that
+aggregation carries the method while selection destroys it: the single global best
+degrades badly, averaging its 16 island champions recovers most of the loss. It still
+does not clear 0.4901.
+
+## THE SHARPEST DIAGNOSTIC: arm C found the right architecture and still failed
+
+Arm C **found and HELD** the target topology — 1 hidden cell, 14 inputs, the same shape
+as simple1 — and scored 13.5x persistence anyway. Its residuals are **5.3x too large**
+with **correlation +0.058 to truth**, i.e. roughly **30x worse than emitting zero** —
+and emitting zero would have BEEN persistence, since in residual space
+`yhat = y_t + 0` is exactly the persistence forecast.
+
+That isolates the failure to what online training does with the weights, INDEPENDENT
+of topology. The architecture space is not the problem; the architecture space
+contains the answer, and two separate arms reached it (C found it, B was handed it)
+and both still lost.
+
+## Every proposed fix failed; two made things worse
+
+| fix | mechanically worked? | effect on accuracy |
+|---|---|---|
+| protect inputs | yes — holds 14/14 enabled | none; B and C both use it and score WORSE than base |
+| published 5:10 ratio (arm A) | yes | overgrew ~10x base cost, could not finish 632 generations |
+| free level anchor (arm C) | yes — found 1 cell / 14 inputs | WORST arm, 13.5x persistence |
+| hand it the answer (arm B) | n/a | 0.4473 -> 3.34, worse than starting from scratch |
+
+## The honest scope
+
+This is ONE task where persistence is unusually strong — the best of 15 baselines
+(ridge_d3, 0.4389) is only 10% better than doing nothing. That is a hostile regime for
+architecture search and this is NOT a general claim about ONE-NAS.
+
+But the task is not unlearnable, which is what makes the result publishable rather
+than merely negative: **simple1 (16 nodes / 15 edges / 31 weights, one simple cell)
+beats persistence at 0.4473, and it is exactly one `add_node` from the seed genome
+every run starts at.** The search cannot find it, cannot hold it when handed it, and
+none of the available levers fix that. **The failure is localised in the search — not
+the architecture space, and not the task.**
