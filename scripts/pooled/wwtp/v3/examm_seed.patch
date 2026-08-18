@@ -1,0 +1,243 @@
+--- a/common/CMakeLists.txt
++++ b/common/CMakeLists.txt
+@@ -3,9 +3,9 @@
+ 
+ if (MYSQL_FOUND)
+     message(STATUS "mysql found, adding db_conn to exact_common library!")
+-    add_library(exact_common arguments.cxx random.cxx exp.cxx db_conn.cxx color_table.cxx log.cxx files.cxx process_arguments.cxx)
++    add_library(exact_common arguments.cxx random.cxx random_seed.cxx exp.cxx db_conn.cxx color_table.cxx log.cxx files.cxx process_arguments.cxx)
+     target_link_libraries(exact_common examm_strategy onenas_strategy exact_time_series)
+ else (MYSQL_FOUND)
+-    add_library(exact_common arguments.cxx exp.cxx random.cxx color_table.cxx log.cxx files.cxx process_arguments.cxx)
++    add_library(exact_common arguments.cxx exp.cxx random.cxx random_seed.cxx color_table.cxx log.cxx files.cxx process_arguments.cxx)
+     target_link_libraries(exact_common examm_strategy onenas_strategy exact_time_series)
+ endif (MYSQL_FOUND)
+--- a/onenas/examm.cxx
++++ b/onenas/examm.cxx
+@@ -28,6 +28,7 @@
+ 
+ #include "common/files.hxx"
+ #include "common/log.hxx"
++#include "common/random_seed.hxx"
+ #include "examm.hxx"
+ #include "island_speciation_strategy.hxx"
+ #include "neat_speciation_strategy.hxx"
+@@ -65,7 +66,7 @@
+     edge_innovation_count = 0;
+     node_innovation_count = 0;
+ 
+-    int32_t seed = std::chrono::system_clock::now().time_since_epoch().count();
++    int32_t seed = (int32_t) RandomSeed::next("EXAMM::generator");
+     generator = minstd_rand0(seed);
+     rng_0_1 = uniform_real_distribution<double>(0.0, 1.0);
+     rng_crossover_weight = uniform_real_distribution<double>(-0.5, 1.5);
+--- a/onenas/onenas.cxx
++++ b/onenas/onenas.cxx
+@@ -28,6 +28,7 @@
+ 
+ #include "common/files.hxx"
+ #include "common/log.hxx"
++#include "common/random_seed.hxx"
+ #include "onenas.hxx"
+ #include "onenas_island_speciation_strategy.hxx"
+ #include "onenas_island.hxx"
+@@ -73,7 +74,7 @@
+     node_innovation_count = 0;
+     generate_op_log = false;
+ 
+-    int32_t seed = std::chrono::system_clock::now().time_since_epoch().count();
++    int32_t seed = (int32_t) RandomSeed::next("ONENAS::generator");
+     generator = minstd_rand0(seed);
+     rng_0_1 = uniform_real_distribution<double>(0.0, 1.0);
+     rng_crossover_weight = uniform_real_distribution<double>(-0.5, 1.5);
+--- a/rnn/rnn_genome.cxx
++++ b/rnn/rnn_genome.cxx
+@@ -52,6 +52,7 @@
+ 
+ #include "common/color_table.hxx"
+ #include "common/log.hxx"
++#include "common/random_seed.hxx"
+ #include "common/random.hxx"
+ #include "delta_node.hxx"
+ #include "dnas_node.hxx"
+@@ -124,7 +125,7 @@
+ 
+     log_filename = "";
+ 
+-    int16_t seed = std::chrono::system_clock::now().time_since_epoch().count();
++    int32_t seed = (int32_t) RandomSeed::next("RNN_Genome::generator");
+     generator = minstd_rand0(seed);
+     rng = uniform_real_distribution<double>(-0.5, 0.5);
+     rng_0_1 = uniform_real_distribution<double>(0.0, 1.0);
+--- a/mpi/onenas_mpi.cxx
++++ b/mpi/onenas_mpi.cxx
+@@ -22,6 +22,7 @@
+ using std::vector;
+ 
+ #include "common/log.hxx"
++#include "common/random_seed.hxx"
+ #include "common/process_arguments.hxx"
+ #include "common/files.hxx"
+ #include "onenas/onenas.hxx"
+@@ -558,6 +559,9 @@
+     Log::set_rank(rank);
+     Log::set_id("main_" + to_string(rank));
+     Log::restrict_to_rank(0);
++    // (5) must follow set_id/restrict_to_rank: Log refuses messages from a thread
++    // with no human-readable id, and it must precede anything that builds an RNG.
++    RandomSeed::configure_from_arguments(arguments);
+     std::cout << "Initialized log!" << std::endl;
+ 
+     // Load required parameters
+--- a/common/random_seed.hxx
++++ b/common/random_seed.hxx
+@@ -0,0 +1,66 @@
++#ifndef EXAMM_COMMON_RANDOM_SEED_HXX
++#define EXAMM_COMMON_RANDOM_SEED_HXX
++
++#include <cstdint>
++#include <string>
++#include <vector>
++
++/**
++ * Central seed source for every RNG that drives the neuro-evolutionary search.
++ *
++ * WHY THIS EXISTS.  `--online_series_seed` seeds ONLY the PER episode sampler
++ * (time_series/online_series.cxx:118-121).  The RNGs that actually decide what
++ * the search does were each seeded independently from the wall clock at
++ * construction:
++ *
++ *   onenas/examm.cxx        EXAMM::generator        mutation / crossover / island choice
++ *   onenas/onenas.cxx       ONENAS::generator       mutation / crossover / island choice
++ *   rnn/rnn_genome.cxx      RNN_Genome::generator   weight init + backprop shuffle order
++ *                                                   (and it was truncated to int16_t,
++ *                                                    i.e. 65536 distinct genome seeds)
++ *
++ * So no run could ever be repeated, and a `seed` field in a run manifest was
++ * misleading provenance: it pinned the episode sampler and nothing else.
++ *
++ * WHAT IT DOES.  Every one of those sites now takes its seed from
++ * RandomSeed::next().
++ *
++ *   - WITHOUT `--examm_seed`: next() returns the same
++ *     std::chrono::system_clock::now().time_since_epoch().count() value those
++ *     sites used to compute for themselves, truncated identically.  The default
++ *     behaviour of the binary is unchanged.
++ *   - WITH `--examm_seed S`: next() returns a deterministic SplitMix64 stream
++ *     rooted at S, so the search becomes a pure function of (S, argv, data).
++ *
++ * WHAT IT DOES NOT FIX (measured, not papered over).  Under MPI the master
++ * inserts finished genomes in ARRIVAL order --
++ * mpi/onenas_mpi.cxx:345 MPI_Probe(MPI_ANY_SOURCE, ...) -> :404 insert_genome() --
++ * so with more than one worker rank the order in which genomes enter the islands
++ * is timing-dependent and a fixed seed alone does NOT make the run
++ * bit-reproducible.  With a single worker (`-n 2`) the order is forced and a
++ * fixed seed does reproduce byte-identically.  Making NP>2 reproducible needs a
++ * deterministic insertion barrier, which is a separate change.
++ *
++ * The genome RNG state is serialised with the genome
++ * (rnn/rnn_genome.cxx read_from_stream reads `generator`), so worker ranks do
++ * NOT re-seed from the clock on deserialisation: the master's stream fully
++ * determines every genome's RNG.
++ */
++namespace RandomSeed {
++    /** Parse `--examm_seed`.  Call once, from main(), before anything constructs an RNG. */
++    void configure_from_arguments(const std::vector<std::string>& arguments);
++
++    /** True iff --examm_seed was given, i.e. iff this run is reproducible. */
++    bool is_fixed();
++
++    /** The root seed, or -1 when the clock fallback is in force. */
++    int64_t root();
++
++    /** Number of seeds drawn so far (for logging / provenance). */
++    uint64_t draw_count();
++
++    /** Next seed for `site`.  Deterministic iff is_fixed(). */
++    uint32_t next(const char* site);
++}  // namespace RandomSeed
++
++#endif
+--- a/common/random_seed.cxx
++++ b/common/random_seed.cxx
+@@ -0,0 +1,80 @@
++#include "common/random_seed.hxx"
++
++#include <chrono>
++
++#include "common/arguments.hxx"
++#include "common/log.hxx"
++
++namespace RandomSeed {
++
++static bool fixed = false;
++static uint64_t root_seed = 0;
++static uint64_t stream_state = 0;
++static uint64_t draws = 0;
++
++// SplitMix64: a well-distributed 64-bit counter mixer.  Used only to spread one
++// root seed across the several independent RNGs, never as the RNG itself.
++static uint64_t splitmix64(uint64_t& x) {
++    x += 0x9E3779B97F4A7C15ULL;
++    uint64_t z = x;
++    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
++    z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
++    return z ^ (z >> 31);
++}
++
++void configure_from_arguments(const std::vector<std::string>& arguments) {
++    long long s = 0;
++    if (get_argument(arguments, "--examm_seed", false, s)) {
++        fixed = true;
++        root_seed = (uint64_t) s;
++        stream_state = root_seed;
++        draws = 0;
++        Log::info(
++            "search RNG: FIXED, --examm_seed %lld -- mutation/crossover/island selection and every "
++            "genome RNG derive from this root; this run is reproducible (single-worker MPI only, see "
++            "common/random_seed.hxx)\n",
++            s
++        );
++    } else {
++        fixed = false;
++        root_seed = 0;
++        stream_state = 0;
++        draws = 0;
++        Log::warning(
++            "search RNG: NOT FIXED -- --examm_seed was not given, so mutation/crossover/island "
++            "selection and every genome RNG are seeded from the wall clock.  This run CANNOT be "
++            "reproduced and any `seed` recorded for it describes only the episode sampler.\n"
++        );
++    }
++}
++
++bool is_fixed() {
++    return fixed;
++}
++
++int64_t root() {
++    return fixed ? (int64_t) root_seed : -1;
++}
++
++uint64_t draw_count() {
++    return draws;
++}
++
++uint32_t next(const char* site) {
++    uint64_t v;
++    if (fixed) {
++        v = splitmix64(stream_state);
++        draws++;
++        Log::debug(
++            "RandomSeed::next(%s) = %u  (draw %llu from root %lld)\n", site == NULL ? "?" : site,
++            (unsigned int) (v & 0xFFFFFFFFULL), (unsigned long long) draws, (long long) root_seed
++        );
++    } else {
++        // Byte-for-byte the expression these call sites used before this file existed.
++        v = (uint64_t) std::chrono::system_clock::now().time_since_epoch().count();
++        draws++;
++    }
++    return (uint32_t) (v & 0xFFFFFFFFULL);
++}
++
++}  // namespace RandomSeed
