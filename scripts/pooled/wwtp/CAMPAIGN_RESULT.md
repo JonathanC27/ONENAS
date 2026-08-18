@@ -158,3 +158,36 @@ beats persistence at 0.4473, and it is exactly one `add_node` from the seed geno
 every run starts at.** The search cannot find it, cannot hold it when handed it, and
 none of the available levers fix that. **The failure is localised in the search — not
 the architecture space, and not the task.**
+
+
+# FINAL, QUEUE DRAINED — 28 variants, 0 below the gate
+
+Arm A's one completed seed is scored. It is the WORST arm on the published
+single-best rule.
+
+| arm | single best (median) | ensemble (median) | n |
+|---|---|---|---|
+| base (unmodified) | **1.3378** | 1.1389 | 4 |
+| **A** (protect inputs + published 5:10 ratio) | **4.2776** | 2.1153 | **1** |
+| B (seeded at simple1 = 0.4473) | 3.3413 | 0.8814 | 4 |
+| C (residual anchor) | 6.6227 | 1.3552 | 5 |
+
+**0 of 28 scored variants beat persistence (0.4901).** Best anywhere: B/s43
+ensemble = 0.5690, ratio 1.161.
+
+## The uncomfortable pattern
+
+**Every intervention made it worse than doing nothing.** Unmodified base is the best
+of the four arms on the single-best rule (1.34), and all three principled fixes
+degraded it:
+
+* protect-inputs + the method's OWN PUBLISHED 5:10 exploration ratio -> 4.28
+* handing it the winning architecture as a seed -> 3.34
+* giving it a free level anchor -> 6.62
+
+Arm A being worst is consistent with the overgrowth diagnosis: the 5:10 ratio doubles
+offspring throughput, `--control_size_method` is provably inert (Naive 631 / Genome 1),
+so nothing brakes growth in a regime where ONE hidden cell is optimal and 19 nodes is
+already past it. Caveat: n=1 for arm A, and the run-to-run spread is 2-3x, so its
+median is not a reliable point estimate — but it did not finish 4 of 5 seeds BECAUSE
+it overgrew, and that failure is itself the measurement.
