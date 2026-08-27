@@ -1,0 +1,132 @@
+% ONE-NAS on the ICAIF evaluation window (2022--2024): comparison tables.
+% Compilable standalone; each table is also \input-ready for the paper.
+% Provenance: pooled-panel branch -- icaif_protocol.py (7fa5fb1),
+% strategy_sweep.py / banded25_yearly (a2a044d, 83d1079), books_vs_lstm (301d4d5),
+% ICAIF_BENCH_NOTE.md (4b3eb73). ICAIF published cells from the prior paper's
+% Tables 4/5/7 and emit_paper_tables.py (EXAMM-Extended).
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{amsmath}
+\newcommand{\se}[1]{{\scriptsize$\pm$#1}}
+\begin{document}
+
+\section*{ONE-NAS on the ICAIF evaluation window (2022--2024)}
+
+All ONE-NAS and benchmark cells: four 50-stock mid-cap panels ($V1$--$V4$,
+identical to the prior paper's validation portfolios), netted half-spread
+costs (TC/PRC) on every trade, realized returns from CRSP total returns
+(split- and dividend-adjusted). ONE-NAS cells are the mean over the four
+panels within each seed, then mean $\pm$ SE over 10 seeds (42--51). ONE-NAS
+is scored prequentially on 2022--2024, the prior paper's test years; the
+population has been evolving online since 2020-01, the online-learning
+analogue of EXAMM's use of pre-2022 data for training. No prediction uses
+information after its date.
+
+\begin{table}[h]
+\centering
+\begin{threeparttable}
+\caption{Net return (\%) by trade year, mean over $V1$--$V4$. Books are
+restarted at each window boundary; the 2022--24 column is one book run over
+the three-year window, not a sum of the yearly cells.}
+\begin{tabular}{lrrrr}
+\toprule
+ & 2022 & 2023 & 2024 & 2022--24 \\
+\midrule
+ONE-NAS (40 isl., sleeves book)            & $+6.1$\se{0.8}  & $+12.4$\se{0.7} & $+6.4$\se{0.5}  & $+27.5$\se{1.1} \\
+ONE-NAS (40 isl., banded book)\tnote{a}    & $+12.5$\se{1.2} & $+14.6$\se{1.3} & $+3.4$\se{0.9}  & $+33.9$\se{1.8} \\
+ONE-NAS (40 isl., Algorithm 1 book)\tnote{b} & $+1.3$\se{1.6} & $+12.8$\se{1.0} & $+10.8$\se{1.2} & $+25.0$\se{1.8} \\
+\midrule
+EXAMM, as published\tnote{c}               & $+15.5$         & $+9.1$          & $+8.5$          & $+33.1$ \\
+\midrule
+Buy \& hold (total return)                 & $-8.0$          & $+13.3$         & $+12.2$         & $+17.9$ \\
+Equal weight, daily (total return)         & $-5.8$          & $+13.8$         & $+12.2$         & $+20.3$ \\
+Buy \& hold, as published\tnote{d}         & $-10.1$         & $+11.2$         & $+6.8$          & --- \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item[a] Buy/hold-spread (``banded'') rule: enter at rank $\le$10 per side,
+exit only when the rank decays past 35 (Novy-Marx \& Velikov 2016; index
+buffer rules). Winner of a seven-book sweep on the development span;
+reported as a sensitivity row, not an adopted headline.
+\item[b] The prior paper's conditional long-short book applied verbatim to
+ONE-NAS. On rank-normal predictions its entry gate fires every day (average
+holding 1 day vs.\ EXAMM's $\approx$5), an $\approx$8\%/yr cost drag; the
+row is therefore conservative.
+\item[c] Prior paper's Table 7 (own trading stack). Positions there are
+priced in shares at raw CRSP \texttt{PRC}, which is not split-adjusted, so
+positions held across a split day book spurious $\pm$50--85\% moves; these
+cells are not artifact-free.
+\item[d] Prior paper's benchmark convention, reproduced to $\pm$0.04 points:
+per-stock price return $(P_{-2}-P_0)/P_0$ on split-unadjusted \texttt{PRC},
+dividends excluded. The paper reported the three-year mean as
+$+2.64\%$/yr; the total-return correction is $+5.9\%$/yr.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{threeparttable}
+\caption{Model comparison on 2022--2024 under identical portfolio
+constructions, costs, panels, and seeds. Net \% / annualized Sharpe.}
+\begin{tabular}{lcc}
+\toprule
+ & Sleeves book & Banded book \\
+\midrule
+ONE-NAS, 40 islands            & $+27.5$\se{1.1}\;/\;0.87 & $+33.9$\se{1.8}\;/\;0.83 \\
+ONE-NAS, 8 islands             & $+20.5$\se{1.8}\;/\;0.70 & $+27.6$\se{2.8}\;/\;0.68 \\
+ONE-NAS, single champion\tnote{a} & $+8.5$\;/\;0.33       & $+8.4$\;/\;0.22 \\
+Online LSTM                    & $+11.3$\se{1.8}\;/\;0.41 & $+19.8$\se{2.0}\;/\;0.47 \\
+Online GRU                     & $+11.7$\se{2.2}\;/\;0.42 & $+20.1$\se{2.4}\;/\;0.49 \\
+LSTM 20-seed ensemble\tnote{b} & $+16.0$\;/\;0.61         & $+25.3$\;/\;0.62 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Paired per seed, ONE-NAS 40 isl.\ vs.\ online LSTM: sleeves
+$\Delta$net $+16.2$ ($t=6.8$), $\Delta$Sharpe $+0.46$ ($t=6.5$); banded
+$+14.1$ ($t=4.4$), $+0.35$ ($t=4.8$).
+\item[a] The published ONE-NAS prediction rule (global-best genome);
+8 islands, seeds 42--44 only ($n=3$). Ensemble$-$single on identical runs:
+$+17.0$ net ($t=5.2$, sleeves). Aggregation, not champion selection,
+carries the method's economic value.
+\item[b] Rank-mean ensemble of 20 LSTM seeds; one series per panel, so no
+seed-level dispersion or test is available.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{threeparttable}
+\caption{Forecast quality on 2022--2024: daily cross-sectional Pearson IC
+of predictions vs.\ realized next-day total returns (the prior paper's
+metric).}
+\begin{tabular}{lrrrr}
+\toprule
+ & 2022 & 2023 & 2024 & 2022--24 \\
+\midrule
+ONE-NAS, 40 islands & $+0.0068$\se{0.0007} & $+0.0196$\se{0.0007} & $+0.0223$\se{0.0008} & $+0.0162$\se{0.0002} \\
+ONE-NAS, 8 islands  & $+0.0066$\se{0.0007} & $+0.0165$\se{0.0010} & $+0.0198$\se{0.0011} & $+0.0143$\se{0.0003} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item The prior paper's EXAMM row reports a grand-mean Pearson IC of
+$+0.0106$ across its panel-years; per-year cells there are not
+methodology-matched to these (different features, target, and data
+handling), so only the grand mean is quoted for reference.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\paragraph{Standing caveats.} (i) 2022--2024 lies inside the development
+span; the window is inherited from the prior paper's protocol rather than
+chosen post hoc, and full-span results are reported separately. (ii) The
+banded book was selected as the best of seven constructions on the same
+span and is exploratory pending pre-registration. (iii) A cold 2022
+deployment of the frozen 8-island primary earns roughly half the matured
+system's net on this window ($+12.3$ vs.\ $+26.5$ pooled), the measured
+cost of forgoing online continuity.
+
+\end{document}
