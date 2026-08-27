@@ -8,7 +8,7 @@
 #                   bash hp_screen_submit.sh | bash     # submit everything
 set -u
 SB="sbatch --array=1-2 factorial_v2.sbatch"
-COMMON="SPAN=tune16,PANELS=core7"
+COMMON="SPAN=tune16,PANELS=core7,EXTRA_FLAGS=--write_elite_predictions"
 
 emit() {  # emit <arm> <extra export assignments...>
   local arm="$1"; shift
