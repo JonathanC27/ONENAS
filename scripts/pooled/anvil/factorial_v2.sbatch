@@ -21,7 +21,12 @@ DATA="/anvil/scratch/x-jchang5/panels_${PANELS}"
 SEED="${SEED:-42}"
 TARGET="${TARGET:-RET_CS}"
 SELECT="${SELECT:-ic_gated}"
-INPUTS="${INPUTS:-RET VOL_CHANGE BA_SPREAD ILLIQUIDITY sprtrn TURNOVER}"
+# default inputs follow the panel tree: core7 panels carry the core7 features
+if [ "$PANELS" = "core7" ]; then
+  INPUTS="${INPUTS:-RET RET_CS_IN BA_SPREAD ILLIQUIDITY REV21_1 TURN_RATIO VOL21}"
+else
+  INPUTS="${INPUTS:-RET VOL_CHANGE BA_SPREAD ILLIQUIDITY sprtrn TURNOVER}"
+fi
 ARM="${ARM:-${TARGET}_${SELECT}}"
 EXTRA_FLAGS="${EXTRA_FLAGS:-}"
 NTS="${NTS:-200}"
