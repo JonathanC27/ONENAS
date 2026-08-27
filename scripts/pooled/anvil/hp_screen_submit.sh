@@ -7,20 +7,26 @@
 # Usage on Anvil:   bash hp_screen_submit.sh            # print all sbatch lines
 #                   bash hp_screen_submit.sh | bash     # submit everything
 set -u
-SB="sbatch --array=1-2 factorial_v2.sbatch"
+# NOTE: sbatch options MUST precede the script name — anything after it is
+# passed as script arguments and silently ignored by our launcher. The
+# 2026-08-27 mis-submission (every job at default config, clobbering the
+# Phase-1 RET_CS_ic_gated set1/set2_seed42 dirs) was exactly this bug.
 COMMON="SPAN=tune16,PANELS=core7,EXTRA_FLAGS=--write_elite_predictions"
 
 emit() {  # emit <arm> <extra export assignments...>
   local arm="$1"; shift
-  local extra="" nts_set=0
+  local extra="" nts_set=0 sel_set=0
   for kv in "$@"; do
     extra+=",$kv"
     [[ "$kv" == NTS=* ]] && nts_set=1
+    [[ "$kv" == SELECT=* ]] && sel_set=1
   done
-  # registered primary uses NTS=2000 (the launcher default is 200)
+  # registered primary: NTS=2000 and MSE selection (the launcher defaults
+  # are 200 and ic_gated) — pin both unless the cell overrides them
   [ "$nts_set" -eq 0 ] && extra+=",NTS=2000"
+  [ "$sel_set" -eq 0 ] && extra+=",SELECT=mse"
   for seed in 42 43 44; do
-    echo "$SB --export=ALL,$COMMON,ARM=hp_${arm},SEED=${seed}${extra}"
+    echo "sbatch --array=1-2 --export=ALL,$COMMON,ARM=hp_${arm},SEED=${seed}${extra} factorial_v2.sbatch"
   done
 }
 

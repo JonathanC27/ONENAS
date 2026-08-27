@@ -84,6 +84,21 @@ PRIMARY.md amendment committed before it is scored once on 2020-2024. If
 nothing survives, the screen is reported as a negative-results table and the
 registered primary stands.
 
+## Incident log
+
+2026-08-27: the first mass submission placed --export after the script name,
+so sbatch passed it as script arguments and every job ran at launcher
+defaults (RET_CS + ic_gated, eval-span clock, seed 42). All 45 jobs were
+cancelled within ~30 minutes; the only damage is to the PHASE-1 design
+artifacts RET_CS_ic_gated/set1_seed42 and set2_seed42 (~85% of files
+overwritten by the concurrent default jobs). Those were 1-seed,
+pre-registration design probes whose conclusions are already recorded; the
+screen's W1-S1 cell re-runs the configuration properly on the tuning span.
+Two submit-script fixes followed: option ordering, and pinning SELECT=mse
+(the launcher default is ic_gated) for every cell that does not override it.
+No screen cell had produced scoreable output before cancellation, so no
+gate is affected.
+
 ## Budget
 
 15 configurations x 2 panels x 3 seeds = 90 runs at the tune16 clock (201
