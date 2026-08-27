@@ -28,9 +28,30 @@ NTS="${NTS:-200}"
 TSL="${TSL:-40}"
 NVS="${NVS:-5}"
 NODE_TYPES="${NODE_TYPES:-simple UGRNN MGU GRU delta LSTM}"
+# population / training knobs (defaults = frozen PRIMARY.md values)
+ELITE="${ELITE:-8}"
+GENPOP="${GENPOP:-5}"
+REPOP="${REPOP:-50}"
+PER_ALPHA="${PER_ALPHA:-0.6}"
+PER_LAMBDA="${PER_LAMBDA:-0.007}"
+BP="${BP:-10}"
+ROUNDS="${ROUNDS:-1}"
+# SPAN=eval  -> scored span 2020-01-01..2024-12-31 (default, unchanged)
+# SPAN=tune16 -> scored span 2016-01-01..2019-12-31 (Amendment 6 clock:
+#                NTW 511/493/501/536 for sets 1-4, 201 generations)
+SPAN="${SPAN:-eval}"
 SET="set${SLURM_ARRAY_TASK_ID:-1}"
 
-if [ "$TSL" = "15" ]; then
+if [ "$SPAN" = "tune16" ]; then
+  if [ "$TSL" != "40" ]; then echo "tune16 clock is defined for TSL=40 only"; exit 1; fi
+  case "$SET" in
+    set1) NTW=511; TOTGEN=201 ;;
+    set2) NTW=493; TOTGEN=201 ;;
+    set3) NTW=501; TOTGEN=201 ;;
+    set4) NTW=536; TOTGEN=201 ;;
+    *) echo "unknown set $SET"; exit 1 ;;
+  esac
+elif [ "$TSL" = "15" ]; then
   # L=15, step 5, V=2: NTW = (row(2020-01-02) - (L-s))/s - V - 50
   case "$SET" in
     set1) NTW=720; TOTGEN=301 ;;
@@ -59,13 +80,13 @@ time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
   --pooled_panel --time_offset 1 \
   --input_parameter_names $INPUTS \
   --output_parameter_names "$TARGET" \
-  --number_islands 8 --bp_iterations 10 --num_mutations 1 \
+  --number_islands 8 --bp_iterations "$BP" --num_mutations 1 \
   --time_series_length "$TSL" --window_step 5 \
   --num_training_windows "$NTW" --num_validation_sets "$NVS" --num_training_sets $NTS \
-  --get_train_data_by PER --per_alpha 0.6 --per_lambda 0.007 --per_epsilon 1e-8 \
-  --online_series_seed "$SEED" --rounds_per_generation 1 \
-  --speciation_method onenas --repopulation_frequency 50 \
-  --generated_population_size 5 --elite_population_size 8 \
+  --get_train_data_by PER --per_alpha "$PER_ALPHA" --per_lambda "$PER_LAMBDA" --per_epsilon 1e-8 \
+  --online_series_seed "$SEED" --rounds_per_generation "$ROUNDS" \
+  --speciation_method onenas --repopulation_frequency "$REPOP" \
+  --generated_population_size "$GENPOP" --elite_population_size "$ELITE" \
   --total_generation "$TOTGEN" \
   --selection_metric "$SELECT" --ic_ewma_halflife 8 --ic_gate_factor 1.5 \
   --max_pred_sd_ratio 3.0 \
