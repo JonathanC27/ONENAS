@@ -43,9 +43,10 @@ S5  Mechanism study (the paper's core)
   M1  PRIMARY TEST — island ensemble vs single champion, WITHIN-RUN paired:
       both prediction rules scored from the same runs; paired t over 10
       seeds, both 8isl and 40isl, on rank IC / net / Sharpe, 2022-24 and
-      2020-24. STATUS: n=3 preview done (+17.0 net, t=5.2); NEEDS RUN:
-      stitch global_best streams for the remaining 68 runs on Anvil
-      (score_ensemble.py, ~1h) + local booking (~30 min). << TOP PRIORITY
+      2020-24. STATUS: DONE (1bd1941; paper/m1_ensemble_table.tex).
+      40isl 2022-24: dNet +23.0 (t=18.2), dSharpe +0.66 (t=14.7); gap
+      widens 8->40 isl (winner's curse confirmed); replicates on the
+      2016-19 tuning fleets (t 4.5-7.5 on economics).
   M2  Fitness signal is uninformative: rank-corr(val MSE, realized) +0.02;
       argmax over 10x pool +0.022 vs averaging +0.143; random pick beats
       argmax; NAS-Bench-201 positive control passes (harness valid).
