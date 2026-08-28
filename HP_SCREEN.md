@@ -99,6 +99,25 @@ Two submit-script fixes followed: option ordering, and pinning SELECT=mse
 No screen cell had produced scoreable output before cancellation, so no
 gate is affected.
 
+## RESULTS (2026-08-28, all 90 runs complete; scored per the gates above)
+
+ZERO cells KEEP. C0 (the frozen primary) has the highest tuning-span rank IC
+(+0.0172; net +23.2, Sharpe +0.81). Both selection-metric cells are strongly
+NEGATIVE (ic_gated dSharpe -0.55 t=-3.1; ungated ic -0.90 t=-7.2): selecting
+on validation IC overfits selection noise rather than repairing the fitness
+signal. RET_CS5 improves the book (+8.1 net, t=+4.3) while degrading daily
+IC@1 (slower signal; fails the registered objective). FLAGs (economics-only,
+not auto-kept): bp20 (+11.8 net t=+4.6, +0.46 Sharpe t=+4.0), repop100
+(+0.25 Sharpe t=+2.4), rounds2 (+0.21 t=+2.2), pa04 (+0.33 t=+3.6; its net
+t=+184.9 is a tiny-variance artifact at n=3 seeds). Full table:
+scripts/pooled/econ/results_econ/hp_screen_score.csv (commit 8626ddb).
+
+Disposition: the registered primary stands, its configuration now
+protocol-symmetric on this axis set. Whether to run the confirmation stage
+on the flagged economics-only cells (bp20 strongest) is an open decision;
+none may be adopted without that confirmation plus a dated PRIMARY.md
+amendment, per the rules above.
+
 ## Budget
 
 15 configurations x 2 panels x 3 seeds = 90 runs at the tune16 clock (201

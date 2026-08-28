@@ -81,10 +81,10 @@ S7  Sensitivity and ablations
       (buy/hold-spread) +16.7 net t=9.6 at lower turnover — EXPLORATORY,
       no adoption. DONE (strategy_sweep.csv, banded25_yearly.csv).
   A3  HP screen (HP_SCREEN.md): 14 cells + C0 on the 2016-2019 tuning
-      span. STATUS: smoke PASSED; 90-run screen READY TO LAUNCH (awaiting
-      go). Scoring: ensemble rank IC + sleeves vs C0, paired gates.
-      Either outcome is writable: a KEEP strengthens "selection can be
-      repaired"; all-DROP confirms M2/M3.
+      span. STATUS: DONE (8626ddb): ZERO KEEPs -- the registered primary
+      wins its own screen; IC-based selection actively hurts (fitness-
+      repair hypothesis refuted, confirming M2/M3); four economics-only
+      FLAGs led by bp20, confirmation stage optional and unadopted.
   A4  Islands scaling table (8/16/20/40 with Amendment 6 protocol-symmetric
       selection). DONE (islands_sweep_final.txt).
 
