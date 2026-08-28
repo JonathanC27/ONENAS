@@ -1,0 +1,14 @@
+# M1 diversity mechanism (from m1_div stdout diagnostics, 120 runs)
+# pairwise_corr = mean pairwise Spearman of member cross-sections per day
+# theory_pred   = member_IC * sqrt(N / (1 + (N-1)*rho)) — equicorrelated
+#                 ensemble-averaging prediction from member IC + diversity
+fleet         N  pairwise_corr  member_IC  ensemble_IC  theory_pred  ratio
+C7_E          8     0.216       +0.0064    +0.0110     +0.0114    0.963
+C7_ISL40      40    0.172       +0.0058    +0.0128     +0.0132    0.969
+TUNE16_ISL8   8     0.190       +0.0071    +0.0132     +0.0132    1.003
+TUNE16_ISL40  40    0.187       +0.0078    +0.0166     +0.0171    0.969
+
+# ensemble vs ex-post best member: ensemble > best in 9/40 (8isl), 5/40
+# (40isl), 3/20, 0/20 runs — the ex-post max is not reachable ex ante
+# (random pick = mean member; argmax selection ~ mean or worse, see M2).
+# Ensemble ~= 1.7-2.2x the mean member's IC in every fleet.
