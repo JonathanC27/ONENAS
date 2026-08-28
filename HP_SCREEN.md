@@ -118,6 +118,24 @@ on the flagged economics-only cells (bp20 strongest) is an open decision;
 none may be adopted without that confirmation plus a dated PRIMARY.md
 amendment, per the rules above.
 
+## DECLARED EXPLORATORY EVAL-SPAN LOOK (2026-08-28, committed before launch)
+
+By author decision, bp_iterations=20 — the strongest economics-only FLAG of
+the screen — is launched on the evaluation clock (2020-2024, 10 seeds x 4
+panels, ARM hp2024_bp20, all other flags the frozen primary) and scored on
+2020-2024 and 2022-2024 paired against the existing C7_E fleet (identical
+seeds/panels, bp=10), BYPASSING the confirmation stage. Standing terms:
+
+- This is an exploratory measurement. It is reported in full regardless of
+  outcome and is NOT eligible for any headline, adoption, or the paper's
+  primary tables without the confirmation stage plus a dated PRIMARY.md
+  amendment.
+- Its selection provenance (best of 14 screen cells on the tuning span,
+  FLAG not KEEP, n=6) is disclosed wherever the number appears; the
+  reported delta must be read as carrying that selection.
+- One scoring pass, both windows, both metrics families (rank IC + sleeves
+  book); no re-scoring under other books.
+
 ## Budget
 
 15 configurations x 2 panels x 3 seeds = 90 runs at the tune16 clock (201
