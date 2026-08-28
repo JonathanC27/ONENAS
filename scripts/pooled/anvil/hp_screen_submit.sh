@@ -26,7 +26,17 @@ emit() {  # emit <arm> <extra export assignments...>
   [ "$nts_set" -eq 0 ] && extra+=",NTS=2000"
   [ "$sel_set" -eq 0 ] && extra+=",SELECT=mse"
   for seed in 42 43 44; do
-    echo "sbatch --array=1-2 --export=ALL,$COMMON,ARM=hp_${arm},SEED=${seed}${extra} factorial_v2.sbatch"
+    if [ "${FILL:-0}" = "1" ]; then
+      # FILL mode: submit only (cell, seed, set) runs that lack a complete
+      # output (201 tune16 generations => generation_200 exists)
+      for set in 1 2; do
+        if [ ! -f "/anvil/scratch/x-jchang5/results_v2/hp_${arm}/set${set}_seed${seed}/generation_200_global_best.csv" ]; then
+          echo "sbatch --array=${set} --export=ALL,$COMMON,ARM=hp_${arm},SEED=${seed}${extra} factorial_v2.sbatch"
+        fi
+      done
+    else
+      echo "sbatch --array=1-2 --export=ALL,$COMMON,ARM=hp_${arm},SEED=${seed}${extra} factorial_v2.sbatch"
+    fi
   done
 }
 

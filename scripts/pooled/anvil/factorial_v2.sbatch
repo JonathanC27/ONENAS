@@ -9,7 +9,7 @@
 #SBATCH -p wholenode
 #SBATCH -N 1
 #SBATCH -n 128
-#SBATCH -t 00:25:00
+#SBATCH -t 01:15:00
 #SBATCH -o %x_%j.out
 #SBATCH -e %x_%j.err
 
