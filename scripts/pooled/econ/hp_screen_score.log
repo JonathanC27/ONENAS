@@ -1,0 +1,108 @@
+hp_C0                set1  s42  IC +0.0197  net   +48.79  sharpe  +1.65
+hp_C0                set1  s43  IC +0.0182  net   +48.81  sharpe  +1.48
+hp_C0                set1  s44  IC +0.0165  net   +45.04  sharpe  +1.78
+hp_C0                set2  s42  IC +0.0215  net    +2.15  sharpe  +0.10
+hp_C0                set2  s43  IC +0.0145  net    +3.30  sharpe  +0.17
+hp_C0                set2  s44  IC +0.0128  net    -8.66  sharpe  -0.35
+hp_W1_S1_icgated     set1  s42  IC +0.0005  net   +13.83  sharpe  +0.39
+hp_W1_S1_icgated     set1  s43  IC +0.0188  net   +38.57  sharpe  +1.11
+hp_W1_S1_icgated     set1  s44  IC +0.0163  net   +25.96  sharpe  +0.70
+hp_W1_S1_icgated     set2  s42  IC +0.0175  net   -10.85  sharpe  -0.43
+hp_W1_S1_icgated     set2  s43  IC +0.0208  net    -3.45  sharpe  -0.17
+hp_W1_S1_icgated     set2  s44  IC +0.0181  net    -1.52  sharpe  -0.05
+hp_W1_S2_ic          set1  s42  IC +0.0136  net    +2.79  sharpe  +0.09
+hp_W1_S2_ic          set1  s43  IC +0.0113  net   +14.04  sharpe  +0.41
+hp_W1_S2_ic          set1  s44  IC +0.0133  net   +10.17  sharpe  +0.35
+hp_W1_S2_ic          set2  s42  IC +0.0148  net   -14.15  sharpe  -0.62
+hp_W1_S2_ic          set2  s43  IC +0.0158  net   -12.04  sharpe  -0.44
+hp_W1_S2_ic          set2  s44  IC +0.0206  net    -9.47  sharpe  -0.35
+hp_W1_T1_cs5         set1  s42  IC +0.0191  net   +43.23  sharpe  +1.42
+hp_W1_T1_cs5         set1  s43  IC +0.0224  net   +64.96  sharpe  +2.08
+hp_W1_T1_cs5         set1  s44  IC +0.0204  net   +38.78  sharpe  +1.16
+hp_W1_T1_cs5         set2  s42  IC +0.0118  net   +20.62  sharpe  +0.71
+hp_W1_T1_cs5         set2  s43  IC +0.0078  net   +10.86  sharpe  +0.37
+hp_W1_T1_cs5         set2  s44  IC +0.0084  net    +9.61  sharpe  +0.30
+hp_W1_TS_cs5_icg     set1  s42  IC +0.0152  net   +40.31  sharpe  +1.07
+hp_W1_TS_cs5_icg     set1  s43  IC +0.0116  net   +31.45  sharpe  +0.88
+hp_W1_TS_cs5_icg     set1  s44  IC +0.0099  net   +21.25  sharpe  +0.58
+hp_W1_TS_cs5_icg     set2  s42  IC +0.0042  net   +19.50  sharpe  +0.58
+hp_W1_TS_cs5_icg     set2  s43  IC +0.0087  net   +29.39  sharpe  +0.88
+hp_W1_TS_cs5_icg     set2  s44  IC +0.0036  net   +19.18  sharpe  +0.60
+hp_W2_F1_repop25     set1  s42  IC +0.0177  net   +30.84  sharpe  +0.97
+hp_W2_F1_repop25     set1  s43  IC +0.0180  net   +59.29  sharpe  +1.81
+hp_W2_F1_repop25     set1  s44  IC +0.0182  net   +27.14  sharpe  +0.82
+hp_W2_F1_repop25     set2  s42  IC +0.0224  net    +9.40  sharpe  +0.38
+hp_W2_F1_repop25     set2  s43  IC +0.0020  net    -8.60  sharpe  -0.30
+hp_W2_F1_repop25     set2  s44  IC +0.0122  net    +0.75  sharpe  +0.03
+hp_W2_F2_repop100    set1  s42  IC +0.0195  net   +52.43  sharpe  +1.60
+hp_W2_F2_repop100    set1  s43  IC +0.0138  net   +45.43  sharpe  +1.55
+hp_W2_F2_repop100    set1  s44  IC +0.0140  net   +50.77  sharpe  +1.67
+hp_W2_F2_repop100    set2  s42  IC +0.0183  net    +8.95  sharpe  +0.34
+hp_W2_F2_repop100    set2  s43  IC +0.0158  net   +14.00  sharpe  +0.52
+hp_W2_F2_repop100    set2  s44  IC +0.0181  net   +15.21  sharpe  +0.65
+hp_W2_G1_rounds2     set1  s42  IC +0.0172  net   +54.78  sharpe  +1.72
+hp_W2_G1_rounds2     set1  s43  IC +0.0157  net   +24.80  sharpe  +0.75
+hp_W2_G1_rounds2     set1  s44  IC +0.0206  net   +54.75  sharpe  +1.77
+hp_W2_G1_rounds2     set2  s42  IC +0.0096  net   +12.36  sharpe  +0.47
+hp_W2_G1_rounds2     set2  s43  IC +0.0111  net   +25.22  sharpe  +0.97
+hp_W2_G1_rounds2     set2  s44  IC +0.0167  net    +8.42  sharpe  +0.39
+hp_W2_N1_nts600      set1  s42  IC +0.0163  net   +33.73  sharpe  +1.24
+hp_W2_N1_nts600      set1  s43  IC +0.0237  net   +50.29  sharpe  +1.75
+hp_W2_N1_nts600      set1  s44  IC +0.0098  net   +26.64  sharpe  +0.87
+hp_W2_N1_nts600      set2  s42  IC +0.0168  net    +8.45  sharpe  +0.37
+hp_W2_N1_nts600      set2  s43  IC +0.0149  net   +18.59  sharpe  +0.76
+hp_W2_N1_nts600      set2  s44  IC +0.0172  net   +21.10  sharpe  +0.86
+hp_W2_R1_e5g10       set1  s42  IC +0.0072  net   +10.89  sharpe  +0.37
+hp_W2_R1_e5g10       set1  s43  IC +0.0138  net   +44.95  sharpe  +1.47
+hp_W2_R1_e5g10       set1  s44  IC +0.0128  net   +42.60  sharpe  +1.62
+hp_W2_R1_e5g10       set2  s42  IC +0.0168  net   +23.81  sharpe  +0.95
+hp_W2_R1_e5g10       set2  s43  IC +0.0139  net   +12.42  sharpe  +0.52
+hp_W2_R1_e5g10       set2  s44  IC +0.0146  net   +17.11  sharpe  +0.71
+hp_W2_R2_e5g15       set1  s42  IC +0.0124  net   +37.00  sharpe  +1.26
+hp_W2_R2_e5g15       set1  s43  IC +0.0097  net   +37.10  sharpe  +1.28
+hp_W2_R2_e5g15       set1  s44  IC +0.0180  net   +53.16  sharpe  +2.26
+hp_W2_R2_e5g15       set2  s42  IC -0.0060  net    -9.71  sharpe  -0.38
+hp_W2_R2_e5g15       set2  s43  IC -0.0013  net   -11.41  sharpe  -0.45
+hp_W2_R2_e5g15       set2  s44  IC +0.0169  net    +0.66  sharpe  +0.03
+hp_W3_B1_bp20        set1  s42  IC +0.0218  net   +51.73  sharpe  +1.61
+hp_W3_B1_bp20        set1  s43  IC +0.0194  net   +44.29  sharpe  +1.34
+hp_W3_B1_bp20        set1  s44  IC +0.0182  net   +34.37  sharpe  +1.30
+hp_W3_B1_bp20        set2  s42  IC +0.0157  net   +25.42  sharpe  +1.06
+hp_W3_B1_bp20        set2  s43  IC +0.0156  net   +21.64  sharpe  +0.83
+hp_W3_B1_bp20        set2  s44  IC +0.0218  net   +33.01  sharpe  +1.44
+hp_W3_P1_pa04        set1  s42  IC +0.0174  net   +44.39  sharpe  +1.44
+hp_W3_P1_pa04        set1  s43  IC +0.0136  net   +41.82  sharpe  +1.70
+hp_W3_P1_pa04        set1  s44  IC +0.0188  net   +43.69  sharpe  +1.50
+hp_W3_P1_pa04        set2  s42  IC +0.0149  net   +22.12  sharpe  +0.82
+hp_W3_P1_pa04        set2  s43  IC +0.0152  net   +25.63  sharpe  +0.97
+hp_W3_P1_pa04        set2  s44  IC +0.0162  net    +7.99  sharpe  +0.38
+hp_W3_P2_pa08        set1  s42  IC +0.0189  net   +44.86  sharpe  +1.48
+hp_W3_P2_pa08        set1  s43  IC +0.0121  net   +47.59  sharpe  +1.57
+hp_W3_P2_pa08        set1  s44  IC +0.0130  net   +26.82  sharpe  +0.85
+hp_W3_P2_pa08        set2  s42  IC +0.0126  net   +13.41  sharpe  +0.52
+hp_W3_P2_pa08        set2  s43  IC +0.0187  net   +20.49  sharpe  +0.86
+hp_W3_P2_pa08        set2  s44  IC +0.0142  net   +13.29  sharpe  +0.59
+hp_W3_P3_pl021       set1  s42  IC +0.0128  net   +46.91  sharpe  +1.43
+hp_W3_P3_pl021       set1  s43  IC +0.0186  net   +48.76  sharpe  +1.55
+hp_W3_P3_pl021       set1  s44  IC +0.0203  net   +60.07  sharpe  +1.87
+hp_W3_P3_pl021       set2  s42  IC +0.0161  net    +8.72  sharpe  +0.32
+hp_W3_P3_pl021       set2  s43  IC +0.0207  net   +29.92  sharpe  +1.30
+hp_W3_P3_pl021       set2  s44  IC +0.0011  net    +5.03  sharpe  +0.17
+# wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/econ/results_econ/hp_screen_score.csv (90 rows)
+
+==== HP screen gates (paired vs C0 on identical (panel,seed); KEEP iff dIC >= +0.0020 & t >= 2) ====
+C0 levels: IC +0.0172  net +23.2  sharpe +0.81  (n=6 runs)
+hp_W1_S1_icgated     dIC -0.0019 (t -0.4)   dNet   -12.8 (t -2.3)   dSharpe -0.55 (t -3.1)   -> DROP
+hp_W1_S2_ic          dIC -0.0023 (t -0.9)   dNet   -24.7 (t -6.4)   dSharpe -0.90 (t -7.2)   -> DROP
+hp_W1_T1_cs5         dIC -0.0022 (t -1.5)   dNet    +8.1 (t +4.3)   dSharpe +0.20 (t +1.8)   -> DROP
+hp_W1_TS_cs5_icg     dIC -0.0083 (t -6.1)   dNet    +3.6 (t +4.6)   dSharpe -0.04 (t -0.8)   -> DROP
+hp_W2_F1_repop25     dIC -0.0021 (t -1.0)   dNet    -3.4 (t -2.5)   dSharpe -0.19 (t -3.0)   -> DROP
+hp_W2_F2_repop100    dIC -0.0006 (t -0.6)   dNet    +7.9 (t +2.3)   dSharpe +0.25 (t +2.4)   -> FLAG (economics only)
+hp_W2_G1_rounds2     dIC -0.0020 (t -0.6)   dNet    +6.8 (t +1.6)   dSharpe +0.21 (t +2.2)   -> FLAG (economics only)
+hp_W2_N1_nts600      dIC -0.0008 (t -0.4)   dNet    +3.2 (t +0.8)   dSharpe +0.17 (t +1.2)   -> DROP
+hp_W2_R1_e5g10       dIC -0.0040 (t -1.7)   dNet    +2.1 (t +0.4)   dSharpe +0.13 (t +0.7)   -> DROP
+hp_W2_R2_e5g15       dIC -0.0089 (t -1.5)   dNet    -5.4 (t -0.8)   dSharpe -0.14 (t -0.5)   -> DROP
+hp_W3_B1_bp20        dIC +0.0016 (t +0.7)   dNet   +11.8 (t +4.6)   dSharpe +0.46 (t +4.0)   -> FLAG (economics only)
+hp_W3_P1_pa04        dIC -0.0012 (t -0.6)   dNet    +7.7 (t+184.9)   dSharpe +0.33 (t +3.6)   -> FLAG (economics only)
+hp_W3_P2_pa08        dIC -0.0023 (t -1.8)   dNet    +4.5 (t +2.5)   dSharpe +0.17 (t +1.5)   -> DROP
+hp_W3_P3_pl021       dIC -0.0023 (t -0.8)   dNet   +10.0 (t +2.6)   dSharpe +0.30 (t +1.7)   -> DROP
