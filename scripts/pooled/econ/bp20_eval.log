@@ -1,0 +1,88 @@
+set1_seed42 2022-24 +17.91
+set1_seed42 2020-24 +3.79
+set1_seed43 2022-24 +42.13
+set1_seed43 2020-24 +48.08
+set1_seed44 2022-24 +23.17
+set1_seed44 2020-24 +40.52
+set1_seed45 2022-24 +16.09
+set1_seed45 2020-24 +58.18
+set1_seed46 2022-24 +24.98
+set1_seed46 2020-24 +30.12
+set1_seed47 2022-24 -10.11
+set1_seed47 2020-24 -17.90
+set1_seed48 2022-24 +22.83
+set1_seed48 2020-24 +16.85
+set1_seed49 2022-24 +15.11
+set1_seed49 2020-24 +10.82
+set1_seed50 2022-24 -9.03
+set1_seed50 2020-24 +16.83
+set1_seed51 2022-24 +25.07
+set1_seed51 2020-24 +10.87
+set2_seed42 2022-24 +23.05
+set2_seed42 2020-24 +55.78
+set2_seed43 2022-24 +43.18
+set2_seed43 2020-24 +84.52
+set2_seed44 2022-24 +23.50
+set2_seed44 2020-24 +55.08
+set2_seed45 2022-24 +33.32
+set2_seed45 2020-24 +54.97
+set2_seed46 2022-24 +10.57
+set2_seed46 2020-24 +34.32
+set2_seed47 2022-24 +25.61
+set2_seed47 2020-24 +54.62
+set2_seed48 2022-24 +31.71
+set2_seed48 2020-24 +58.71
+set2_seed49 2022-24 +29.71
+set2_seed49 2020-24 +65.97
+set2_seed50 2022-24 +22.66
+set2_seed50 2020-24 +58.92
+set2_seed51 2022-24 +41.82
+set2_seed51 2020-24 +71.60
+set3_seed42 2022-24 +4.96
+set3_seed42 2020-24 +11.62
+set3_seed43 2022-24 +10.40
+set3_seed43 2020-24 +26.73
+set3_seed44 2022-24 +6.06
+set3_seed44 2020-24 +12.26
+set3_seed45 2022-24 -6.42
+set3_seed45 2020-24 +4.37
+set3_seed46 2022-24 -6.10
+set3_seed46 2020-24 -14.77
+set3_seed47 2022-24 +8.68
+set3_seed47 2020-24 +18.25
+set3_seed48 2022-24 +10.71
+set3_seed48 2020-24 +34.60
+set3_seed49 2022-24 -1.66
+set3_seed49 2020-24 -3.35
+set3_seed50 2022-24 +5.92
+set3_seed50 2020-24 +25.70
+set3_seed51 2022-24 +8.81
+set3_seed51 2020-24 +15.82
+set4_seed42 2022-24 +8.09
+set4_seed42 2020-24 -7.34
+set4_seed43 2022-24 +4.83
+set4_seed43 2020-24 +9.67
+set4_seed44 2022-24 +2.02
+set4_seed44 2020-24 -19.27
+set4_seed45 2022-24 +23.08
+set4_seed45 2020-24 +25.55
+set4_seed46 2022-24 +32.41
+set4_seed46 2020-24 +22.64
+set4_seed47 2022-24 +17.48
+set4_seed47 2020-24 +33.99
+set4_seed48 2022-24 +36.63
+set4_seed48 2020-24 +36.89
+set4_seed49 2022-24 +41.93
+set4_seed49 2020-24 +66.79
+set4_seed50 2022-24 +19.04
+set4_seed50 2020-24 +6.84
+set4_seed51 2022-24 +24.44
+set4_seed51 2020-24 +43.96
+
+==== bp20 (eval span, exploratory) vs registered primary (C7_E), paired per (panel,seed), collapsed to seeds ====
+2022-24 rank_ic  bp20 +0.0122  primary +0.0136  delta -0.0014 (t=-1.42, n=10 seeds)
+2022-24 net_pct  bp20 +17.62  primary +20.52  delta -2.90 (t=-0.95, n=10 seeds)
+2022-24 sharpe   bp20 +0.61  primary +0.70  delta -0.09 (t=-0.92, n=10 seeds)
+2020-24 rank_ic  bp20 +0.0100  primary +0.0110  delta -0.0009 (t=-1.44, n=10 seeds)
+2020-24 net_pct  bp20 +29.09  primary +32.12  delta -3.03 (t=-0.63, n=10 seeds)
+2020-24 sharpe   bp20 +0.46  primary +0.52  delta -0.06 (t=-0.87, n=10 seeds)

@@ -136,6 +136,15 @@ seeds/panels, bp=10), BYPASSING the confirmation stage. Standing terms:
 - One scoring pass, both windows, both metrics families (rank IC + sleeves
   book); no re-scoring under other books.
 
+OUTCOME (2026-08-28, one pass as declared): bp20 does NOT transfer.
+Paired vs the primary over 10 seeds: 2022-24 net +17.6 vs +20.5
+(d=-2.9, t=-0.95), Sharpe 0.61 vs 0.70 (d=-0.09, t=-0.92), dIC -0.0014
+(t=-1.42); 2020-24 the same shape (all deltas mildly negative, none
+significant). The screen's n=6 FLAG (+11.8 net, +0.46 Sharpe on 2016-19)
+was selection-inflated, as the confirmation-stage rule anticipated. No
+adoption; the registered primary stands; the confirmation stage for bp20
+is moot. Full table: results_econ/bp20_eval.csv.
+
 ## Budget
 
 15 configurations x 2 panels x 3 seeds = 90 runs at the tune16 clock (201
