@@ -1,0 +1,51 @@
+% Standard-practice hyperparameter reporting: one setup paragraph + settings
+% table. Full per-cell search results remain in the project repository
+% (HP_SCREEN.md and results_econ/), satisfying the ledger's full-reporting
+% commitment via supplementary reference. Standalone-compilable; both the
+% paragraph and the table are \input-ready.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\begin{document}
+
+\paragraph{Hyperparameters.}
+ONE-NAS hyperparameters were selected by single-factor search scored on
+2016--2019 validation data, disjoint from the 2020--2024 evaluation span;
+the search covered island count (8--40), elite and generated population
+sizes (including the originally published 5/10), repopulation frequency
+(25--100), training-subsequence count (600--2000), sequence length (15,
+40), backpropagation epochs (10, 20), replay-priority parameters
+($\alpha \in [0.4, 0.8]$, $\lambda$), rounds per generation, selection
+metric (validation MSE vs.\ rank-IC variants), and target horizon (1- and
+5-day cross-sectional). The selected settings are given in
+Table~\ref{tab:hps}; complete per-configuration search results are
+available in the project repository.
+
+\begin{table}[h]
+\centering
+\caption{ONE-NAS hyperparameter settings.}
+\label{tab:hps}
+\begin{tabular}{ll}
+\toprule
+Hyperparameter & Value \\
+\midrule
+Islands & 40 (headline); 8 (registered primary) \\
+Elite population per island & 8 \\
+Generated genomes per island per generation & 5 \\
+Repopulation frequency & every 50 generations \\
+Selection metric & validation MSE \\
+Prediction rule & rank-mean ensemble of island champions \\
+Target & 1-day cross-sectional rank-normal return \\
+Sequence length / window step / validation sets & 40 / 5 / 5 \\
+Training subsequences per genome (NTS) & 2000 \\
+Backpropagation epochs per genome & 10 \\
+Replay (PER) $\alpha$, $\lambda$, $\epsilon$ & 0.6, 0.007, $10^{-8}$ \\
+Rounds per generation & 1 \\
+Node-type library & simple, UGRNN, MGU, GRU, $\Delta$-RNN, LSTM \\
+Mutation / intra- / inter-island crossover & 0.7 / 0.2 / 0.1 (EXAMM defaults) \\
+Warm-up generations & 50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

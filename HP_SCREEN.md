@@ -145,6 +145,17 @@ was selection-inflated, as the confirmation-stage rule anticipated. No
 adoption; the registered primary stands; the confirmation stage for bp20
 is moot. Full table: results_econ/bp20_eval.csv.
 
+## AMENDMENT (2026-08-29): reporting venue
+
+By author decision the paper reports this search at standard ML granularity
+(setup paragraph + settings table, paper/hp_reporting.tex): search space,
+tuning span, and selected values, with a pointer to this repository for the
+complete per-cell results. The full-reporting commitment above is satisfied
+by this file, results_econ/hp_screen_score.csv, and results_econ/
+bp20_eval.csv remaining in the repository, referenced from the paper. No
+result is altered; the selected configuration is the registered primary,
+which predates and is unaffected by every look recorded here.
+
 ## Budget
 
 15 configurations x 2 panels x 3 seeds = 90 runs at the tune16 clock (201
