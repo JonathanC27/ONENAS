@@ -87,24 +87,24 @@ def main():
             print(f"{arm} [{w0}..{w1}]: {n_runs} runs, "
                   f"{len(series[arm])} days", flush=True)
 
-        # equal-weight buy & hold reference (mean of 4 panel B&H books)
+        # equal-weight buy & hold, PRIOR-PAPER CONVENTION: per-stock price
+        # return on raw PRC (no dividends, no split adjustment) -- matches
+        # the published benchmark rows. Shares bought at the prior close of
+        # the first scored day, held; no costs (the prior stack charged
+        # none on this arm).
         acc = {}
         for pn, panel in panels.items():
             rows = panel.rows_between(max(w0, "2020-01-02"), w1)
             n = panel.n_stocks
-            pos = [ss.CAPITAL / n] * n
-            frac = ss._cost_frac(panel.prc, panel.tc, max(rows[0] - 1, 0),
-                                 None)
-            cost0 = sum(abs(v) * frac(k) for k, v in enumerate(pos))
-            for i, r in enumerate(rows):
-                pnl = 0.0
-                for k in range(n):
-                    ret = panel.Yscore[r][k]
-                    pnl += pos[k] * ret
-                    pos[k] *= 1.0 + ret
-            # cost charged on the build day only
-                c = cost0 if i == 0 else 0.0
-                acc.setdefault(panel.dates[r], []).append((pnl - c) / ss.CAPITAL)
+            r0 = max(rows[0] - 1, 0)
+            shares = [(ss.CAPITAL / n) / abs(panel.prc[r0][k])
+                      for k in range(n)]
+            prev = sum(shares[k] * abs(panel.prc[r0][k]) for k in range(n))
+            for r in rows:
+                val = sum(shares[k] * abs(panel.prc[r][k]) for k in range(n))
+                acc.setdefault(panel.dates[r], []).append(
+                    (val - prev) / ss.CAPITAL)
+                prev = val
         series["ew_buy_hold"] = pd.Series(
             {d: np.mean(v) for d, v in acc.items()}).sort_index()
         return series
@@ -166,7 +166,7 @@ def main():
               "onenas_8isl": "ONE-NAS (8 islands)",
               "online_lstm": "Online LSTM",
               "periodic_lstm_monthly": "Periodic LSTM (monthly)",
-              "ew_buy_hold": "Equal-weight buy & hold"}
+              "ew_buy_hold": "Equal-weight buy & hold (prior-paper convention)"}
     fig, ax = plt.subplots(figsize=(7.2, 4.2))
     ends = []
     for arm in ("onenas_40isl", "onenas_8isl", "online_lstm",
