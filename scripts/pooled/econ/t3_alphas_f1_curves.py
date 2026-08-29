@@ -59,49 +59,57 @@ def main():
               for p in args.panels}
 
     # ---------------- arm daily series (mean across runs, keyed by date)
-    series = {}
-    for arm, sources in ARMS.items():
-        acc = {}
-        n_runs = 0
-        for d, fname in sources:
-            if not os.path.isdir(d):
-                print(f"# missing {d}", flush=True)
-                continue
-            for run in sorted(os.listdir(d)):
-                path = os.path.join(d, run, fname)
-                if "_seed" not in run or not os.path.exists(path):
+    def build_series(w0, w1):
+        series = {}
+        for arm, sources in ARMS.items():
+            acc = {}
+            n_runs = 0
+            for d, fname in sources:
+                if not os.path.isdir(d):
+                    print(f"# missing {d}", flush=True)
                     continue
-                pn, seed = run.rsplit("_seed", 1)
-                pn = pn.replace("_core7", "")
-                if int(seed) not in SEEDS or pn not in panels:
-                    continue
-                panel = panels[pn]
-                preds, rows = load_preds(path, panel, W0, W1)
-                for dt, r in book_series(panel, preds, rows).items():
-                    acc.setdefault(dt, []).append(r)
-                n_runs += 1
-        series[arm] = pd.Series({d: np.mean(v) for d, v in acc.items()}
-                                ).sort_index()
-        print(f"{arm}: {n_runs} runs, {len(series[arm])} days", flush=True)
+                for run in sorted(os.listdir(d)):
+                    path = os.path.join(d, run, fname)
+                    if "_seed" not in run or not os.path.exists(path):
+                        continue
+                    pn, seed = run.rsplit("_seed", 1)
+                    pn = pn.replace("_core7", "")
+                    if int(seed) not in SEEDS or pn not in panels:
+                        continue
+                    panel = panels[pn]
+                    preds, rows = load_preds(path, panel, w0, w1)
+                    rows = [r for r in rows if w0 <= panel.dates[r] <= w1]
+                    for dt, r in book_series(panel, preds, rows).items():
+                        acc.setdefault(dt, []).append(r)
+                    n_runs += 1
+            series[arm] = pd.Series({d: np.mean(v) for d, v in acc.items()}
+                                    ).sort_index()
+            print(f"{arm} [{w0}..{w1}]: {n_runs} runs, "
+                  f"{len(series[arm])} days", flush=True)
 
-    # equal-weight buy & hold reference (mean of 4 panel B&H books)
-    acc = {}
-    for pn, panel in panels.items():
-        rows = panel.rows_between("2020-01-02", W1)
-        n = panel.n_stocks
-        pos = [ss.CAPITAL / n] * n
-        frac = ss._cost_frac(panel.prc, panel.tc, max(rows[0] - 1, 0), None)
-        cost0 = sum(abs(v) * frac(k) for k, v in enumerate(pos))
-        for i, r in enumerate(rows):
-            pnl = 0.0
-            for k in range(n):
-                ret = panel.Yscore[r][k]
-                pnl += pos[k] * ret
-                pos[k] *= 1.0 + ret
-            c = cost0 if i == 0 else 0.0
-            acc.setdefault(panel.dates[r], []).append((pnl - c) / ss.CAPITAL)
-    series["ew_buy_hold"] = pd.Series({d: np.mean(v) for d, v in acc.items()}
-                                      ).sort_index()
+        # equal-weight buy & hold reference (mean of 4 panel B&H books)
+        acc = {}
+        for pn, panel in panels.items():
+            rows = panel.rows_between(max(w0, "2020-01-02"), w1)
+            n = panel.n_stocks
+            pos = [ss.CAPITAL / n] * n
+            frac = ss._cost_frac(panel.prc, panel.tc, max(rows[0] - 1, 0),
+                                 None)
+            cost0 = sum(abs(v) * frac(k) for k, v in enumerate(pos))
+            for i, r in enumerate(rows):
+                pnl = 0.0
+                for k in range(n):
+                    ret = panel.Yscore[r][k]
+                    pnl += pos[k] * ret
+                    pos[k] *= 1.0 + ret
+            # cost charged on the build day only
+                c = cost0 if i == 0 else 0.0
+                acc.setdefault(panel.dates[r], []).append((pnl - c) / ss.CAPITAL)
+        series["ew_buy_hold"] = pd.Series(
+            {d: np.mean(v) for d, v in acc.items()}).sort_index()
+        return series
+
+    series = build_series(W0, W1)          # 2020-24: factor alphas
 
     # ---------------- T3: FF3 + Mom, Newey-West lag 10
     ff = pd.read_csv(os.path.join(args.ff_dir,
@@ -142,7 +150,10 @@ def main():
     pd.DataFrame(out_rows).to_csv("results_econ/factor_alphas_final.csv",
                                   index=False)
 
-    # ---------------- F1: cumulative net curves
+    # ---------------- F1: cumulative net curves (2022-24, the paper's
+    # evaluation window; books restarted at the window start so endpoints
+    # match the 2022-24 table)
+    series = build_series("2022-01-01", "2024-12-31")
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -170,14 +181,15 @@ def main():
     # don't collide
     ends.sort(key=lambda e: e[2])
     ys = [e[2] for e in ends]
-    MIN_SEP = 5.5
+    yl = ax.get_ylim()
+    MIN_SEP = 0.045 * (yl[1] - yl[0])
     for i in range(1, len(ys)):
         if ys[i] - ys[i - 1] < MIN_SEP:
             ys[i] = ys[i - 1] + MIN_SEP
     for (arm, x, v), y in zip(ends, ys):
         ax.annotate(f"{v:+.0f}", (x, y), xytext=(4, 0),
                     textcoords="offset points", color=COLORS[arm],
-                    fontsize=8, va="center")
+                    fontsize=8, va="center", annotation_clip=False)
     ax.axhline(0, color="#8b8d92", lw=1)
     ax.set_ylabel("Cumulative net return (%)")
     ax.grid(axis="y", color="#ececea", lw=0.6)
