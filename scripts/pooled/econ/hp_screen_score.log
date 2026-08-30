@@ -70,6 +70,12 @@ hp_W3_B1_bp20        set1  s44  IC +0.0182  net   +34.37  sharpe  +1.30
 hp_W3_B1_bp20        set2  s42  IC +0.0157  net   +25.42  sharpe  +1.06
 hp_W3_B1_bp20        set2  s43  IC +0.0156  net   +21.64  sharpe  +0.83
 hp_W3_B1_bp20        set2  s44  IC +0.0218  net   +33.01  sharpe  +1.44
+hp_W3_P0_uniform     set1  s42  IC +0.0194  net   +50.88  sharpe  +1.73
+hp_W3_P0_uniform     set1  s43  IC +0.0122  net   +47.85  sharpe  +1.66
+hp_W3_P0_uniform     set1  s44  IC +0.0091  net   +34.94  sharpe  +1.15
+hp_W3_P0_uniform     set2  s42  IC +0.0185  net   +30.50  sharpe  +1.16
+hp_W3_P0_uniform     set2  s43  IC +0.0191  net   +17.15  sharpe  +0.73
+hp_W3_P0_uniform     set2  s44  IC +0.0105  net   +10.34  sharpe  +0.46
 hp_W3_P1_pa04        set1  s42  IC +0.0174  net   +44.39  sharpe  +1.44
 hp_W3_P1_pa04        set1  s43  IC +0.0136  net   +41.82  sharpe  +1.70
 hp_W3_P1_pa04        set1  s44  IC +0.0188  net   +43.69  sharpe  +1.50
@@ -88,7 +94,7 @@ hp_W3_P3_pl021       set1  s44  IC +0.0203  net   +60.07  sharpe  +1.87
 hp_W3_P3_pl021       set2  s42  IC +0.0161  net    +8.72  sharpe  +0.32
 hp_W3_P3_pl021       set2  s43  IC +0.0207  net   +29.92  sharpe  +1.30
 hp_W3_P3_pl021       set2  s44  IC +0.0011  net    +5.03  sharpe  +0.17
-# wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/econ/results_econ/hp_screen_score.csv (90 rows)
+# wrote /Users/jonathanchang/ONENAS/.claude/worktrees/pooled-panel/scripts/pooled/econ/results_econ/hp_screen_score.csv (96 rows)
 
 ==== HP screen gates (paired vs C0 on identical (panel,seed); KEEP iff dIC >= +0.0020 & t >= 2) ====
 C0 levels: IC +0.0172  net +23.2  sharpe +0.81  (n=6 runs)
@@ -103,6 +109,7 @@ hp_W2_N1_nts600      dIC -0.0008 (t -0.4)   dNet    +3.2 (t +0.8)   dSharpe +0.1
 hp_W2_R1_e5g10       dIC -0.0040 (t -1.7)   dNet    +2.1 (t +0.4)   dSharpe +0.13 (t +0.7)   -> DROP
 hp_W2_R2_e5g15       dIC -0.0089 (t -1.5)   dNet    -5.4 (t -0.8)   dSharpe -0.14 (t -0.5)   -> DROP
 hp_W3_B1_bp20        dIC +0.0016 (t +0.7)   dNet   +11.8 (t +4.6)   dSharpe +0.46 (t +4.0)   -> FLAG (economics only)
+hp_W3_P0_uniform     dIC -0.0024 (t -1.9)   dNet    +8.7 (t +2.6)   dSharpe +0.34 (t +2.5)   -> FLAG (economics only)
 hp_W3_P1_pa04        dIC -0.0012 (t -0.6)   dNet    +7.7 (t+184.9)   dSharpe +0.33 (t +3.6)   -> FLAG (economics only)
 hp_W3_P2_pa08        dIC -0.0023 (t -1.8)   dNet    +4.5 (t +2.5)   dSharpe +0.17 (t +1.5)   -> DROP
 hp_W3_P3_pl021       dIC -0.0023 (t -0.8)   dNet   +10.0 (t +2.6)   dSharpe +0.30 (t +1.7)   -> DROP

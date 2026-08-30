@@ -94,6 +94,15 @@ settings table; its effect must be measured, not assumed. Same design,
 objective, gates, and replication as every other cell (2 panels x 3 seeds,
 tune16 clock, paired vs C0). Reported in full regardless of outcome.
 
+OUTCOME (2026-08-30, scored on arrival): dIC -0.0024 (t=-1.9), dNet +8.7
+(t=+2.6), dSharpe +0.34 (t=+2.5) -> FLAG (economics only), not KEEP.
+PER mildly helps the registered IC objective and mildly hurts the book --
+the campaign's IC/economics dissociation again. Conclusion for the paper:
+PER is NOT load-bearing (removing it does not degrade the system; if
+anything the book improves within noise at n=6); the settings-table row is
+an implementation detail, ablated. Per the bp20 precedent, the economics
+flag is not adopted without confirmation.
+
 ## Incident log
 
 2026-08-27: the first mass submission placed --export after the script name,
