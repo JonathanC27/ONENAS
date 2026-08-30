@@ -22,12 +22,12 @@ WORST   = [0.41, 0.72, 0.68, 0.78]
 
 BLUE = "#2a78d6"
 INK2 = "#5a5c61"
-plt.rcParams.update({"font.size": 9.5, "axes.spines.top": False,
+plt.rcParams.update({"font.size": 7, "axes.spines.top": False,
                      "axes.spines.right": False})
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.2, 2.9))
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(3.4, 1.75))
 
-ax1.errorbar(ISLANDS, NET, yerr=NET_SE, color=BLUE, lw=1.6, marker="o",
-             ms=4, capsize=3)
+ax1.errorbar(ISLANDS, NET, yerr=NET_SE, color=BLUE, lw=1.2, marker="o",
+             ms=3, capsize=3)
 ax1.set_xlabel("Islands")
 ax1.set_ylabel("Net return 2020–24 (%)")
 ax1.set_xticks(ISLANDS)
@@ -36,15 +36,15 @@ ax1.grid(axis="y", color="#ececea", lw=0.6)
 ax2.fill_between(ISLANDS, [m - s for m, s in zip(SHARPE, SH_SD)],
                  [m + s for m, s in zip(SHARPE, SH_SD)],
                  color=BLUE, alpha=0.15, lw=0, label="±1 seed SD")
-ax2.plot(ISLANDS, SHARPE, color=BLUE, lw=1.6, marker="o", ms=4,
+ax2.plot(ISLANDS, SHARPE, color=BLUE, lw=1.2, marker="o", ms=3,
          label="Mean Sharpe")
-ax2.plot(ISLANDS, WORST, color=INK2, lw=1.1, ls="--", marker="s", ms=3.5,
+ax2.plot(ISLANDS, WORST, color=INK2, lw=0.9, ls="--", marker="s", ms=2.5,
          label="Worst seed")
 ax2.set_xlabel("Islands")
 ax2.set_ylabel("Sharpe, 2020–24")
 ax2.set_xticks(ISLANDS)
 ax2.grid(axis="y", color="#ececea", lw=0.6)
-ax2.legend(frameon=False, fontsize=8, loc="lower right")
+ax2.legend(frameon=False, fontsize=5.5, loc="lower right")
 
 fig.tight_layout()
 fig.savefig(os.path.join(HERE, "../../../paper/islands_scaling.pdf"))
