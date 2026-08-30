@@ -1,0 +1,202 @@
+% 05-Results.tex — results exhibits, AAAI 2027 two-column layout.
+% Needs only packages already in the template preamble (graphicx, booktabs,
+% caption). Wide exhibits use table*/figure*; notes are plain footnotesize
+% lines (no threeparttable). Figure files: net_curves.pdf, islands_scaling.pdf.
+\providecommand{\se}[1]{{\scriptsize$\pm$#1}}
+
+\section{Results}
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+ & 2022 & 2023 & 2024 & 2022--24 \\
+\midrule
+ONE-NAS (40 isl., sleeves book)              & $+6.1$\se{0.8}  & $+12.4$\se{0.7} & $+6.4$\se{0.5}  & $+27.5$\se{1.1} \\
+ONE-NAS (40 isl., banded book)$^{a}$         & $+12.5$\se{1.2} & $+14.6$\se{1.3} & $+3.4$\se{0.9}  & $+33.9$\se{1.8} \\
+ONE-NAS (40 isl., Algorithm 1 book)$^{b}$    & $+1.3$\se{1.6}  & $+12.8$\se{1.0} & $+10.8$\se{1.2} & $+25.0$\se{1.8} \\
+\midrule
+ONE-NAS single champion (8 isl., sleeves)$^{c}$ & $+3.1$\se{1.8} & $+1.7$\se{1.3} & $+2.7$\se{1.1} & $+8.5$ \\
+Online LSTM                                  & $+1.2$\se{1.3}  & $+4.5$\se{1.2}  & $+3.8$\se{0.7}  & $+11.3$\se{1.8} \\
+Online GRU                                   & $+2.1$\se{1.0}  & $+3.1$\se{1.9}  & $+5.0$\se{0.8}  & $+11.7$\se{2.2} \\
+Periodic LSTM (monthly retrain)              & $+1.4$\se{1.0}  & $+3.9$\se{0.8}  & $+6.9$\se{0.6}  & $+14.8$\se{1.0} \\
+Online AR$^{d}$                              & $-14.6$         & $+4.8$          & $+7.9$          & $-3.3$ \\
+\midrule
+Buy \& hold$^{e}$                            & $-10.1$         & $+11.2$         & $+6.8$          & $+7.9$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize
+$^{a}$Buy/hold-spread rule (enter rank $\le$10, exit past 35); sensitivity
+row, not an adopted headline.
+$^{b}$Conditional long--short book (rebalance only when all top-10
+predictions are positive and all bottom-10 negative); on rank-normal
+predictions the gate fires daily.
+$^{c}$Published ONE-NAS prediction rule; seeds 42--44 ($n{=}3$).
+$^{d}$Deterministic; one run per panel. All baselines trade the sleeves
+book under identical costs.
+$^{e}$Equal-weight, prior-study benchmark convention; 2022--24 column is
+the sum of yearly cells.\par}
+\caption{Net return (\%) by trade year, mean over $V1$--$V4$, 10 seeds.
+ONE-NAS books restarted at each window boundary; the 2022--24 column is one
+book run over the three-year window.}
+\label{tab:window}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{net_curves.pdf}
+\caption{Cumulative net return, 2022--2024 (books restarted at window
+start). Buy-and-hold follows the prior-study benchmark convention.}
+\label{fig:curves}
+\end{figure*}
+
+\begin{table*}[t]
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Fleet & Window & Single & Ensemble & $\Delta$net ($t$) & $\Delta$Sharpe ($t$) \\
+\midrule
+40 isl.\ ($n{=}10$) & 2022--24 & $+4.5$ / $0.21$  & $+27.5$ / $0.87$ & $+23.0$ $(18.2)$ & $+0.66$ $(14.7)$ \\
+40 isl.\ ($n{=}10$) & 2020--24 & $+2.7$ / $0.08$  & $+45.6$ / $0.68$ & $+42.9$ $(14.6)$ & $+0.60$ $(13.4)$ \\
+8 isl.\ ($n{=}10$)  & 2022--24 & $+8.3$ / $0.33$  & $+20.5$ / $0.70$ & $+12.2$ $(6.7)$  & $+0.37$ $(5.8)$ \\
+8 isl.\ ($n{=}10$)  & 2020--24 & $+12.0$ / $0.21$ & $+32.1$ / $0.52$ & $+20.1$ $(5.5)$  & $+0.30$ $(5.3)$ \\
+\midrule
+8 isl.\ ($n{=}5$)$^{a}$  & 2016--19 & $+16.3$ / $0.56$ & $+26.0$ / $0.92$ & $+9.7$ $(5.2)$   & $+0.36$ $(4.5)$ \\
+40 isl.\ ($n{=}5$)$^{a}$ & 2016--19 & $+8.9$ / $0.30$  & $+36.7$ / $1.22$ & $+27.8$ $(7.5)$  & $+0.92$ $(6.6)$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize $^{a}$Replication on the 2016--2019 tuning-span fleets.\par}
+\caption{Prediction rule, within-run paired: single global-best genome
+vs.\ island-champion rank-mean ensemble from the same runs (sleeves book).
+Net \% / Sharpe; $\Delta$ = ensemble $-$ single, paired $t$ over seeds.}
+\label{tab:m1}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{islands_scaling.pdf}
+\caption{Performance vs.\ island count (2020--2024, registered sleeves
+book; 10 seeds per width, 6 at 16 islands). Left: pooled net return (mean
+$\pm$ SE). Right: Sharpe --- mean with $\pm$1 seed-SD band, and the worst
+seed; width narrows the seed distribution (SD 0.171 $\to$ 0.078, worst
+seed 0.41 $\to$ 0.78) more than it moves the mean.}
+\label{fig:islands}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
+\toprule
+Arm & bps/day & \%/yr & NW $t$ & Beta \\
+\midrule
+ONE-NAS (40 islands)     & $+3.15$ & $+7.9$ & $+2.14$ & $+0.120$ \\
+ONE-NAS (8 islands)      & $+2.17$ & $+5.5$ & $+1.76$ & $+0.096$ \\
+Periodic LSTM (monthly)  & $+2.15$ & $+5.4$ & $+1.78$ & $+0.079$ \\
+Online LSTM              & $+2.08$ & $+5.2$ & $+1.59$ & $+0.130$ \\
+Online GRU               & $+1.52$ & $+3.8$ & $+1.35$ & $+0.119$ \\
+Online AR                & $-1.35$ & $-3.4$ & $-1.05$ & $+0.007$ \\
+\bottomrule
+\end{tabular}
+\caption{Factor-adjusted alphas: pooled daily book returns regressed on
+the Fama--French three factors plus momentum, 2020--2024, Newey--West lag
+10.}
+\label{tab:alphas}
+\end{table}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Fleet & $N$ & $\rho$ & Member & Ensemble & Predicted \\
+\midrule
+8 isl., 2020--24  & 8  & 0.216 & $+0.0064$ & $+0.0110$ & $+0.0114$ \\
+40 isl., 2020--24 & 40 & 0.172 & $+0.0058$ & $+0.0128$ & $+0.0132$ \\
+8 isl., 2016--19  & 8  & 0.190 & $+0.0071$ & $+0.0132$ & $+0.0132$ \\
+40 isl., 2016--19 & 40 & 0.187 & $+0.0078$ & $+0.0166$ & $+0.0171$ \\
+\bottomrule
+\end{tabular}
+\caption{Ensemble diversity mechanism: member rank IC, pairwise member
+prediction correlation $\rho$, measured ensemble IC, and the
+equicorrelated averaging prediction $m\sqrt{N/(1+(N-1)\rho)}$.}
+\label{tab:diversity}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lr@{\quad}lr}
+\toprule
+Configuration & $\Delta$net & Configuration & $\Delta$net \\
+\midrule
+C0 (registered)      & $+3.9$  & NTS 600            & $+12.8$ \\
+Select: IC-gated     & $+0.5$  & Rounds 2           & $+11.0$ \\
+Select: IC           & $+2.8$  & PER $\alpha$ 0.4   & $+4.0$  \\
+Target: 5-day CS     & $+4.5$  & PER $\alpha$ 0.8   & $+11.7$ \\
+5-day CS + IC-gated  & $+1.8$  & PER $\lambda{\times}3$ & $+20.6$ \\
+Elite 5 / gen 10     & $+9.6$  & BP epochs 20       & $+12.5$ \\
+Elite 5 / gen 15     & $+11.1$ & Repop.\ 25         & $+7.0$  \\
+Repop.\ 100          & $+9.6$  &                    &         \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+{\footnotesize Mean $+8.2$; $n{=}6$ runs per cell (2 panels $\times$ 3
+seeds).\par}
+\caption{Ensembling gain (ensemble $-$ single champion, within-run, net \%
+on 2016--2019) inside every trained hyperparameter configuration; positive
+in 15/15 cells.}
+\label{tab:invariance}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lr}
+\toprule
+Population evolving online since 2020-01 & $+26.5$ \\
+Cold start at 2022-01                     & $+12.3$ \\
+\bottomrule
+\end{tabular}
+\caption{Online continuity: pooled net (\%) on 2022--2024, frozen 8-island
+configuration.}
+\label{tab:continuity}
+\end{table}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll}
+\toprule
+Hyperparameter & Value \\
+\midrule
+Islands & 40 (headline); 8 (reg.) \\
+Elite population / island & 8 \\
+Generated / island / generation & 5 \\
+Repopulation frequency & every 50 gen. \\
+Selection metric & validation MSE \\
+Prediction rule & champion rank-mean \\
+Target & 1-day CS rank-normal \\
+Seq.\ len.\ / step / val.\ sets & 40 / 5 / 5 \\
+Train subseq.\ / genome & 2000 \\
+Backprop.\ epochs / genome & 10 \\
+Replay (PER) $\alpha$, $\lambda$, $\epsilon$ & 0.6, 0.007, $10^{-8}$ \\
+Rounds / generation & 1 \\
+Node types & simple, UGRNN, MGU, \\
+ & GRU, $\Delta$-RNN, LSTM \\
+Mut.\ / intra- / inter-crossover & 0.7 / 0.2 / 0.1 \\
+Warm-up generations & 50 \\
+\bottomrule
+\end{tabular}
+\caption{ONE-NAS hyperparameter settings (selected on 2016--2019
+validation data, disjoint from the evaluation span).}
+\label{tab:hps}
+\end{table}
