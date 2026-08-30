@@ -129,7 +129,7 @@ Fleet & $N$ & $\rho$ & Member IC & Ensemble IC & Predicted \\
 \begin{threeparttable}
 \caption{Ensembling gain (ensemble $-$ single champion, within-run, net \%
 on 2016--2019) inside every trained hyperparameter configuration; positive
-in 15/15 cells.}
+in 16/16 cells.}
 \label{tab:invariance}
 \begin{tabular}{lr@{\qquad}lr}
 \toprule
@@ -142,11 +142,11 @@ Target: 5-day CS        & $+4.5$  & PER $\alpha$ 0.8   & $+11.7$ \\
 5-day CS + IC-gated     & $+1.8$  & PER $\lambda{\times}3$ & $+20.6$ \\
 Elite 5 / gen 10        & $+9.6$  & BP epochs 20       & $+12.5$ \\
 Elite 5 / gen 15        & $+11.1$ & Repop.\ 25         & $+7.0$  \\
-Repop.\ 100             & $+9.6$  &                    &         \\
+Repop.\ 100             & $+9.6$  & PER off (uniform)  & $+9.3$  \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\footnotesize
-\item Mean $+8.2$; $n{=}6$ runs per cell (2 panels $\times$ 3 seeds).
+\item Mean $+8.3$; $n{=}6$ runs per cell (2 panels $\times$ 3 seeds).
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -167,7 +167,9 @@ Cold start at 2022-01                     & $+12.3$ \\
 \begin{table}[h]
 \centering
 \caption{ONE-NAS hyperparameter settings (selected on 2016--2019
-validation data, disjoint from the evaluation span).}
+validation data, disjoint from the evaluation span). Replay sampling
+ablated: PER vs.\ uniform shows no advantage on the tuning objective
+($\Delta$IC $-0.0024$, $t{=}-1.9$).}
 \label{tab:hps}
 \begin{tabular}{ll}
 \toprule

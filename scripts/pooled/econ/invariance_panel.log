@@ -70,6 +70,12 @@ hp_W3_B1_bp20 set1_seed44 dnet +1.52
 hp_W3_B1_bp20 set2_seed42 dnet +11.86
 hp_W3_B1_bp20 set2_seed43 dnet +29.18
 hp_W3_B1_bp20 set2_seed44 dnet +13.98
+hp_W3_P0_uniform set1_seed42 dnet +8.78
+hp_W3_P0_uniform set1_seed43 dnet +20.48
+hp_W3_P0_uniform set1_seed44 dnet -7.08
+hp_W3_P0_uniform set2_seed42 dnet +14.91
+hp_W3_P0_uniform set2_seed43 dnet +13.83
+hp_W3_P0_uniform set2_seed44 dnet +4.72
 hp_W3_P1_pa04 set1_seed42 dnet -0.94
 hp_W3_P1_pa04 set1_seed43 dnet +8.01
 hp_W3_P1_pa04 set1_seed44 dnet +8.94
@@ -102,8 +108,9 @@ hp_W2_N1_nts600      dNet   +12.8 (t +2.6)  dSharpe +0.46  dIC +0.0037  (n=6 run
 hp_W2_R1_e5g10       dNet    +9.6 (t +2.5)  dSharpe +0.35  dIC +0.0019  (n=6 runs)
 hp_W2_R2_e5g15       dNet   +11.1 (t +1.6)  dSharpe +0.46  dIC +0.0029  (n=6 runs)
 hp_W3_B1_bp20        dNet   +12.5 (t +2.7)  dSharpe +0.49  dIC +0.0070  (n=6 runs)
+hp_W3_P0_uniform     dNet    +9.3 (t +2.4)  dSharpe +0.36  dIC +0.0009  (n=6 runs)
 hp_W3_P1_pa04        dNet    +4.0 (t +1.3)  dSharpe +0.16  dIC +0.0034  (n=6 runs)
 hp_W3_P2_pa08        dNet   +11.7 (t +3.6)  dSharpe +0.48  dIC +0.0064  (n=6 runs)
 hp_W3_P3_pl021       dNet   +20.6 (t +6.0)  dSharpe +0.70  dIC +0.0071  (n=6 runs)
 
-cells with positive ensembling net gain: 15/15
+cells with positive ensembling net gain: 16/16
