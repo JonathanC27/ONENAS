@@ -42,6 +42,7 @@ ARMS = {
     "online_gru": [("results_econ/gru", "predictions.csv")],
     "periodic_lstm_monthly": [("results_econ/periodic_lstm_monthly",
                                "predictions.csv")],
+    "online_ar": [("results_econ/ar", "predictions.csv")],
 }
 
 
@@ -166,6 +167,7 @@ def main():
               "onenas_8isl": "ONE-NAS (8 islands)",
               "online_lstm": "Online LSTM",
               "periodic_lstm_monthly": "Periodic LSTM (monthly)",
+              "online_ar": "Online AR",
               "ew_buy_hold": "Equal-weight buy & hold (prior-paper convention)"}
     fig, ax = plt.subplots(figsize=(7.2, 4.2))
     ends = []

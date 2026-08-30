@@ -30,20 +30,25 @@ ONE-NAS (40 isl., banded book)\tnote{a}      & $+12.5$\se{1.2} & $+14.6$\se{1.3}
 ONE-NAS (40 isl., Algorithm 1 book)\tnote{b} & $+1.3$\se{1.6}  & $+12.8$\se{1.0} & $+10.8$\se{1.2} & $+25.0$\se{1.8} \\
 \midrule
 ONE-NAS single champion (8 isl., sleeves)\tnote{c} & $+3.1$\se{1.8} & $+1.7$\se{1.3} & $+2.7$\se{1.1} & $+8.5$ \\
-Online LSTM (sleeves book)                   & $+1.2$\se{1.3}  & $+4.5$\se{1.2}  & $+3.8$\se{0.7}  & $+11.3$\se{1.8} \\
+Online LSTM                                  & $+1.2$\se{1.3}  & $+4.5$\se{1.2}  & $+3.8$\se{0.7}  & $+11.3$\se{1.8} \\
+Online GRU                                   & $+2.1$\se{1.0}  & $+3.1$\se{1.9}  & $+5.0$\se{0.8}  & $+11.7$\se{2.2} \\
+Periodic LSTM (monthly retrain)              & $+1.4$\se{1.0}  & $+3.9$\se{0.8}  & $+6.9$\se{0.6}  & $+14.8$\se{1.0} \\
+Online AR\tnote{d}                           & $-14.6$         & $+4.8$          & $+7.9$          & $-3.3$ \\
 \midrule
-EXAMM (prior paper)                          & $+15.5$         & $+9.1$          & $+8.5$          & $+33.1$\tnote{d} \\
-Buy \& hold (prior paper)                    & $-10.1$         & $+11.2$         & $+6.8$          & $+7.9$\tnote{d} \\
+Buy \& hold\tnote{e}                         & $-10.1$         & $+11.2$         & $+6.8$          & $+7.9$ \\
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\footnotesize
 \item[a] Buy/hold-spread rule (enter rank $\le$10, exit past 35);
 sensitivity row, not an adopted headline.
-\item[b] Prior paper's conditional book applied verbatim; trigger fires
-daily on rank-normal predictions.
+\item[b] Conditional long--short book (rebalance only when all top-10
+predictions are positive and all bottom-10 negative); on rank-normal
+predictions the gate fires daily.
 \item[c] Published ONE-NAS prediction rule; seeds 42--44 ($n{=}3$).
-\item[d] Prior paper's published Table 7 cells; 2022--24 column is their
-sum.
+\item[d] Deterministic; one run per panel. All baselines trade the sleeves
+book under identical costs.
+\item[e] Equal-weight, prior-study benchmark convention; 2022--24 column
+is the sum of yearly cells.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -96,7 +101,7 @@ ONE-NAS (8 islands)      & $+2.17$ & $+5.5$ & $+1.76$ & $+0.096$ \\
 Periodic LSTM (monthly)  & $+2.15$ & $+5.4$ & $+1.78$ & $+0.079$ \\
 Online LSTM              & $+2.08$ & $+5.2$ & $+1.59$ & $+0.130$ \\
 Online GRU               & $+1.52$ & $+3.8$ & $+1.35$ & $+0.119$ \\
-Equal-weight buy \& hold & $+0.66$ & $+1.7$ & $+0.41$ & $+0.969$ \\
+Online AR                & $-1.35$ & $-3.4$ & $-1.05$ & $+0.007$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -181,7 +186,7 @@ Backpropagation epochs per genome & 10 \\
 Replay (PER) $\alpha$, $\lambda$, $\epsilon$ & 0.6, 0.007, $10^{-8}$ \\
 Rounds per generation & 1 \\
 Node-type library & simple, UGRNN, MGU, GRU, $\Delta$-RNN, LSTM \\
-Mutation / intra- / inter-island crossover & 0.7 / 0.2 / 0.1 (EXAMM defaults) \\
+Mutation / intra- / inter-island crossover & 0.7 / 0.2 / 0.1 (framework defaults) \\
 Warm-up generations & 50 \\
 \bottomrule
 \end{tabular}
