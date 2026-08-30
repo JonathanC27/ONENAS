@@ -84,6 +84,16 @@ PRIMARY.md amendment committed before it is scored once on 2020-2024. If
 nothing survives, the screen is reported as a negative-results table and the
 registered primary stands.
 
+## AMENDMENT (2026-08-30): cell W3-P0, declared before launch
+
+One additional Wave-3 cell: W3-P0 GET=Uniform -- prioritized experience
+replay OFF, i.e. the published ONE-NAS papers' plain subsequence sampling.
+Rationale: PER exists only in the post-publication codebase (added
+2025-06), appears in no ONE-NAS publication, and is listed in the paper's
+settings table; its effect must be measured, not assumed. Same design,
+objective, gates, and replication as every other cell (2 panels x 3 seeds,
+tune16 clock, paired vs C0). Reported in full regardless of outcome.
+
 ## Incident log
 
 2026-08-27: the first mass submission placed --export after the script name,

@@ -41,6 +41,13 @@ PER_ALPHA="${PER_ALPHA:-0.6}"
 PER_LAMBDA="${PER_LAMBDA:-0.007}"
 BP="${BP:-10}"
 ROUNDS="${ROUNDS:-1}"
+# GET=PER (registered primary) | Uniform (published ONE-NAS sampling)
+GET="${GET:-PER}"
+if [ "$GET" = "PER" ]; then
+  SAMPLING_FLAGS="--get_train_data_by PER --per_alpha $PER_ALPHA --per_lambda $PER_LAMBDA --per_epsilon 1e-8"
+else
+  SAMPLING_FLAGS="--get_train_data_by $GET"
+fi
 # SPAN=eval  -> scored span 2020-01-01..2024-12-31 (default, unchanged)
 # SPAN=tune16 -> scored span 2016-01-01..2019-12-31 (Amendment 6 clock:
 #                NTW 511/493/501/536 for sets 1-4, 201 generations)
@@ -88,7 +95,7 @@ time srun --mpi=pmi2 "$ONENAS/build/mpi/onenas_mpi" \
   --number_islands 8 --bp_iterations "$BP" --num_mutations 1 \
   --time_series_length "$TSL" --window_step 5 \
   --num_training_windows "$NTW" --num_validation_sets "$NVS" --num_training_sets $NTS \
-  --get_train_data_by PER --per_alpha "$PER_ALPHA" --per_lambda "$PER_LAMBDA" --per_epsilon 1e-8 \
+  $SAMPLING_FLAGS \
   --online_series_seed "$SEED" --rounds_per_generation "$ROUNDS" \
   --speciation_method onenas --repopulation_frequency "$REPOP" \
   --generated_population_size "$GENPOP" --elite_population_size "$ELITE" \
