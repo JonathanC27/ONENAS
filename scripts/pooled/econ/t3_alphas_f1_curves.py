@@ -36,7 +36,7 @@ _sw = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_sw)
 # ONE-NAS unchanged; the pooled daily series each alpha is fitted to is then
 # each arm's best available estimate rather than a ten-seed subsample.
 SEEDS = set(range(42, 200))
-W0, W1 = "2020-01-01", "2024-12-31"
+W0, W1 = "2022-01-01", "2024-12-31"
 
 ARMS = {
     "onenas_40isl": [("probe_ISL40", "ensemble_stitched_predictions.csv")],

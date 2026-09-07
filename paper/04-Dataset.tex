@@ -94,7 +94,10 @@ purposes:
 \item \textbf{Tuning}, 2016-01-01 to 2019-12-31. Every configuration
       decision --- hyperparameter screen, island count --- is made here.
 \item \textbf{Evaluation}, 2020-01-01 to 2024-12-31. Scored once per
-      registered configuration.
+      registered configuration. Results are reported on the 2022--2024
+      sub-window, which is the span the prior study on these panels
+      evaluated and therefore the one that makes the two comparable;
+      2020--2021 is scored but not reported.
 \end{itemize}
 
 \subsection{Search Configuration and Prediction Rule}
@@ -112,6 +115,51 @@ island --- the lowest-validation-error elite of each --- converts each
 member's predicted cross-section to ranks, and averages the ranks. Rank
 averaging is used rather than averaging predictions because the members
 are separately trained networks whose output scales are not comparable.
+
+\subsection{Hyperparameter Search}
+
+Every configuration decision was made on the tuning span and is listed
+here in full, so that the selected values in Table~\ref{tab:hps} can be
+read against what was actually considered.
+
+The search is single-axis around the registered control configuration:
+each cell changes one setting and is compared against the control on
+identical (panel, seed) cells. Sixteen configurations were trained ---
+the control plus fifteen variants:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Fitness signal.} Selection on validation MSE (control),
+      on cross-sectional rank IC, and on a gated rank IC.
+\item \textbf{Prediction target.} 1-day cross-sectional rank-normal
+      return (control) and the 5-day equivalent, the latter also in
+      combination with gated-IC selection.
+\item \textbf{Population structure.} Elite/generated ratios of 8/5
+      (control), 5/10 and 5/15; repopulation every 25, 50 (control) and
+      100 generations.
+\item \textbf{Training budget.} 2000 (control) and 600 training
+      subsequences per genome; 10 (control) and 20 backpropagation
+      epochs per genome; one (control) and two generations per window.
+\item \textbf{Replay sampling.} Prioritised replay at
+      $\alpha \in \{0.4, 0.6\ (\text{control}), 0.8\}$, at
+      $\lambda \in \{0.007\ (\text{control}), 0.021\}$, and uniform
+      sampling with prioritisation disabled.
+\item \textbf{Island count.} 8, 16, 20, 40, 50 and 60
+      (Table~\ref{tab:tunewidth}).
+\end{itemize}
+
+Selection used the tuning-span rank IC as the primary objective with the
+registered book's net return and Sharpe as an economic co-primary, and
+required a paired improvement over the control to adopt a change. No
+single-axis variant met that bar, so the control configuration is the one
+reported; the island count is the one axis where a change was adopted,
+and the value chosen sits on the plateau of Table~\ref{tab:tunewidth}
+rather than at its nominal maximum. Table~\ref{tab:invariance} reports
+every trained cell.
+
+Several axes were deliberately not searched, having been settled by
+earlier work on this data: sequence length, the number of validation
+sets, the node-type library, window geometry, and the ensemble's width
+and combination rule.
 
 \subsection{Baselines}
 

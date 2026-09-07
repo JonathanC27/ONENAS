@@ -36,7 +36,7 @@ from rebook import load_preds         # noqa: E402
 SETS = ["set1", "set2", "set3", "set4"]
 SEEDS = list(range(42, 52))
 WIDTHS = [10, 20, 30, 40, 50, 60]
-FROM, TO = "2020-01-01", "2024-12-31"
+FROM, TO = "2022-01-01", "2024-12-31"
 TOP_K, HOLD = 10, 10
 STITCHED = "ensemble_stitched_predictions.csv"
 
@@ -181,7 +181,7 @@ def main():
     ax1.errorbar(ISL, NET, yerr=NSE, color=BLUE, lw=1.2, marker="o", ms=3,
                  capsize=3)
     ax1.set_xlabel("Islands")
-    ax1.set_ylabel("Net return 2020–24 (%)")
+    ax1.set_ylabel("Net return 2022–24 (%)")
     ax1.set_xticks(ISL)
     ax1.grid(axis="y", color="#ececea", lw=0.6)
 
@@ -193,7 +193,7 @@ def main():
     ax2.plot(ISL, WOR, color=INK2, lw=0.9, ls="--", marker="s", ms=2.5,
              label="Worst seed")
     ax2.set_xlabel("Islands")
-    ax2.set_ylabel("Sharpe, 2020–24")
+    ax2.set_ylabel("Sharpe, 2022–24")
     ax2.set_xticks(ISL)
     ax2.grid(axis="y", color="#ececea", lw=0.6)
     ax2.legend(frameon=False, fontsize=5.5, loc="lower right")

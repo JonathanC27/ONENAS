@@ -20,11 +20,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SETS = ["set1", "set2", "set3", "set4"]
 SEEDS = range(42, 52)
 DIAG = "ensemble_diagnostics.csv"
+FROM, TO = "2022-01-01", "2024-12-31"
 
 FLEETS = [
-    ("20 isl., 2020--24", lambda s, sd: f"probe_ISL20/{s}_seed{sd}/{DIAG}", 20),
-    ("40 isl., 2020--24", lambda s, sd: f"probe_ISL40/{s}_seed{sd}/{DIAG}", 40),
-    ("60 isl., 2020--24",
+    ("20 isl., 2022--24", lambda s, sd: f"probe_ISL20/{s}_seed{sd}/{DIAG}", 20),
+    ("40 isl., 2022--24", lambda s, sd: f"probe_ISL40/{s}_seed{sd}/{DIAG}", 40),
+    ("60 isl., 2022--24",
      lambda s, sd: f"islands_sweep/islands_60/{s}_seed{sd}/{DIAG}", 60),
 ]
 
@@ -43,6 +44,12 @@ def main():
                 d, m, e = [], [], []
                 with open(p, newline="") as fh:
                     for r in csv.DictReader(fh):
+                        # The diagnostics span the whole eval clock; the
+                        # table reports 2022-2024, so filter rather than
+                        # relabel -- averaging every row under a 2022--24
+                        # heading would simply be wrong.
+                        if not (FROM <= r.get("date", "") <= TO):
+                            continue
                         try:
                             dv = float(r["dispersion"])
                             mv = float(r["mean_member_rank_ic"])
