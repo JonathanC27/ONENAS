@@ -11,13 +11,14 @@
 % Place immediately after \section{Results}, before Table 1.
 
 Across the three trade years the island-champion ensemble returns
-$+27.5\%$ at the registered 40-island width, against $+11.3\%$ for an
+$+27.5\%$ at the headline 40-island width, against $+11.3\%$ for an
 online LSTM, $+11.7\%$ for an online GRU and $+14.8\%$ for an LSTM
 retrained monthly (Table~\ref{tab:window}). Paired within each (panel,
 seed) cell the margins are $+16.2$, $+15.8$ and $+12.7$ points, at
 $t=7.3$, $6.6$ and $6.7$ over 40 cells (Table~\ref{tab:paired}). The
-ordering is stable year by year: the ensemble leads in each of 2022,
-2023 and 2024 rather than earning its margin in a single favourable year.
+margin is not the product of a single year: the ensemble leads every
+baseline in 2022 and 2023, and in 2024 is level with the best of them
+(the monthly-retrained LSTM at $+6.9$ against $+6.3$).
 
 % ------------------------------------------------- the central observation
 % Place after Table 1 / Figure 1, as the paper's main claim.
@@ -62,8 +63,8 @@ difference inside all 16 trained hyperparameter configurations of the
 screen --- different selection metrics, target horizons, population
 ratios, repopulation frequencies, replay settings and training budgets.
 The difference is positive in 16 of 16, with a mean of $+8.3$ points.
-It also holds at every island width tested and on the tuning span as well
-as the trading period (Table~\ref{tab:m1}).
+It also holds at every island width tested on the trading period, and at
+40 islands on the tuning span as well (Table~\ref{tab:m1}).
 
 % ------------------------------------------------------------------ width
 % Place after the island-count figure.
@@ -106,7 +107,9 @@ Nor do the results depend on an optimistic cost assumption.
 Table~\ref{tab:costs} scales the realised per-name transaction cost while
 preserving its cross-sectional shape. The ensemble remains profitable to
 roughly $10$--$12\times$ realistic costs, against $4.5$--$5.4\times$ for
-the baselines, because it also turns over least.
+the baselines. Part of that margin is lower trading: the ensemble turns
+over about $0.12$ of gross book per day against $0.13$--$0.14$ for the
+baselines, so it pays the scaled cost on less notional.
 
 % ------------------------------------------------------------ limitations
 % Place at the end of Results, or fold into the Discussion.
