@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Interleave the results prose with the exhibits into one pasteable file.
+
+The exhibits are copied verbatim from 05-Results.tex -- they are never
+retyped -- and each prose block is inserted after the float carrying the
+label it discusses. Output: paper/05-Results-combined.tex.
+
+    python3 build_results_combined.py
+"""
+import os
+import re
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+PAPER = os.path.join(REPO, "paper")
+SRC = os.path.join(PAPER, "05-Results.tex")
+OUT = os.path.join(PAPER, "05-Results-combined.tex")
+
+P = {}
+
+P["opening"] = r"""
+Across the three trade years the island-champion ensemble returns
+$+27.5\%$ at the headline 40-island width, against $+11.3\%$ for an
+online LSTM, $+11.7\%$ for an online GRU and $+14.8\%$ for an LSTM
+retrained monthly (Table~\ref{tab:window}). Paired within each (panel,
+seed) cell the margins are $+16.2$, $+15.8$ and $+12.7$ points, at
+$t=7.3$, $6.6$ and $6.7$ over 40 cells (Table~\ref{tab:paired}). The
+margin is not the product of a single year: the ensemble leads every
+baseline in 2022 and 2023, and in 2024 is level with the best of them
+(the monthly-retrained LSTM at $+6.9$ against $+6.3$).
+"""
+
+P["central"] = r"""
+The more informative comparison is inside the system rather than against
+the baselines. The single global-best genome --- the prediction rule of
+prior ONE-NAS work --- returns $+4.5\%$ at 40 islands, $+4.7\%$ at 20 and
+$+1.0\%$ at 60 (Table~\ref{tab:window}). Those figures sit below every
+neural baseline and below buy and hold. The same runs, read as an
+ensemble of island champions rather than as a single champion, return
+$+27.5$, $+27.4$ and $+30.1$. The search therefore does not pay by
+finding one good architecture; it pays by producing a population.
+"""
+
+P["costs"] = r"""
+Nor do the results depend on an optimistic cost assumption.
+Table~\ref{tab:costs} scales the realised per-name transaction cost while
+preserving its cross-sectional shape. The ensemble remains profitable to
+roughly $10$--$12\times$ realistic costs, against $4.5$--$5.4\times$ for
+the baselines. Part of that margin is lower trading: the ensemble turns
+over about $0.12$ of gross book per day against $0.13$--$0.14$ for the
+baselines, so it pays the scaled cost on less notional.
+"""
+
+P["m1"] = r"""
+Table~\ref{tab:m1} makes the comparison within-run and paired, since both
+rules are scoring-time readings of the same evolved population: the
+ensemble adds $+23.0$ points at 40 islands ($t=18.2$), $+22.6$ at 20
+($t=14.9$) and $+29.1$ at 60 ($t=18.3$), with Sharpe gains of $+0.62$ to
+$+0.84$ on the same pairing. Nothing about the search changes between the
+two columns --- only which genomes are read.
+"""
+
+P["width"] = r"""
+Figure~\ref{fig:islands} separates two things that island count does.
+Return and Sharpe rise steeply from 10 to about 20 islands ($+19.9$ to
+$+27.3$ net, Sharpe $0.88$ to $1.11$) and then flatten: across 20 to 60
+the pooled net sits between $+26$ and $+30$ and the widths are not
+separable at ten seeds. Seed dispersion narrows over the same range, the
+standard deviation of per-seed Sharpe falling from $0.227$ at 10 islands
+to $0.11$--$0.13$ above 30 and the worst seed rising from $0.53$ to
+$0.91$, though not monotonically width by width. Width therefore buys
+consistency at least as much as expected return, which is the relevant
+property for a deployed system, where a single run is held rather than an
+average over runs.
+
+Width was chosen on the tuning span, not on this curve.
+Table~\ref{tab:tunewidth} gives the same sweep on 2016--2019: rank IC
+rises from 8 to about 20 islands and is flat above it, with the 40-, 50-
+and 60-island cells spanning $0.0168$--$0.0170$. Measured on the trading
+period 50 and 60 islands score above 40; measured on the tuning span,
+where a configuration choice can legitimately be made, they are
+indistinguishable from it (largest $|t|=0.23$). The apparent width
+advantage does not survive protocol-symmetric selection and is not
+adopted.
+"""
+
+P["alphas"] = r"""
+The returns are not explained by factor exposure. Regressed on the
+Fama--French three factors plus momentum with Newey--West standard errors
+(Table~\ref{tab:alphas}), all three ONE-NAS widths carry alphas
+distinguishable from zero ($+10.0$ to $+11.2\%$/yr, $t=2.56$ to $2.77$)
+at market betas near $0.11$--$0.12$. Among the baselines only the
+monthly-retrained LSTM reaches $|t|=2$, at $+6.0\%$/yr and $t=2.01$;
+buy and hold earns no alpha at all ($-2.3\%$/yr, $t=-0.72$) at a market
+beta of $0.80$.
+"""
+
+P["mechanism"] = r"""
+The size of that gain is not an empirical surprise once member diversity
+is measured. Table~\ref{tab:diversity} reports, for each width, the mean
+rank IC of an individual island champion, the mean pairwise Spearman
+correlation $\rho$ between member cross-sections, and the resulting
+ensemble IC. Members are individually weak (rank IC $+0.0065$ to
+$+0.0068$) and substantially decorrelated ($\rho$ between $0.150$ and
+$0.166$). The equicorrelated averaging prediction
+$m\sqrt{N/(1+(N-1)\rho)}$ then anticipates the measured ensemble IC to
+within 3\% at every width. The ensemble is not recovering a latent
+strong model; it is averaging many weak, weakly-correlated ones, and the
+observed gain is the size that diversity implies.
+"""
+
+P["invariance"] = r"""
+The effect does not depend on the configuration it was measured in.
+Table~\ref{tab:invariance} recomputes the ensemble-minus-champion
+difference inside all 16 trained hyperparameter configurations of the
+screen --- different selection metrics, target horizons, population
+ratios, repopulation frequencies, replay settings and training budgets.
+The difference is positive in 16 of 16, with a mean of $+8.3$ points.
+It also holds at every island width tested on the trading period, and at
+40 islands on the tuning span as well (Table~\ref{tab:m1}).
+"""
+
+P["limits"] = r"""
+Three limits are worth stating with the results.
+
+The comparison against buy and hold is not like for like. The ensemble
+returns $+27.5\%$ against $+7.9\%$ for an equal-weight hold of the same
+universe, but the two carry very different risk: the hold runs at a
+market beta of $0.80$ and earns no alpha once factors are accounted for
+($-2.3\%$/yr, $t=-0.72$), while the ensemble runs near $0.11$. The
+benchmark is included because the prior study on these panels reported
+it, and it should be read as a market reference rather than as a
+competing strategy.
+
+Second, the evidence is from one universe and one asset class.
+Mid-capitalisation US equities over three years is a single regime
+sample, and the panels have fixed membership, so the universe is
+conditioned on names that survived to the end of it. That conditioning
+applies equally to every arm compared here, but it does mean the absolute
+return levels should not be read as achievable ex ante.
+
+Third, the prediction rule that pays is also the expensive one to serve.
+The ensemble requires every island champion to be evaluated at inference,
+so a deployment carries $N$ networks rather than one. The cost is modest
+for the small recurrent networks the search produces --- and
+Table~\ref{tab:costs} shows the resulting book tolerates transaction
+costs far beyond realistic levels --- but it is a real difference from
+serving the single champion, and it grows with the island count that
+Figure~\ref{fig:islands} recommends.
+"""
+
+# prose block -> the label whose float it should follow
+AFTER = [
+    ("fig:curves",     "central"),
+    ("tab:costs",      "costs"),
+    ("tab:m1",         "m1"),
+    ("tab:tunewidth",  "width"),
+    ("tab:alphas",     "alphas"),
+    ("tab:diversity",  "mechanism"),
+    ("tab:invariance", "invariance"),
+]
+
+
+def float_end(text, label):
+    """Index just past the \\end{...} of the float carrying `label`."""
+    i = text.index("\\label{%s}" % label)
+    m = re.compile(r"\\end\{(table\*|figure\*|table|figure)\}").search(text, i)
+    if not m:
+        raise SystemExit("no float end after %s" % label)
+    return m.end()
+
+
+def main():
+    text = open(SRC).read()
+
+    # opening paragraph goes straight after the section heading
+    anchor = "\\section{Results}"
+    i = text.index(anchor) + len(anchor)
+    text = text[:i] + "\n" + P["opening"] + text[i:]
+
+    # insert from the bottom up so earlier offsets stay valid
+    for label, key in sorted(AFTER, key=lambda kv: -float_end(text, kv[0])):
+        j = float_end(text, label)
+        text = text[:j] + "\n" + P[key] + text[j:]
+
+    text = text.rstrip() + "\n" + P["limits"]
+
+    header = (
+        "% 05-Results.tex -- results section: exhibits with their\n"
+        "% observation paragraphs interleaved. Paste this whole file into\n"
+        "% Overleaf's 05-Results.tex.\n"
+        "%\n"
+        "% Generated by scripts/pooled/econ/build_results_combined.py from\n"
+        "% 05-Results.tex (exhibits, verbatim) and 05-Results-prose.tex\n"
+        "% (prose). Edit those and regenerate rather than editing this file,\n"
+        "% or the two will drift apart.\n%\n"
+    )
+    text = header + text[text.index("% AAAI COMPLIANCE"):]
+
+    open(OUT, "w").write(text)
+    print("wrote %s (%d bytes)" % (OUT, len(text)))
+
+
+if __name__ == "__main__":
+    main()
