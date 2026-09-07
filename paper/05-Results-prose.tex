@@ -45,11 +45,11 @@ The size of that gain is not an empirical surprise once member diversity
 is measured. Table~\ref{tab:diversity} reports, for each width, the mean
 rank IC of an individual island champion, the mean pairwise Spearman
 correlation $\rho$ between member cross-sections, and the resulting
-ensemble IC. Members are individually weak (rank IC $+0.0056$ to
-$+0.0060$) and substantially decorrelated ($\rho$ between $0.172$ and
-$0.180$). The equicorrelated averaging prediction
+ensemble IC. Members are individually weak (rank IC $+0.0065$ to
+$+0.0068$) and substantially decorrelated ($\rho$ between $0.150$ and
+$0.166$). The equicorrelated averaging prediction
 $m\sqrt{N/(1+(N-1)\rho)}$ then anticipates the measured ensemble IC to
-within 3--5\% at every width. The ensemble is not recovering a latent
+within 3\% at every width. The ensemble is not recovering a latent
 strong model; it is averaging many weak, weakly-correlated ones, and the
 observed gain is the size that diversity implies.
 
@@ -69,20 +69,26 @@ as the evaluation span (Table~\ref{tab:m1}).
 % Place after the island-count figure.
 
 Figure~\ref{fig:islands} separates two things that island count does.
-Return and Sharpe rise steeply to about 30 islands and then flatten:
-across 30, 40, 50 and 60 the pooled net sits between $+45$ and $+50$ and
-the widths are not separable at ten seeds. Dispersion keeps improving
-after the mean stops: the worst seed rises monotonically from $0.51$ at
-10 islands to $0.84$ at 60. Width therefore buys reliability rather than
-expected return, which is the relevant property for a deployed system,
-where a single run is held rather than an average over runs.
+Return and Sharpe rise steeply from 10 to about 20 islands ($+19.9$ to
+$+27.3$ net, Sharpe $0.88$ to $1.11$) and then flatten: across 20 to 60
+the pooled net sits between $+26$ and $+30$ and the widths are not
+separable at ten seeds. Seed dispersion narrows over the same range, the
+standard deviation of per-seed Sharpe falling from $0.227$ at 10 islands
+to $0.11$--$0.13$ above 30 and the worst seed rising from $0.53$ to
+$0.91$, though not monotonically width by width. Width therefore buys
+consistency at least as much as expected return, which is the relevant
+property for a deployed system, where a single run is held rather than an
+average over runs.
 
-The 40-island headline was fixed on the 2016--2019 tuning span before this
-curve was measured. Measured on the evaluation span, 50 and 60 islands
-score above it; measured on the tuning span, where a configuration choice
-can legitimately be made, 50 and 60 are indistinguishable from 40 (largest
-$|t|=0.23$). The apparent width advantage does not survive
-protocol-symmetric selection and is not adopted.
+Width was chosen on the tuning span, not on this curve.
+Table~\ref{tab:tunewidth} gives the same sweep on 2016--2019: rank IC
+rises from 8 to about 20 islands and is flat above it, with the 40-, 50-
+and 60-island cells spanning $0.0168$--$0.0170$. Measured on the
+evaluation span 50 and 60 islands score above 40; measured on the tuning
+span, where a configuration choice can legitimately be made, they are
+indistinguishable from it (largest $|t|=0.23$). The apparent width
+advantage does not survive protocol-symmetric selection and is not
+adopted.
 
 % ------------------------------------------------------------ risk, costs
 % Place after the alphas and cost tables.
@@ -90,11 +96,11 @@ protocol-symmetric selection and is not adopted.
 The returns are not explained by factor exposure. Regressed on the
 Fama--French three factors plus momentum with Newey--West standard errors
 (Table~\ref{tab:alphas}), all three ONE-NAS widths carry alphas
-distinguishable from zero ($+7.2$ to $+8.7\%$/yr, $t=2.04$ to $2.32$)
-at market betas near $0.11$--$0.12$; no baseline reaches $|t|=2$, the
-closest being the monthly-retrained LSTM at $t=1.89$. The separation
-between the best baseline and the weakest ONE-NAS width is narrow and
-should be read as suggestive.
+distinguishable from zero ($+10.0$ to $+11.2\%$/yr, $t=2.56$ to $2.77$)
+at market betas near $0.11$--$0.12$. Among the baselines only the
+monthly-retrained LSTM reaches $|t|=2$, at $+6.0\%$/yr and $t=2.01$;
+buy and hold earns no alpha at all ($-2.3\%$/yr, $t=-0.72$) at a market
+beta of $0.80$.
 
 Nor do the results depend on an optimistic cost assumption.
 Table~\ref{tab:costs} scales the realised per-name transaction cost while
@@ -105,13 +111,27 @@ the baselines, because it also turns over least.
 % ------------------------------------------------------------ limitations
 % Place at the end of Results, or fold into the Discussion.
 
-Three limits are worth stating with the results. The margin over buy and
-hold is a risk-adjusted one rather than a return one: over the full
-registered span an equal-weight hold of the same universe returns
-$+44.3\%$ under the prior study's convention, close to the ensemble's own
-figure, but does so at market beta $0.93$ against $0.12$ and with a
-$39.1\%$ drawdown against $24.5\%$. Second, the advantage is smallest in
-2020, the crisis year, where a plain online LSTM adapts faster than the
-evolved population. Third, the panels have fixed membership over the
-sample, so the universe is conditioned on survivors; this applies equally
-to every arm compared here.
+Three limits are worth stating with the results.
+
+The reported window is a favourable one for the comparison against buy
+and hold, and the full scored span is not. On 2022--2024 an equal-weight
+hold of the same universe returns $+7.9\%$ under the prior study's
+convention, against $+27.5\%$ for the ensemble. Scored instead over the
+whole registered span, 2020--2024, the same benchmark returns $+44.3\%$
+against the ensemble's $+45.6\%$ --- a tie on raw return, because
+2020--2021 was a strong market that a long-only hold captures and a
+dollar-neutral book does not. The defensible claim is therefore
+risk-adjusted rather than a return margin: the ensemble matches or beats
+the benchmark while running at a market beta near $0.11$ rather than
+$0.80$, and it is the only construction here with an alpha
+distinguishable from zero.
+
+Second, the advantage is regime-dependent. In 2020, the crisis year
+excluded from the reported window, a plain online LSTM adapts faster than
+the evolved population and outperforms it; the ensemble's edge is largest
+in ordinary markets.
+
+Third, panel membership is fixed over the sample, so the universe is
+conditioned on names that survived to the end of it. This applies equally
+to every arm compared here, but it does mean the absolute return levels
+should not be read as achievable ex ante.

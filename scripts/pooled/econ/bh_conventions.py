@@ -30,8 +30,8 @@ from panel import Panel                # noqa: E402
 
 PANELS = "/Users/jonathanchang/.claude/jobs/a28206de/tmp/panels_core7"
 SETS = ["set1", "set2", "set3", "set4"]
-W0, W1 = "2020-01-02", "2024-12-31"
-YEARS = [str(y) for y in range(2020, 2025)]
+W0, W1 = "2022-01-03", "2024-12-31"
+YEARS = [str(y) for y in range(2022, 2025)]
 
 
 def sharpe(v):
