@@ -88,16 +88,16 @@ The sample is divided into three disjoint spans, used for three distinct
 purposes:
 
 \begin{itemize}\itemsep2pt
-\item \textbf{Burn-in}, through 2019-12-31. The population evolves online
-      but nothing is scored. A further 50 warm-up generations precede any
-      recorded prediction, so the scored population is never a cold start.
+\item \textbf{Burn-in}, through 2021-12-31. The population evolves online
+      throughout, but nothing is traded or scored. A further 50 warm-up
+      generations precede any recorded prediction, so the population that
+      begins trading is mature rather than cold-started.
 \item \textbf{Tuning}, 2016-01-01 to 2019-12-31. Every configuration
-      decision --- hyperparameter screen, island count --- is made here.
-\item \textbf{Evaluation}, 2020-01-01 to 2024-12-31. Scored once per
-      registered configuration. Results are reported on the 2022--2024
-      sub-window, which is the span the prior study on these panels
-      evaluated and therefore the one that makes the two comparable;
-      2020--2021 is scored but not reported.
+      decision --- hyperparameter screen, island count --- is made here,
+      disjoint from the trading period.
+\item \textbf{Trading}, 2022-01-01 to 2024-12-31. All reported results
+      are on this period, which is also the period the prior study on
+      these panels evaluated, so the two are directly comparable.
 \end{itemize}
 
 \subsection{Search Configuration and Prediction Rule}

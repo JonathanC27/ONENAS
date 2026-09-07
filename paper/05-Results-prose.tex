@@ -63,7 +63,7 @@ screen --- different selection metrics, target horizons, population
 ratios, repopulation frequencies, replay settings and training budgets.
 The difference is positive in 16 of 16, with a mean of $+8.3$ points.
 It also holds at every island width tested and on the tuning span as well
-as the evaluation span (Table~\ref{tab:m1}).
+as the trading period (Table~\ref{tab:m1}).
 
 % ------------------------------------------------------------------ width
 % Place after the island-count figure.
@@ -83,9 +83,9 @@ average over runs.
 Width was chosen on the tuning span, not on this curve.
 Table~\ref{tab:tunewidth} gives the same sweep on 2016--2019: rank IC
 rises from 8 to about 20 islands and is flat above it, with the 40-, 50-
-and 60-island cells spanning $0.0168$--$0.0170$. Measured on the
-evaluation span 50 and 60 islands score above 40; measured on the tuning
-span, where a configuration choice can legitimately be made, they are
+and 60-island cells spanning $0.0168$--$0.0170$. Measured on the trading
+period 50 and 60 islands score above 40; measured on the tuning span,
+where a configuration choice can legitimately be made, they are
 indistinguishable from it (largest $|t|=0.23$). The apparent width
 advantage does not survive protocol-symmetric selection and is not
 adopted.
@@ -113,25 +113,27 @@ the baselines, because it also turns over least.
 
 Three limits are worth stating with the results.
 
-The reported window is a favourable one for the comparison against buy
-and hold, and the full scored span is not. On 2022--2024 an equal-weight
-hold of the same universe returns $+7.9\%$ under the prior study's
-convention, against $+27.5\%$ for the ensemble. Scored instead over the
-whole registered span, 2020--2024, the same benchmark returns $+44.3\%$
-against the ensemble's $+45.6\%$ --- a tie on raw return, because
-2020--2021 was a strong market that a long-only hold captures and a
-dollar-neutral book does not. The defensible claim is therefore
-risk-adjusted rather than a return margin: the ensemble matches or beats
-the benchmark while running at a market beta near $0.11$ rather than
-$0.80$, and it is the only construction here with an alpha
-distinguishable from zero.
+The comparison against buy and hold is not like for like. The ensemble
+returns $+27.5\%$ against $+7.9\%$ for an equal-weight hold of the same
+universe, but the two carry very different risk: the hold runs at a
+market beta of $0.80$ and earns no alpha once factors are accounted for
+($-2.3\%$/yr, $t=-0.72$), while the ensemble runs near $0.11$. The
+benchmark is included because the prior study on these panels reported
+it, and it should be read as a market reference rather than as a
+competing strategy.
 
-Second, the advantage is regime-dependent. In 2020, the crisis year
-excluded from the reported window, a plain online LSTM adapts faster than
-the evolved population and outperforms it; the ensemble's edge is largest
-in ordinary markets.
+Second, the evidence is from one universe and one asset class.
+Mid-capitalisation US equities over three years is a single regime
+sample, and the panels have fixed membership, so the universe is
+conditioned on names that survived to the end of it. That conditioning
+applies equally to every arm compared here, but it does mean the absolute
+return levels should not be read as achievable ex ante.
 
-Third, panel membership is fixed over the sample, so the universe is
-conditioned on names that survived to the end of it. This applies equally
-to every arm compared here, but it does mean the absolute return levels
-should not be read as achievable ex ante.
+Third, the prediction rule that pays is also the expensive one to serve.
+The ensemble requires every island champion to be evaluated at inference,
+so a deployment carries $N$ networks rather than one. The cost is modest
+for the small recurrent networks the search produces --- and
+Table~\ref{tab:costs} shows the resulting book tolerates transaction
+costs far beyond realistic levels --- but it is a real difference from
+serving the single champion, and it grows with the island count that
+Figure~\ref{fig:islands} recommends.
