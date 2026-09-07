@@ -90,14 +90,14 @@ def main():
             if not v:
                 continue
             ic = float(np.mean([x[0] for x in v]))
-            print(f"{w:>8}{len(v):>5}{ic:>+10.4f}"
-                  f"{float(np.mean([x[1] for x in v])):>+9.1f}"
+            print(f"{w:>8}{len(v):>5}{ic:>+10.5f}"
+                  f"{float(np.mean([x[1] for x in v])):>+9.2f}"
                   f"{float(np.mean([x[2] for x in v])):>8.2f}"
                   f"{float(np.mean([x[3] for x in v])):>7.1f}")
             if ic > best_ic:
                 best_ic, best_w = ic, w
         print(f"  -> highest tuning-span rank IC: {best_w} islands "
-              f"({best_ic:+.4f})")
+              f"({best_ic:+.5f})")
 
     report("COMMON SEEDS 42-46 (directly comparable)", set(COMMON))
     report("EACH WIDTH AT FULL REPLICATION", None)
