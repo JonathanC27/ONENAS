@@ -12,42 +12,59 @@
 % It is a no-op when amsmath is present.
 \providecommand{\text}[1]{\mathrm{#1}}
 
-\section{Data}
+\section{Dataset}
+The Center for Research in Security Prices (CRSP) dataset is the standard academic source for U.S. equity prices, returns, and trading volumes, and it is widely used for empirical asset pricing and financial forecasting research. The datasets used in this paper are derived from the CRSP dataset, using daily frequency data. 
 
-\subsection{Universe and Source}
+% We further processed the CRSP dataset by adopting the set of economic predictors used in Lyu~\etal~\cite{lyu2025evolving}, which were generated from the CRSP dataset. 
+% In total, we used six predictors: \textit{Return}, \textit{Volume Change}, \textit{Bid-Ask Spread}, \textit{Illiquidity}, \textit{Turnover}, and \textit{S\&P 500 Return}. 
 
-All data are daily CRSP records for U.S.\ common equities. From the
-mid-- and upper-mid-capitalisation segment we form four disjoint panels,
-denoted $V1$--$V4$, of 50 tickers each; the four share no constituents,
-so 200 distinct names are used in total. Each panel is stored as one CSV
-per ticker plus a panel-level date index carrying the aligned raw price
-and transaction-cost columns for every name.
+% \subsection{Baseline Portfolio}
+% % \label{subsec:baseline-portfolio}
+% We adopt the stock selection of Lyu et al.~\cite{lyu2025evolving}: 50 mid-cap companies drawn from the S\&P 500, chosen because mid-cap stocks receive less analyst and institutional scrutiny than large-caps and so are less efficiently priced. Retaining the same 50 tickers lets our results sit directly alongside that paper's, since no difference in performance can be attributed to a different forecasting universe. This dataset contains the same six predictors described above, obtained directly from CRSP or computed from CRSP variables.
 
-Every panel ends on 2024-12-31 but they begin on different dates,
-because a panel starts only once all 50 of its constituents have priced
-history: $V1$ runs from 2004-08-16, $V2$ from 2004-12-17, $V3$ from
-2004-10-27 and $V4$ from 2004-02-09, giving 5{,}130, 5{,}043, 5{,}079 and
-5{,}257 trading days respectively. The differing lengths affect only the
-burn-in each panel receives; the tuning and trading periods are the same
-calendar spans for all four, so no arm gains or loses scored days.
+\subsection{Portfolios}
+\label{subsec:validation-portfolios}
 
-Panel membership is fixed for the whole sample: a ticker is either in a
-panel for its entire history or not in it at all. This removes
-index-reconstitution effects from the comparison, at the cost of
-conditioning the universe on names that survived to the end of the
-sample. All methods trade the identical universe, so the conditioning
-applies equally to every arm reported.
+We choose mid-cap companies drawn from the S\&P 500, chosen because mid-cap stocks receive less analyst and institutional scrutiny than large-caps and so are less efficiently priced. We then shuffled the stocks and made $V1$--$V4$, of 50 stocks each.
+The target universe $\mathcal{U}$ covers mid-cap through low-large-cap securities, defined by current market capitalization $2 \le M_i < 50$ in USD billions for security~$i$.
+Restricting the S\&P~500 CRSP panel to securities with at least 20 years of continuous trading history leaves 203 names in this range, from which 200 were drawn at random to form $\mathcal{U}$.
+These 200 stocks were then shuffled and split evenly into $V1$--$V4$, so the four portfolios are disjoint and no stock appears in more than one.
+
+This construction carries survivorship bias, since drawing from current S\&P~500 constituents with 20 years of continuous history projects today's survivors backward into the training and test periods. The length requirement follows from the models under comparison: the recurrent architectures evaluated here are data-hungry, and the online protocol lets each of them learn from well over a decade of daily data before the first trade is scored. The bias applies uniformly across models, since every method is trained and evaluated on the identical universe, calendar and trading rule, and the reported returns should be read as relative rather than as absolute levels.
+
+
+Each panel is stored as one CSV per ticker together with a panel-level
+date index carrying the aligned raw price and transaction-cost columns
+for every name. All four panels end on 2024-12-31, but they begin on
+different dates, because a panel starts only once all 50 of its
+constituents have priced history: $V1$ runs from 2004-08-16, $V2$ from
+2004-12-17, $V3$ from 2004-10-27 and $V4$ from 2004-02-09, giving
+5{,}130, 5{,}043, 5{,}079 and 5{,}257 trading days respectively. The
+differing lengths affect only how much burn-in each panel receives; the
+tuning and trading periods are the same calendar spans for all four, so
+no method gains or loses scored days.
 
 \subsection{Features and Prediction Target}
 
-Each model sees seven per-stock features, all computed causally from
-information available at or before the formation day:
+Each model sees seven per-stock features. Three describe the stock's own
+recent price behaviour, three describe how easily and how heavily it
+trades, and one places it against the rest of the market that day. All
+are computed causally, from information available at or before the day
+on which a position is formed.
+
+Liquidity and attention features are included because the target is a
+short-horizon one. Over a single day, how expensive a stock is to trade
+and how much attention it is currently attracting carry more information
+about its next move than fundamentals do, and they also tell the model
+where a predicted edge would be eaten by trading costs.
 
 \begin{itemize}\itemsep2pt
 \item \texttt{RET} --- the raw daily return.
-\item \texttt{RET\_CS\_IN} --- the cross-sectional rank-normal score of
-      \texttt{RET} on the same day, i.e.\ $\Phi^{-1}\!\big((\mathrm{rank}_t(i)-0.5)/N\big)$
-      over the $N$ names priced that day.
+\item \texttt{RET\_CS\_IN} --- the same return expressed as a
+      cross-sectional rank-normal score,
+      $\Phi^{-1}\!\big((\mathrm{rank}_t(i)-0.5)/N\big)$ over the $N$
+      names priced that day. It tells the model how a stock did
+      \emph{relative to its peers}, which is what the target asks about.
 \item \texttt{BA\_SPREAD} --- the quoted bid--ask spread, the gap between
       the best buying and selling price, which proxies how costly the
       stock is to trade.
@@ -56,24 +73,26 @@ information available at or before the formation day:
       a small amount of trading moves the price a lot.
 \item \texttt{REV21\_1} --- short-horizon reversal: the compounded return
       over the 20 days before the formation day, excluding it. Recent
-      winners tend to give some of it back, so this is predictive with a
-      negative sign.
+      winners tend to give some of it back, so this is informative with
+      a negative sign.
 \item \texttt{TURN\_RATIO} --- turnover acceleration: recent trading
       activity relative to its own longer-run level, as the mean of
       $\log(1+\mathrm{turnover})$ over the last 5 days minus the same
-      mean over the last 63. It rises when a stock starts attracting
+      mean over the last 63. It rises when a stock begins attracting
       unusual attention.
 \item \texttt{VOL21} --- realised volatility, the standard deviation of
       \texttt{RET} over the trailing 21 days.
 \end{itemize}
 
 These are standard predictors in the empirical asset pricing literature
-rather than novel ones; the contribution of this paper is in the
+rather than novel ones; the contribution of this paper is the
 architecture search, so the feature set is deliberately conventional.
 
-The last five of these are additionally mapped, per date, to their
-cross-sectional rank on $[-1,1]$, so that no feature carries a level that
-drifts across the two decades of the sample.
+The last five are additionally mapped, per date, to their
+cross-sectional rank on $[-1,1]$. Without this a feature would carry a
+level that drifts across two decades --- spreads and volumes in 2004 are
+not comparable to 2024 --- and the model would spend capacity tracking
+that drift instead of the cross-section.
 
 The prediction target is \texttt{RET\_CS}: the next day's return, rank-
 normalised across the cross-section of that day by the same $\Phi^{-1}$
@@ -87,55 +106,131 @@ for splits and dividends. Prices and per-name transaction costs enter only
 through the cost model below.
 
 \section{Experimental Setup}
+\label{sec:setup}
 
 \subsection{Online Evaluation Protocol}
+\label{sec:protocol}
 
-Every method is evaluated prequentially: on each scored day the model
-predicts the next day's cross-section, the realised outcome is then
-revealed, and the model updates. No model ever sees a label before
-predicting it, and no model is refit on the scored span with hindsight.
+ONE-NAS operates on a weekly clock. Each panel's daily series is divided
+into consecutive windows of 5 trading days, and one generation is
+executed per window. At generation $t$, the revealed data are split into
+two parts: the 5 most recent windows form the validation block, on which
+all genomes are scored to select the elite sets, and every earlier
+window forms the training pool, from which offspring sample subsequences
+of $L=40$ days. The genomes selected at generation $t$ then predict the
+next, unrevealed window day by day as its features arrive. When that
+window closes, its realised returns are appended to the revealed data,
+the validation block advances by one window, and generation $t{+}1$
+begins. The training pool thus grows by one window per generation while
+the validation block and the predicted window slide forward with it.
 
-ONE-NAS advances on a weekly clock. One generation corresponds to a
-\texttt{window\_step} of 5 trading days; each genome is trained on
-sequences of length $L=40$ and validated on the 5 most recent windows.
-The number of training windows is set per panel so that the clock lands on
-the intended calendar span --- 712, 695, 702 and 738 windows for
-$V1$--$V4$ on the evaluation span, and 511, 493, 501 and 536 on the
-tuning span.
+Leakage is prevented by construction. A window is predicted before any
+of its labels are revealed, enters the validation block only after it
+has been predicted, and enters the training pool only after it has left
+the validation block. No genome is ever trained or selected on data it
+is later scored on, and no model is refit on the scored span with
+hindsight. Baselines are evaluated under the same prequential rule:
+predict the next day, reveal the outcome, update.
 
-The sample is divided into three disjoint spans, used for three distinct
-purposes:
+The sample is divided into three disjoint calendar spans. The
+\textbf{burn-in} span (2004-08-16 to 2015-12-31) is used only to grow
+the population from the minimal seed genome; no prediction is recorded.
+The \textbf{tuning} span (2016--2019) is where every configuration
+decision is made. The \textbf{evaluation} span (2020--2024) is scored
+once per registered configuration; results are reported on 2022--2024,
+the span evaluated by the prior study on these panels, and 2020--2021
+is scored but not reported. When the evaluation span is scored, the
+population continues to evolve through the tuning span without any
+configuration change, so evolution is uninterrupted from 2004 to the
+last scored day. In both cases 50 warm-up generations precede the first
+recorded prediction, so the scored population is never a cold start.
 
-\begin{itemize}\itemsep2pt
-\item \textbf{Burn-in}, through 2021-12-31. The population evolves online
-      throughout, but nothing is traded or scored. A further 50 warm-up
-      generations precede any recorded prediction, so the population that
-      begins trading is mature rather than cold-started.
-\item \textbf{Tuning}, 2016-01-01 to 2019-12-31. Every configuration
-      decision --- hyperparameter screen, island count --- is made here,
-      disjoint from the trading period.
-\item \textbf{Trading}, 2022-01-01 to 2024-12-31. All reported results
-      are on this period, which is also the period the prior study on
-      these panels evaluated, so the two are directly comparable.
-\end{itemize}
+% \subsection{Online Evaluation Protocol}
 
-\subsection{Search Configuration and Prediction Rule}
+% Every method is evaluated prequentially: on each scored day the model
+% predicts the next day's cross-section, the realised outcome is then
+% revealed, and the model updates. No model ever sees a label before
+% predicting it, and no model is refit on the scored span with hindsight.
 
-The ONE-NAS settings are listed in Table~\ref{tab:hps} and were selected
-on the tuning span. Node types available to the search are simple,
-UGRNN, MGU, GRU, $\Delta$-RNN and LSTM recurrent cells.
+% ONE-NAS advances on a weekly clock. One generation corresponds to a
+% \texttt{window\_step} of 5 trading days; each genome is trained on
+% sequences of length $L=40$ and validated on the 5 most recent windows.
+% The number of training windows is set per panel so that the clock lands on
+% the intended calendar span --- 712, 695, 702 and 738 windows for
+% $V1$--$V4$ on the evaluation span, and 511, 493, 501 and 536 on the
+% tuning span.
 
-A single run yields, at every generation, both the elite population of
-each island and the single best genome overall, so the prediction rule is
-a scoring-time choice rather than a property of the run. Two rules are
-reported. The \emph{single champion} rule takes the global-best genome, as
-in prior ONE-NAS work. The \emph{ensemble} rule takes one champion per
-island --- the lowest-validation-error elite of each --- converts each
-member's predicted cross-section to ranks, and averages the ranks. Rank
-averaging is used rather than averaging predictions because the members
-are separately trained networks whose output scales are not comparable.
+% The sample is divided into three disjoint spans, used for three distinct
+% purposes:
+
+% \begin{itemize}\itemsep2pt
+% \item \textbf{Burn-in}, through 2019-12-31. The population evolves online
+%       but nothing is scored. A further 50 warm-up generations precede any
+%       recorded prediction, so the scored population is never a cold start.
+% \item \textbf{Tuning}, 2016-01-01 to 2019-12-31. Every configuration
+%       decision --- hyperparameter screen, island count --- is made here.
+% \item \textbf{Evaluation}, 2020-01-01 to 2024-12-31. Scored once per
+%       registered configuration. Results are reported on the 2022--2024
+%       sub-window, which is the span the prior study on these panels
+%       evaluated and therefore the one that makes the two comparable;
+%       2020--2021 is scored but not reported.
+% \end{itemize}
+
+% \subsection{Search Configuration and Prediction Rule}
+
+% The ONE-NAS settings are listed in Table~\ref{tab:hps} and were selected
+% on the tuning span. Node types available to the search are simple,
+% UGRNN, MGU, GRU, $\Delta$-RNN and LSTM recurrent cells.
+
+% A single run yields, at every generation, both the elite population of
+% each island and the single best genome overall, so the prediction rule is
+% a scoring-time choice rather than a property of the run. Two rules are
+% reported. The \emph{single champion} rule takes the global-best genome, as
+% in prior ONE-NAS work. The \emph{ensemble} rule takes one champion per
+% island --- the lowest-validation-error elite of each --- converts each
+% member's predicted cross-section to ranks, and averages the ranks. Rank
+% averaging is used rather than averaging predictions because the members
+% are separately trained networks whose output scales are not comparable.
 
 \subsection{Hyperparameter Search}
+
+Every configuration decision was made on the tuning span, and every cell
+that was trained is reported: Table~\ref{tab:hpscreen} in the appendix
+gives the rank IC, net return and Sharpe of all sixteen configurations,
+together with each one's paired difference against the control. No cell
+is omitted, including those that did worse than the control.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\begin{tabular}{@{}l@{\hspace{4pt}}l@{}}
+\toprule
+Hyperparameter & Value \\
+\midrule
+Islands & 40 (headline); 8 (reg.) \\
+Elite population / island & 8 \\
+Generated / island / generation & 5 \\
+Repopulation frequency & every 50 gen. \\
+Selection metric & validation MSE \\
+Prediction rule & champion rank-mean \\
+Target & 1-day CS rank-normal \\
+Seq.\ len.\ / step / val.\ sets & 40 / 5 / 5 \\
+Train subseq.\ / genome & 2000 \\
+Backprop.\ epochs / genome & 10 \\
+Replay (PER) $\alpha$, $\lambda$, $\epsilon$ & 0.6, 0.007, $10^{-8}$ \\
+Rounds / generation & 1 \\
+Node types & simple, UGRNN, MGU, \\
+ & GRU, $\Delta$-RNN, LSTM \\
+Mut.\ / intra- / inter-crossover & 0.7 / 0.2 / 0.1 \\
+Warm-up generations & 50 \\
+\bottomrule
+\end{tabular}
+\caption{ONE-NAS hyperparameter settings (selected on 2016--2019
+validation data, disjoint from the evaluation span). Replay sampling
+ablated: PER vs.\ uniform shows no advantage on the tuning objective
+($\Delta$IC $-0.0024$, $t{=}-1.9$).}
+\label{tab:hps}
+\end{table}
 
 Every configuration decision was made on the tuning span and is listed
 here in full, so that the selected values in Table~\ref{tab:hps} can be
@@ -182,151 +277,248 @@ and combination rule.
 
 \subsection{Baselines}
 
-Four online baselines trade the same books on the same panels under the
-same costs. All are single networks; the reported cell is the mean over
-independent runs, not the return of an ensemble of those runs.
+ONE-NAS is compared against four online baselines. All are evaluated on
+the same panels, with the same prequential protocol, target, trading
+books, and transaction costs. Each baseline is a single model, and
+reported figures are means over independent runs rather than the return
+of an ensemble of those runs.
 
 \begin{itemize}\itemsep2pt
-\item \textbf{Online LSTM} --- one LSTM, 8 hidden units, sequence length
-      10, Adam at $10^{-3}$, one gradient step per trading day with a
-      1000-day replay buffer.
-\item \textbf{Online GRU} --- as above with a GRU cell and sequence
-      length 5.
-\item \textbf{Periodic LSTM} --- the same LSTM architecture refit from
-      scratch each month for up to 4000 steps, rather than updated daily.
-\item \textbf{Online AR} --- a first-order autoregression fitted by online
-      gradient descent at $\eta=10^{-4}$. Deterministic, so it contributes
-      one run per panel rather than one per seed.
+\item \textbf{Online LSTM.} A single-layer LSTM with 8 hidden units and
+      input sequence length 10, trained with Adam (learning rate
+      $10^{-3}$). The model takes one gradient step per trading day on a
+      minibatch drawn from a replay buffer of the most recent 1000 days.
+\item \textbf{Online GRU.} Identical to the online LSTM with a GRU cell
+      and sequence length 5.
+\item \textbf{Periodic LSTM.} The same LSTM architecture, retrained from
+      scratch at the start of each month for up to 4000 steps and held
+      fixed between retrainings. This represents the batch-retraining
+      practice common in production forecasting systems.
+\item \textbf{Online AR.} A first-order autoregressive model fitted by
+      online gradient descent with learning rate $10^{-4}$. The model is
+      deterministic and contributes one run per panel.
 \end{itemize}
 
-All baselines predict the same cross-sectionally demeaned target as
-ONE-NAS.
+The recurrent baselines represent fixed-architecture online learning at
+the same model scale as the networks ONE-NAS evolves; the difference
+between them and ONE-NAS is therefore whether the architecture is
+searched and whether a population is maintained, not model capacity.
+
+% \subsection{Baselines}
+
+% Four online baselines trade the same books on the same panels under the
+% same costs. All are single networks; the reported cell is the mean over
+% independent runs, not the return of an ensemble of those runs.
+
+% \begin{itemize}\itemsep2pt
+% \item \textbf{Online LSTM} --- one LSTM, 8 hidden units, sequence length
+%       10, Adam at $10^{-3}$, one gradient step per trading day with a
+%       1000-day replay buffer.
+% \item \textbf{Online GRU} --- as above with a GRU cell and sequence
+%       length 5.
+% \item \textbf{Periodic LSTM} --- the same LSTM architecture refit from
+%       scratch each month for up to 4000 steps, rather than updated daily.
+% \item \textbf{Online AR} --- a first-order autoregression fitted by online
+%       gradient descent at $\eta=10^{-4}$. Deterministic, so it contributes
+%       one run per panel rather than one per seed.
+% \end{itemize}
+
+% All baselines predict the same cross-sectionally demeaned target as
+% ONE-NAS.
+
+% \subsection{Trading Books}
+
+% Predictions are turned into positions by a registered primary
+% construction, with two further constructions reported as sensitivities.
+
+% The \textbf{sleeves} book is the registered primary: Jegadeesh--Titman
+% overlapping portfolios. Each day a new sleeve goes long the top
+% $k=10$ names and short the bottom 10 by predicted rank, at
+% $(\$100/H)/k$ per name per side with holding period $H=10$ days; the
+% sleeve formed $H$ days earlier is retired. Ten sleeves are therefore live
+% at once, and costs are charged on the change in \emph{aggregate} per-name
+% notional, so a name held by several sleeves is netted rather than traded
+% repeatedly. Because only the ordering of each day's predictions is read,
+% every metric is invariant to any strictly monotone transform of a model's
+% outputs.
+
+% The \textbf{banded} book enters a name at predicted rank $\le 10$ and
+% holds it until its rank passes 35, following the buy/hold-spread
+% construction used to reduce turnover in the transaction-cost literature.
+% The \textbf{Algorithm 1} book is the conditional long--short rule of the
+% prior study, which rebalances only when all ten top predictions are
+% positive and all ten bottom predictions negative.
+
+% Books are funded with \$100 of capital and \$200 of gross notional when
+% fully invested. Transaction costs are charged per name from the CRSP
+% cost field scaled by the traded notional at the prior close, so
+% wide-spread names are genuinely more expensive to trade than liquid ones;
+% no flat basis-point assumption is used. All reported returns are net of
+% these costs.
 
 \subsection{Trading Books}
 
-A \emph{book} is the rule that turns a day's predicted ranking into
-actual positions, and it is what converts prediction quality into money.
-All three books used here are \emph{long--short}: they buy (go
-\emph{long}) the names predicted to do best and sell borrowed shares of
-(go \emph{short}) the names predicted to do worst, in equal dollar
-amounts. Equal amounts on each side make the book roughly
-\emph{dollar-neutral}, so it profits from the top names outperforming the
-bottom ones rather than from the market rising, and a rising or falling
-market largely cancels out. This is why the books can be compared against
-each other on skill rather than on market exposure, and why their returns
-are not comparable to simply holding the market.
+Predictions are converted into positions by a pre-registered primary
+book, with two further books reported as sensitivities. Every book reads
+only the ordering of each day's predicted cross-section, so all reported
+metrics are invariant to any strictly monotone transform of a model's
+output.
 
-One registered primary construction is used, with two further
-constructions reported as sensitivities.
+\paragraph{Overlapping portfolios (primary).} The primary book follows
+the overlapping-portfolio construction of \citet{efficiency1993returns}.
+Each day a new portfolio is formed that goes long the $k=10$ highest-ranked
+names and short the 10 lowest-ranked, with equal notional per name, and
+is held for $H=10$ trading days; the portfolio formed $H$ days earlier is
+closed. Ten portfolios are therefore open at any time, each funded with
+$1/H$ of the capital. Positions are netted across portfolios before
+trading, so a name that appears in several consecutive portfolios is
+held rather than repeatedly bought and sold, and transaction costs are
+charged only on the change in aggregate notional per name.
 
-The \textbf{sleeves} book is the registered primary: Jegadeesh--Titman
-overlapping portfolios. Each day a new \emph{sleeve} --- one small
-long--short portfolio --- goes long the top $k=10$ names and short the
-bottom 10 by predicted rank, at $(\$100/H)/k$ per name per side with
-holding period $H=10$ days; the sleeve formed $H$ days earlier is
-retired. Ten sleeves are therefore live at once, each holding for ten
-days, so the book turns over about a tenth of itself per day rather than
-rebuilding daily. Costs are charged on the change in \emph{aggregate}
-per-name position, so a name held by several sleeves at once is netted
-rather than bought and sold repeatedly. Because only the ordering of each
-day's predictions is read, every metric is invariant to any strictly
-monotone transform of a model's outputs --- a model that doubles all its
-predictions, or applies any order-preserving rescaling, trades
-identically.
+\paragraph{Banded entry and exit.} The second book uses the buy/hold
+spread of \citet{novy2016taxonomy}, a standard device for reducing
+turnover: a name is entered when its predicted rank reaches the top 10
+and is held until its rank falls past 35. Names between the two
+thresholds are neither bought nor sold, which removes the churn caused
+by small day-to-day changes in rank near the boundary.
 
-The \textbf{banded} book enters a name at predicted rank $\le 10$ and
-holds it until its rank passes 35, following the buy/hold-spread
-construction used to reduce turnover in the transaction-cost literature.
-The \textbf{Algorithm 1} book is the conditional long--short rule of the
-prior study, which rebalances only when all ten top predictions are
-positive and all ten bottom predictions negative.
+\paragraph{Conditional long--short.} The third book is the daily
+long--short rule of the prior study on these panels. Each day, if the
+predicted return of the $k$-th ranked name is positive and that of the
+$k$-th lowest-ranked name is negative, all existing positions are
+closed and the capital is redeployed equally across the top $k$ names
+long and the bottom $k$ names short; otherwise the current positions are
+held unchanged. The condition is a confidence gate that suspends
+rebalancing when the model does not separate the top and bottom of the
+cross-section by sign. On rank-normalised predictions the gate is
+satisfied every day, so this book reduces to daily full rebalancing.
 
-Books are funded with \$100 of capital and, when fully invested, hold
-\$100 long and \$100 short, so \$200 of stock changes hands in total ---
-the \emph{gross notional}.
+\paragraph{Capital and costs.} Each book is funded with \$100 of capital
+and, when fully invested, holds \$100 long and \$100 short, so \$200 of
+stock is held in total --- the \emph{gross notional}.
 
-Trading is not free, and the cost is charged explicitly. Every trade pays
-the \emph{bid--ask spread}: the gap between what a buyer pays and a
-seller receives, which is wide for thinly traded stocks and narrow for
-liquid ones. We take that cost per name from the CRSP cost field and
-apply it to the value actually traded, rather than assuming one flat rate
-for every stock, so illiquid names are correctly penalised. All returns
-reported in this paper are \emph{net}: costs have already been deducted.
+Trading is not free, and the cost is charged explicitly rather than
+assumed away. Each stock has a per-share cost $c_{i,t}$ in dollars,
+taken from the dataset's \texttt{TRAN\_COST} column, which is the half
+bid--ask spread: the cost of crossing the spread once, in one direction.
+Dividing by the share price gives a cost per dollar traded, and this is
+applied to the notional actually traded at the previous close. A trade of
+$\$v$ in stock~$i$ therefore pays
+\begin{equation*}
+  \text{cost} \;=\; v \cdot \frac{c_{i,t}}{|P_{i,t}|},
+\end{equation*}
+which for the median name in these panels is of the order of a few basis
+points, and considerably more for the least liquid ones. Costs are
+per-stock and time-varying rather than a single flat basis-point
+assumption, so illiquid names are penalised as they should be. All
+returns reported in this paper are \emph{net}: these costs have already
+been deducted.
 
 \subsection{Metrics}
 
-Two families are reported: how good the predictions are, and what the
-resulting book earns.
+Two families of metrics are reported. \emph{Prediction quality} is
+measured by the rank information coefficient (rank IC): the Spearman
+correlation between predicted and realised returns across the names on
+a given day, averaged over all scored days. Because the trading books
+read only the ordering of predictions, rank IC is the accuracy measure
+that the books directly depend on.
 
-\emph{Prediction quality} is the \textbf{rank IC} (information
-coefficient): on each day, the Spearman rank correlation between the
-predicted ordering of the cross-section and the realised one, averaged
-over scored days. It is the natural accuracy measure here because the
-books read only the ordering. Values are small by construction --- daily
-cross-sectional return is mostly noise, and a rank IC of $0.01$--$0.02$
-is a usable signal in this literature, not a weak one.
+\emph{Economic performance} is measured on each trading book by four
+quantities: net return, the cumulative daily profit and loss after
+transaction costs as a fraction of initial capital; annualised Sharpe
+ratio, the mean daily return divided by its standard deviation and
+scaled by $\sqrt{252}$, which measures return per unit of risk; maximum
+drawdown, the largest peak-to-trough decline in cumulative return over
+the period; and turnover, the mean daily traded notional as a fraction
+of gross book size, which determines exposure to transaction costs.
 
-\emph{Economics} covers four quantities:
-
-\begin{itemize}\itemsep2pt
-\item \textbf{Net return}, the cumulative profit and loss over the period
-      as a percentage of the starting \$100, after costs.
-\item \textbf{Sharpe ratio}, the mean daily return divided by its
-      standard deviation, annualised. It measures return per unit of
-      volatility, so a strategy that earns the same amount more smoothly
-      scores higher. Roughly, above 1 is good for a strategy of this
-      kind.
-\item \textbf{Maximum drawdown} (MDD), the largest peak-to-trough fall in
-      cumulative profit over the period --- the worst loss an investor
-      who entered at the worst moment would have sat through.
-\item \textbf{Turnover}, mean daily traded value as a fraction of gross
-      notional. A turnover of $0.12$ means about $12\%$ of the book is
-      replaced each day; lower turnover means less exposure to
-      transaction costs.
-\end{itemize}
-
-Finally, a return can look impressive merely by taking well-known risks,
-so we check whether it survives that. Each arm's daily book return is
-regressed on the four standard \emph{factors} of the empirical asset
-pricing literature --- the market, firm size, value, and momentum
-(Fama--French three-factor plus momentum). The slope on the market factor
-is the \textbf{beta}, the portfolio's sensitivity to the market as a
-whole: a beta near $1$ moves with the market, and one near $0$ is
-insulated from it. The intercept is the \textbf{alpha}, the average
-return left over once those four exposures are accounted for, and it is
-alpha rather than raw return that indicates genuine skill. Standard
-errors use the Newey--West correction at lag 10, which allows for daily
-returns being autocorrelated rather than independent.
+To test whether returns are explained by exposure to known sources of
+market risk, each arm's pooled daily book return is regressed on the
+Fama--French three factors \cite{fama1993common} and the momentum
+factor \cite{carhart1997persistence}. The intercept of this regression
+(alpha) is the return not attributable to those factors, and the
+market coefficient (beta) is the sensitivity to overall market
+movement. Standard errors are Newey--West \cite{newey1986simple} with
+lag 10 to account for autocorrelation induced by the 10-day holding
+period.
 
 \subsection{Replication and Statistical Comparison}
 
 The unit of replication is one (panel, seed) cell. Unless stated
-otherwise, ONE-NAS arms comprise 10 seeds $\times$ 4 panels $=40$ cells.
-The baselines were run at higher replication --- 48 seeds for online LSTM,
-40 for online GRU and periodic LSTM --- and their own means are reported
-at that full replication.
+otherwise, each ONE-NAS configuration is run with 10 seeds on 4 panels,
+giving 40 cells. Baselines were run at higher replication (48 seeds for
+online LSTM, 40 for online GRU and periodic LSTM) and their means are
+reported at that replication.
 
-Comparisons between arms are paired within (panel, seed) cells, so that
-panel and seed effects cancel, and the reported $t$ is a paired $t$ over
-those cells. Where two arms do not share a seed set, the pairing is
-restricted to the cells they have in common and $n$ is stated.
+Comparisons between arms are paired within (panel, seed) cells so that
+panel and seed effects cancel, and reported $t$ statistics are paired
+$t$-tests over those cells. When two arms do not share a seed set, the
+pairing is restricted to their common cells and $n$ is stated.
 
 \subsection{Compute Environment}
 
-All searches ran on ACCESS Anvil. Each run occupied one node of the
-\texttt{wholenode} partition with 128 MPI ranks, one acting as the master
-that maintains the island populations and distributes genomes, and the
-remaining 127 as workers that train and evaluate them. The island count
-is a search parameter and is independent of the rank count, so the worker
-pool is identical across every configuration reported. Baselines are
-single-process and were run on the same hardware.
+All searches ran on the ACCESS Anvil cluster. Each run occupied one
+node of the \texttt{wholenode} partition with 128 MPI ranks: one master
+maintaining the island populations and generating offspring, and 127
+workers training and evaluating them. The island count is a search
+parameter independent of the rank count, so the worker pool is
+identical across all reported configurations. Baselines are
+single-process and were run on the same hardware. The inference
+endpoint described in Section~\ref{sec:deployment} is a Raspberry Pi 4B with 8GB RAM.
 
 \subsection{Pre-Registration}
 
-The scored configuration, evaluation span, trading book and metrics were
-committed to the repository before the evaluation span was scored, and
-each subsequent look at the data was declared in advance with its
-decision rule. Configuration changes require a dated amendment written
-before the changed configuration is scored. The registered protocol,
-the hyperparameter screen with its per-cell outcomes, and every declared
-exploratory look are included in the code release.
+The scored configuration, evaluation span, trading book, and metrics
+were committed to the repository before the evaluation span was scored.
+Every subsequent analysis of evaluation-span data was declared in
+advance with its decision rule, and any configuration change required a
+dated amendment written before the changed configuration was scored.
+The registered protocol, the full hyperparameter screen with per-cell
+outcomes, and all declared exploratory analyses are included in the
+code release.
+
+% \subsection{Metrics}
+
+% Two families are reported. \emph{Prediction quality}: the daily
+% cross-sectional Spearman rank correlation between predicted and realised
+% returns, averaged over scored days (rank IC). \emph{Economics}: net return
+% as cumulative daily profit and loss over initial capital, annualised
+% Sharpe ratio, maximum drawdown, and turnover as mean daily traded notional
+% divided by gross book size.
+
+% Factor-adjusted returns regress each arm's pooled daily book return on the
+% Fama--French three factors plus momentum, with Newey--West standard errors
+% at lag 10.
+
+% \subsection{Replication and Statistical Comparison}
+
+% The unit of replication is one (panel, seed) cell. Unless stated
+% otherwise, ONE-NAS arms comprise 10 seeds $\times$ 4 panels $=40$ cells.
+% The baselines were run at higher replication --- 48 seeds for online LSTM,
+% 40 for online GRU and periodic LSTM --- and their own means are reported
+% at that full replication.
+
+% Comparisons between arms are paired within (panel, seed) cells, so that
+% panel and seed effects cancel, and the reported $t$ is a paired $t$ over
+% those cells. Where two arms do not share a seed set, the pairing is
+% restricted to the cells they have in common and $n$ is stated.
+
+% \subsection{Compute Environment}
+
+% All searches ran on ACCESS Anvil. Each run occupied one node of the
+% \texttt{wholenode} partition with 128 MPI ranks, one acting as the master
+% that maintains the island populations and distributes genomes, and the
+% remaining 127 as workers that train and evaluate them. The island count
+% is a search parameter and is independent of the rank count, so the worker
+% pool is identical across every configuration reported. Baselines are
+% single-process and were run on the same hardware.
+
+% \subsection{Pre-Registration}
+
+% The scored configuration, evaluation span, trading book and metrics were
+% committed to the repository before the evaluation span was scored, and
+% each subsequent look at the data was declared in advance with its
+% decision rule. Configuration changes require a dated amendment written
+% before the changed configuration is scored. The registered protocol,
+% the hyperparameter screen with its per-cell outcomes, and every declared
+% exploratory look are included in the code release.

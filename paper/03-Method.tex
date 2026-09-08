@@ -1,0 +1,117 @@
+\section{Method}
+\label{sec:method}
+
+This section summarises the ONE-NAS algorithm \cite{lyu2023onenas},
+defines the two prediction rules compared in this study, and describes
+the deployment architecture in which search and inference are executed
+on separate hardware. Configuration values are deferred to
+Section~\ref{sec:setup}.
+
+\subsection{Online Neuroevolution}
+
+ONE-NAS maintains a population of RNNs and evolves both their
+architectures and their weights as data arrive. Each individual, termed
+a genome, is a directed graph in which hidden nodes are instantiated
+from a library of recurrent cell types. Evolution begins from a minimal
+genome containing only input-to-output connections. Offspring are
+produced by mutation (insertion or deletion of nodes and edges,
+insertion of recurrent edges, and change of cell type) and by crossover
+between two parents. Weights are inherited from the parent for every
+retained component and randomly initialised only for newly introduced
+components. This Lamarckian inheritance reduces the training required
+per offspring to a small number of backpropagation epochs and is a
+prerequisite for operating within the data cadence.
+
+The population is partitioned into $N$ islands. Each island maintains an
+elite set of fixed size, generates a fixed number of offspring per
+generation from that set, and admits genetic material from other
+islands only through inter-island crossover at a low rate. Islands
+consequently converge to distinct regions of the architecture space. To
+counteract stagnation, at a fixed interval the island whose best elite
+has the worst fitness is cleared and re-initialised from the global
+best genome.
+
+\subsection{Online Protocol}
+
+The input stream is partitioned into windows of fixed length in trading
+days, and one generation is executed per window. Let $\mathcal{H}_t$
+denote the history available at generation $t$. In generation $t$, each
+island generates offspring from its elites; offspring are trained on
+worker processes using subsequences sampled from $\mathcal{H}_t$; all
+genomes, elite and offspring, are evaluated by mean squared error on
+the most recent windows of $\mathcal{H}_t$, which are excluded from
+training; and each island retains the top-ranked genomes as its elite
+set. The window revealed during generation $t$ is then appended to form
+$\mathcal{H}_{t+1}$. Because fitness is measured on recent data while
+training draws on the full history, the population tracks the current
+regime without discarding earlier ones. Genome generation is performed
+by a single master process and training is distributed asynchronously
+across workers, so that the wall-clock cost of a generation is governed
+by the number of workers rather than the population size.
+
+\subsection{Prediction Rules}
+\label{sec:prediction_rules}
+
+At the end of generation $t$, the algorithm exposes the elite set of
+each island and the genome of best fitness across all islands. The
+selection of genomes used to predict window $t{+}1$ is a scoring-time
+decision that does not affect the search. Two rules are compared.
+
+Under the \emph{single champion} rule, the global best genome alone
+produces the prediction. This is the rule used in all prior ONE-NAS
+work.
+
+Under the \emph{island-champion ensemble} rule, the best elite of each
+island produces a prediction, giving $N$ predicted cross-sections. Each
+is converted to ranks, and the ranks are averaged across members. Rank
+aggregation is used in place of output averaging because the members
+are independently trained networks with non-comparable output scales,
+and because every trading rule considered here depends only on the
+ordering of the prediction.
+
+Both rules are evaluated on the same runs. Any difference between them
+is therefore attributable to the use of the evolved population rather
+than to its construction.
+
+\subsection{Deployment Architecture}
+\label{sec:deployment}
+
+Search and inference are executed on separate machines, reflecting the
+asymmetry in their computational requirements: population training is
+parallel and expensive, whereas evaluating the resulting networks is
+not. Figure~\ref{fig:deployment} depicts the pipeline.
+
+\paragraph{Search host.} ONE-NAS is executed on a cloud instance or a
+workstation with sufficient cores to train a generation's offspring in
+parallel, using one master process and a pool of training workers. The
+host stores the price history, advances the window clock, and performs
+all evolutionary operations.
+
+\paragraph{Endpoint.} Inference is performed on a Raspberry Pi,
+selected as a deliberately constrained target with substantially less
+compute and memory than a typical consumer laptop or office desktop.
+Demonstrating that inference meets the data cadence on this device
+establishes a lower bound on the hardware required at the point of use.
+The endpoint stores only the most recently received genomes and the
+current day's feature vectors; no training is performed on the device.
+
+\paragraph{Model hand-off.} Transfer of genomes from host to endpoint is
+a step of every generation. Upon completion of selection in generation
+$t$, the master serialises the genomes designated to predict window
+$t{+}1$ (the global best genome, or the $N$ island champions, according
+to the prediction rule) into a binary encoding of graph structure, cell
+types, and weights, and transmits the file to the endpoint over TCP/IP.
+The endpoint deserialises the networks and produces a prediction for
+each day of window $t{+}1$ as its features become available, applying
+the rank aggregation of Section~\ref{sec:prediction_rules} when an
+ensemble is received. Concurrently, the host generates and trains
+generation $t{+}1$. Prediction and search thus overlap in time, as in
+the original ONE-NAS design, but are decoupled across hardware.
+
+Two properties of this architecture are relevant to deployment. First,
+inference cost scales only with $N$ and the number of securities, so
+increasing the island count does not alter the endpoint's hardware
+requirement. Second, the endpoint is stateless with respect to the
+search: in the event of host unavailability, it continues to predict
+with the most recently received genomes and resumes upon the next
+hand-off.
