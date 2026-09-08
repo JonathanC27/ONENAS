@@ -18,17 +18,25 @@
 
 All data are daily CRSP records for U.S.\ common equities. From the
 mid-- and upper-mid-capitalisation segment we form four disjoint panels,
-denoted $V1$--$V4$, of 51 tickers each (204 distinct names in total). Each
-panel spans 2004-08-16 to 2024-12-31, or 5{,}130 trading days, and is
-stored as one CSV per ticker plus a panel-level date index carrying the
-aligned raw price and transaction-cost columns for every name.
+denoted $V1$--$V4$, of 50 tickers each; the four share no constituents,
+so 200 distinct names are used in total. Each panel is stored as one CSV
+per ticker plus a panel-level date index carrying the aligned raw price
+and transaction-cost columns for every name.
+
+Every panel ends on 2024-12-31 but they begin on different dates,
+because a panel starts only once all 50 of its constituents have priced
+history: $V1$ runs from 2004-08-16, $V2$ from 2004-12-17, $V3$ from
+2004-10-27 and $V4$ from 2004-02-09, giving 5{,}130, 5{,}043, 5{,}079 and
+5{,}257 trading days respectively. The differing lengths affect only the
+burn-in each panel receives; the tuning and trading periods are the same
+calendar spans for all four, so no arm gains or loses scored days.
 
 Panel membership is fixed for the whole sample: a ticker is either in a
-panel for all 5{,}130 days or not in it at all. This removes index-
-reconstitution effects from the comparison, at the cost of conditioning
-the universe on names that survived to the end of the sample. All methods
-trade the identical universe, so the conditioning applies equally to every
-arm reported.
+panel for its entire history or not in it at all. This removes
+index-reconstitution effects from the comparison, at the cost of
+conditioning the universe on names that survived to the end of the
+sample. All methods trade the identical universe, so the conditioning
+applies equally to every arm reported.
 
 \subsection{Features and Prediction Target}
 
