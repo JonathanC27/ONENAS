@@ -48,17 +48,28 @@ information available at or before the formation day:
 \item \texttt{RET\_CS\_IN} --- the cross-sectional rank-normal score of
       \texttt{RET} on the same day, i.e.\ $\Phi^{-1}\!\big((\mathrm{rank}_t(i)-0.5)/N\big)$
       over the $N$ names priced that day.
-\item \texttt{BA\_SPREAD} --- the quoted bid--ask spread.
+\item \texttt{BA\_SPREAD} --- the quoted bid--ask spread, the gap between
+      the best buying and selling price, which proxies how costly the
+      stock is to trade.
 \item \texttt{ILLIQUIDITY} --- Amihud illiquidity: absolute return over
-      dollar volume, passed through a 21-day trailing mean and a log.
-\item \texttt{REV21\_1} --- short-horizon reversal, the compounded return
-      over the 20 rows preceding the formation day, excluding it.
-\item \texttt{TURN\_RATIO} --- turnover acceleration: the mean of
-      $\log(1+\mathrm{turnover})$ over the last 5 rows minus the same mean
-      over the last 63 rows.
-\item \texttt{VOL21} --- the sample standard deviation of \texttt{RET}
-      over the trailing 21 rows.
+      dollar volume, smoothed over 21 days and logged. It is large when
+      a small amount of trading moves the price a lot.
+\item \texttt{REV21\_1} --- short-horizon reversal: the compounded return
+      over the 20 days before the formation day, excluding it. Recent
+      winners tend to give some of it back, so this is predictive with a
+      negative sign.
+\item \texttt{TURN\_RATIO} --- turnover acceleration: recent trading
+      activity relative to its own longer-run level, as the mean of
+      $\log(1+\mathrm{turnover})$ over the last 5 days minus the same
+      mean over the last 63. It rises when a stock starts attracting
+      unusual attention.
+\item \texttt{VOL21} --- realised volatility, the standard deviation of
+      \texttt{RET} over the trailing 21 days.
 \end{itemize}
+
+These are standard predictors in the empirical asset pricing literature
+rather than novel ones; the contribution of this paper is in the
+architecture search, so the feature set is deliberately conventional.
 
 The last five of these are additionally mapped, per date, to their
 cross-sectional rank on $[-1,1]$, so that no feature carries a level that
@@ -193,19 +204,35 @@ ONE-NAS.
 
 \subsection{Trading Books}
 
-Predictions are turned into positions by a registered primary
-construction, with two further constructions reported as sensitivities.
+A \emph{book} is the rule that turns a day's predicted ranking into
+actual positions, and it is what converts prediction quality into money.
+All three books used here are \emph{long--short}: they buy (go
+\emph{long}) the names predicted to do best and sell borrowed shares of
+(go \emph{short}) the names predicted to do worst, in equal dollar
+amounts. Equal amounts on each side make the book roughly
+\emph{dollar-neutral}, so it profits from the top names outperforming the
+bottom ones rather than from the market rising, and a rising or falling
+market largely cancels out. This is why the books can be compared against
+each other on skill rather than on market exposure, and why their returns
+are not comparable to simply holding the market.
+
+One registered primary construction is used, with two further
+constructions reported as sensitivities.
 
 The \textbf{sleeves} book is the registered primary: Jegadeesh--Titman
-overlapping portfolios. Each day a new sleeve goes long the top
-$k=10$ names and short the bottom 10 by predicted rank, at
-$(\$100/H)/k$ per name per side with holding period $H=10$ days; the
-sleeve formed $H$ days earlier is retired. Ten sleeves are therefore live
-at once, and costs are charged on the change in \emph{aggregate} per-name
-notional, so a name held by several sleeves is netted rather than traded
-repeatedly. Because only the ordering of each day's predictions is read,
-every metric is invariant to any strictly monotone transform of a model's
-outputs.
+overlapping portfolios. Each day a new \emph{sleeve} --- one small
+long--short portfolio --- goes long the top $k=10$ names and short the
+bottom 10 by predicted rank, at $(\$100/H)/k$ per name per side with
+holding period $H=10$ days; the sleeve formed $H$ days earlier is
+retired. Ten sleeves are therefore live at once, each holding for ten
+days, so the book turns over about a tenth of itself per day rather than
+rebuilding daily. Costs are charged on the change in \emph{aggregate}
+per-name position, so a name held by several sleeves at once is netted
+rather than bought and sold repeatedly. Because only the ordering of each
+day's predictions is read, every metric is invariant to any strictly
+monotone transform of a model's outputs --- a model that doubles all its
+predictions, or applies any order-preserving rescaling, trades
+identically.
 
 The \textbf{banded} book enters a name at predicted rank $\le 10$ and
 holds it until its rank passes 35, following the buy/hold-spread
@@ -214,25 +241,62 @@ The \textbf{Algorithm 1} book is the conditional long--short rule of the
 prior study, which rebalances only when all ten top predictions are
 positive and all ten bottom predictions negative.
 
-Books are funded with \$100 of capital and \$200 of gross notional when
-fully invested. Transaction costs are charged per name from the CRSP
-cost field scaled by the traded notional at the prior close, so
-wide-spread names are genuinely more expensive to trade than liquid ones;
-no flat basis-point assumption is used. All reported returns are net of
-these costs.
+Books are funded with \$100 of capital and, when fully invested, hold
+\$100 long and \$100 short, so \$200 of stock changes hands in total ---
+the \emph{gross notional}.
+
+Trading is not free, and the cost is charged explicitly. Every trade pays
+the \emph{bid--ask spread}: the gap between what a buyer pays and a
+seller receives, which is wide for thinly traded stocks and narrow for
+liquid ones. We take that cost per name from the CRSP cost field and
+apply it to the value actually traded, rather than assuming one flat rate
+for every stock, so illiquid names are correctly penalised. All returns
+reported in this paper are \emph{net}: costs have already been deducted.
 
 \subsection{Metrics}
 
-Two families are reported. \emph{Prediction quality}: the daily
-cross-sectional Spearman rank correlation between predicted and realised
-returns, averaged over scored days (rank IC). \emph{Economics}: net return
-as cumulative daily profit and loss over initial capital, annualised
-Sharpe ratio, maximum drawdown, and turnover as mean daily traded notional
-divided by gross book size.
+Two families are reported: how good the predictions are, and what the
+resulting book earns.
 
-Factor-adjusted returns regress each arm's pooled daily book return on the
-Fama--French three factors plus momentum, with Newey--West standard errors
-at lag 10.
+\emph{Prediction quality} is the \textbf{rank IC} (information
+coefficient): on each day, the Spearman rank correlation between the
+predicted ordering of the cross-section and the realised one, averaged
+over scored days. It is the natural accuracy measure here because the
+books read only the ordering. Values are small by construction --- daily
+cross-sectional return is mostly noise, and a rank IC of $0.01$--$0.02$
+is a usable signal in this literature, not a weak one.
+
+\emph{Economics} covers four quantities:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Net return}, the cumulative profit and loss over the period
+      as a percentage of the starting \$100, after costs.
+\item \textbf{Sharpe ratio}, the mean daily return divided by its
+      standard deviation, annualised. It measures return per unit of
+      volatility, so a strategy that earns the same amount more smoothly
+      scores higher. Roughly, above 1 is good for a strategy of this
+      kind.
+\item \textbf{Maximum drawdown} (MDD), the largest peak-to-trough fall in
+      cumulative profit over the period --- the worst loss an investor
+      who entered at the worst moment would have sat through.
+\item \textbf{Turnover}, mean daily traded value as a fraction of gross
+      notional. A turnover of $0.12$ means about $12\%$ of the book is
+      replaced each day; lower turnover means less exposure to
+      transaction costs.
+\end{itemize}
+
+Finally, a return can look impressive merely by taking well-known risks,
+so we check whether it survives that. Each arm's daily book return is
+regressed on the four standard \emph{factors} of the empirical asset
+pricing literature --- the market, firm size, value, and momentum
+(Fama--French three-factor plus momentum). The slope on the market factor
+is the \textbf{beta}, the portfolio's sensitivity to the market as a
+whole: a beta near $1$ moves with the market, and one near $0$ is
+insulated from it. The intercept is the \textbf{alpha}, the average
+return left over once those four exposures are accounted for, and it is
+alpha rather than raw return that indicates genuine skill. Standard
+errors use the Newey--West correction at lag 10, which allows for daily
+returns being autocorrelated rather than independent.
 
 \subsection{Replication and Statistical Comparison}
 
